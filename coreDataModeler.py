@@ -17,7 +17,7 @@
 # handle O2O case
 # handle O2N case?
 # test array of primitive case
-# correctly resize elements
+# correctly resize elements, dynamically
 
 import sys
 import json
