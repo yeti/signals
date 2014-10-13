@@ -53,6 +53,7 @@ RELATIONSHIPS = set({
 })
 
 # A little logic to to make plural words more readable
+# this won't cover everything, there's a few python libraries out there you could use: https://pypi.python.org/pypi/inflect
 def get_word_plural(word):
     if word.endswith("y"):
         return word.lower()[:-1] + 'ies'
@@ -81,6 +82,7 @@ def get_basic_relationship(entity, relationship_name, destination_entity, invers
     relationship.set("inverseEntity", inverse_entity)
     return relationship
 
+# it seems redundant that we pass around the entities as well as their names then also get their names again from the entity in the following functions
 # Creates a one relationship between these two entities
 def add_one_relationship(entity_one, entity_two, entity_one_name, entity_two_name):
     relationship = get_basic_relationship(entity_one, entity_two_name, entity_two.get('name'), entity_one_name, entity_two.get('name'))
@@ -117,11 +119,15 @@ def add_relationships(model, objects):
         for key, value in obj_fields.iteritems():
 
             values = value.split(",")
+            # I think it's `optional` not `optionals` that we put in the schema files unless you want to change the wording
             if "optionals" in values:
                 values.remove("optionals")
             if "primarykey" in values:
                 values.remove("primarykey")
 
+            # This isn't the most bulletproof way to do this if we ever want to add a new definition to the schema
+            # Might be better to loop over every value in values and see if it equals O2M or M2M?
+            # These two if/elif blocks are also identical minus the function being called, you could DRY this up
             if values[0] == "O2M":
                 one_entity = None
                 many_entity = None
@@ -158,6 +164,7 @@ def add_entities(model, objects):
         for key, value in obj_fields.iteritems():
             values = value.split(",")
 
+            # Same thing as above, should probably be optional not optionals
             if "optionals" in values:
                 values.remove("optionals")
             if "primarykey" in values:
@@ -173,6 +180,8 @@ def get_model(xml):
     xmldoc = minidom.parse(xml)
     itemlist = xmldoc.getElementsByTagName('model') 
     model = etree.Element("model")
+    # should set itemlist[0] equal to a variable so it's clearer what's being used
+    # I think you can use iteritems() instead of keys() here to loop over both at the same time `for key, value in first_model.attributes.iteritems():`
     for att in itemlist[0].attributes.keys():
         model.set(att, itemlist[0].attributes[att].value)
     return model
@@ -180,6 +189,8 @@ def get_model(xml):
 # Main script to parse json, add in appropiate entities, relationships and elements
 # Re-writes given XML
 def main_script(incoming_json, xml):
+    # Should use the python file open context manager: http://preshing.com/20110920/the-python-with-statement-by-example/
+    # Probably want some user friendly print statements like "Script starting", "Scripts adding entities", "Scripts finishing", etc
     f = open(incoming_json, "r")
     objects = json.loads(f.read())["objects"]
     f.close()
@@ -201,6 +212,9 @@ def main_script(incoming_json, xml):
 # Check if JSON and if JSON is Valid
 # Please enter XML:
 # Do some kind of check on the XML?
+
+# We should use a main block here: http://stackoverflow.com/questions/4041238/why-use-def-main
+# We should also name this file to be more pythonic - core_data_modeler.py
 if len(sys.argv) != 3:
     print "Error, usage: " + sys.argv[0] + " <file.json> <file.xml>" 
 else:
