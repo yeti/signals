@@ -1,26 +1,3 @@
-# Manticore
-# Copyright (C) 2013, Collin Schupman at Yeti LLC
-
-# This is a script to update an exisiting CoreDataModel with a given JSON file
-
-# Assumes JSON is in format : TODO->Write format
-
-# Please pass in contents file from your xcode project, located here:
-# project_name.xcdatamodeld
-#    project_name.xcdatamodel
-#       contents (XML)
-# this script will make appropiate changes and update the file
-
-# TODO:
-#
-# add in interactive session to get JSON and XML to update
-# handle O2O case
-# handle O2N case?
-# test array of primitive case
-# correctly resize elements, dynamically
-
-import sys
-import json
 import StringIO
 from lxml import etree
 from xml.dom import minidom
@@ -44,7 +21,6 @@ DATA_TYPES = {
     "boolean"    : "Boolean",
     "array"      : "Transformable"
 }
-
 # Database Relationships
 RELATIONSHIPS = set({
     "O2O",
@@ -111,7 +87,7 @@ def add_O2M_relationships(one_entity, many_entity):
     add_one_relationship(many_entity, one_entity, many_entity_name, one_entity_name)
 
 # Adds relationships and inverse relationships for each required entity
-# Currently only supports M2M, O2M. TODO: Add in O2O, possibly others
+# Currently only supports M2M, O2M. TODO: Add in others
 def add_relationships(model, objects):
     for obj in objects:
         obj_name = obj.keys()[0]
@@ -119,9 +95,8 @@ def add_relationships(model, objects):
         for key, value in obj_fields.iteritems():
 
             values = value.split(",")
-            # I think it's `optional` not `optionals` that we put in the schema files unless you want to change the wording
-            if "optionals" in values:
-                values.remove("optionals")
+            if "optional" in values:
+                values.remove("optional")
             if "primarykey" in values:
                 values.remove("primarykey")
 
@@ -164,9 +139,8 @@ def add_entities(model, objects):
         for key, value in obj_fields.iteritems():
             values = value.split(",")
 
-            # Same thing as above, should probably be optional not optionals
-            if "optionals" in values:
-                values.remove("optionals")
+            if "optional" in values:
+                values.remove("optional")
             if "primarykey" in values:
                 values.remove("primarykey")
 
@@ -179,43 +153,30 @@ def add_entities(model, objects):
 def get_model(xml):
     xmldoc = minidom.parse(xml)
     itemlist = xmldoc.getElementsByTagName('model') 
-    model = etree.Element("model")
-    # should set itemlist[0] equal to a variable so it's clearer what's being used
-    # I think you can use iteritems() instead of keys() here to loop over both at the same time `for key, value in first_model.attributes.iteritems():`
-    for att in itemlist[0].attributes.keys():
-        model.set(att, itemlist[0].attributes[att].value)
-    return model
+    new_model = etree.Element("model")
+    current_xml_model = itemlist[0]
+    for att in current_xml_model.attributes.keys():
+        new_model.set(att, current_xml_model.attributes[att].value)
+    return new_model
 
-# Main script to parse json, add in appropiate entities, relationships and elements
-# Re-writes given XML
-def main_script(incoming_json, xml):
-    # Should use the python file open context manager: http://preshing.com/20110920/the-python-with-statement-by-example/
-    # Probably want some user friendly print statements like "Script starting", "Scripts adding entities", "Scripts finishing", etc
-    f = open(incoming_json, "r")
-    objects = json.loads(f.read())["objects"]
-    f.close()
+def write_xml_to_file(xml, objects):
+    print "Reading XML"
     model = get_model(xml)
+
+    print "Adding entitites"
     add_entities(model,objects)
+
+    print "Adding relationships"
     add_relationships(model, objects)
+
+    print "Adding elements"
     add_elements(model, objects)
     
-    # print tree
-    #print etree.tostring(model, pretty_print = True)
+    # print tree (FOR DEBUGGING)
+    # print "Printing XML"
+    # print etree.tostring(model, pretty_print = True)
 
     # write tree
-    #tree = etree.ElementTree(model)
-    #tree.write(xml, pretty_print=True)
-
-# check user input
-# TODO: Should make this an interactive session
-# Please enter JSON:
-# Check if JSON and if JSON is Valid
-# Please enter XML:
-# Do some kind of check on the XML?
-
-# We should use a main block here: http://stackoverflow.com/questions/4041238/why-use-def-main
-# We should also name this file to be more pythonic - core_data_modeler.py
-if len(sys.argv) != 3:
-    print "Error, usage: " + sys.argv[0] + " <file.json> <file.xml>" 
-else:
-    main_script(sys.argv[1], sys.argv[2]) 
+    print "Writting XML"
+    tree = etree.ElementTree(model)
+    tree.write(xml, pretty_print=True)
