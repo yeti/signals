@@ -1,5 +1,5 @@
-# Manticore
-# Copyright (C) 2013, Collin Schupman at Yeti LLC
+# manticom_ios_models
+# Copyright (C) 2014, Collin Schupman at Yeti LLC
 
 # This is a script to create the models needed iOS side from a given JSON file
 
