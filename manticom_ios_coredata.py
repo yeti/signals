@@ -1,3 +1,24 @@
+# manticom_ios_coredata
+# Copyright (C) 2014, Collin Schupman at Yeti LLC
+
+# This is a script to update an exisitding CoreDataModel with a given JSON file
+
+# Assumes JSON is in format : TODO->Write format
+
+# Please pass in contents file from your xcode project, located here:
+# project_name.xcdatamodeld
+#    project_name.xcdatamodel
+#       contents (XML)
+# this script will make appropiate changes and update the file
+
+# TODO:
+#
+# add in interactive session to get JSON and XML to update
+# handle O2O case
+# handle O2N case?
+# test array of primitive case
+# correctly resize elements, dynamically
+
 import StringIO
 from lxml import etree
 from xml.dom import minidom
