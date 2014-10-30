@@ -27,6 +27,8 @@ my_dict = {}
 dict_two = {}
 params = {}
 
+requests = {}
+
 def create_relationships_and_properties(urls):
     pass
 
@@ -39,7 +41,9 @@ def create_mappings(urls, objects):
 
         for obj in objects:
 
-            print obj.keys()[0]
+            if "Request" in obj.keys()[0]:
+                requests[obj.keys()[0]] = obj
+
             params[obj.keys()[0]] = obj[obj.keys()[0]]
 
             if "Parameters" not in obj.keys()[0]:
@@ -102,7 +106,12 @@ def create_mappings(urls, objects):
                         h.write('['+name+' addPropertyMapping:[RKRelationshipMapping relationshipMappingFromKeyPath:@"'+prop+'" toKeyPath:@"'+prop+'" withMapping:'+mapping+']];\n')
                 h.write('\n')
 
-
+        m.write('#import "MachineDataModel.h"\n')
+        m.write('#import <RestKit/RestKit.h>\n')
+        m.write('#import "AppModel.h"\n')
+        for request in requests:
+            request_variable = request[1].capitalize() + request[2:]
+            m.write('#import "'+ request_variable +'.h";\n')
         # Setup URL Descriptors For Get's
         for url in urls:
             if 'get' in url and ':id' not in url['url']:
@@ -201,18 +210,72 @@ def create_mappings(urls, objects):
                     h.write('       failure(operation,error);\n')
                     h.write('    }];\n')
                     h.write('}\n\n')
-# -(void) getAllLoginWithUsername:(NSString*)username password:(NSString*)password success:(void (^)(RKObjectRequestOperation *operation, RKMappingResult *mappingResult))success failure:(void (^)(RKObjectRequestOperation *operation, NSError *error))failure {
-#   RKObjectManager* sharedMgr = [RKObjectManager sharedManager];
-#   [sharedMgr.HTTPClient setAuthorizationHeaderWithUsername:username password:password];
-#   [sharedMgr getObjectsAtPath:@"login/" parameters:nil success:success failure:failure];
-# }      
-        h.write('-(void) getAllLoginWithUsername:(NSString*)username password:(NSString*)password success:(void (^)(RKObjectRequestOperation *operation, RKMappingResult *mappingResult))success failure:(void (^)(RKObjectRequestOperation *operation, NSError *error))failure {')
-        h.write('   RKObjectManager* sharedMgr = [RKObjectManager sharedManager];')
-        h.write('   [sharedMgr.HTTPClient setAuthorizationHeaderWithUsername:username password:password];')
-        h.write('   [sharedMgr getObjectsAtPath:@"login/" parameters:nil success:success failure:failure];')
-        h.write('}')
 
-        m.write('-(void) getAllLoginWithUsername:(NSString*)username password:(NSString*)password success:(void (^)(RKObjectRequestOperation *operation, RKMappingResult *mappingResult))success failure:(void (^)(RKObjectRequestOperation *operation, NSError *error))failure);')
+        for url in urls:
+            if 'post' in url:
+                post_title = url['url'].replace('/',"")
+                post_title = post_title.replace('_',"")
+                post_title = post_title.capitalize()
+                post_request = requests[url['post']['request']]
+                post_request_key = post_request.keys()[0]
+                method_title = '- (void) post'+post_title+'With'
+                for field in post_request[post_request_key]:
+                    title_variable = field.replace('_',"").capitalize()
+                    variable_variable = field.replace('_',"")
+                    variable_type = post_request[post_request_key][field].split(',')
+                    variable_type = OBJC_DATA_TYPES[variable_type[0]]
+                    method_title += title_variable+":("+variable_type+")"+variable_variable + " "
+                    #print '\n'
+                if "id" in url['url']: 
+                    method_title += "theID:(NSNumber*) theID "   
+                method_title_h = method_title[:-1] + ";\n"
+                method_title = method_title[:-1] + " {\n"
+                h.write(method_title)
+                m.write(method_title_h)
+                h.write('    RKObjectManager* sharedMgr = [RKObjectManager sharedManager];\n')
+                request_variable = post_request.keys()[0][1].capitalize() + post_request.keys()[0][2:]
+                h.write('    ' + request_variable + '* obj = [' + request_variable + ' new];\n')
+                for field in post_request[post_request_key]: 
+                    obj_variable = field   
+                    #print "FIELD = " + field    
+                    if obj_variable == "id":
+                        obj_variable = "theID"
+                    elif obj_variable == "description":
+                        obj_variable = "theDescription"
+                    elif '_' in obj_variable:
+                        words = obj_variable.split('_')
+                        obj_variable = words[0]
+                        for x in range(1,len(words)):
+                            next_word = words[x]
+                            next_word = next_word.capitalize()
+                            obj_variable += next_word
+
+                    method_variable = field.replace('_',"")
+                    #print "Method variable = " + method_variable
+                    #print "Object variable = " + obj_variable
+                    h.write('    obj.'+obj_variable+' = ' + method_variable + ';\n') 
+                url_destination = str(url['url'])
+                # if "id" in url_destination:
+                #     url_destination.replace("s",":theID")
+                h.write('    [sharedMgr.HTTPClient setAuthorizationHeaderWithToken:[AppModel sharedModel].token];\n')
+                h.write('    [sharedMgr postObject:obj path:@"'+url_destination+'" parameters:nil success:^(RKObjectRequestOperation *operation,\n') 
+                h.write('        RKMappingResult *mappingResult) {\n')
+                h.write('        success(operation, mappingResult); }\n') 
+                h.write('        failure:failure];\n')
+                h.write('}\n')
+            elif 'patch' in url:
+                if "id" not in url['url']:
+                    print "PATCH for " + url['patch']
+                    print url['post']
+
+        h.write('\n')
+        h.write('- (void)getAllLoginWithUsername:(NSString*)username password:(NSString*)password success:(void (^)(RKObjectRequestOperation *operation, RKMappingResult *mappingResult))success failure:(void (^)(RKObjectRequestOperation *operation, NSError *error))failure {\n')
+        h.write('   RKObjectManager* sharedMgr = [RKObjectManager sharedManager];\n')
+        h.write('   [sharedMgr.HTTPClient setAuthorizationHeaderWithUsername:username password:password];\n')
+        h.write('   [sharedMgr getObjectsAtPath:@"login/" parameters:nil success:success failure:failure];\n')
+        h.write('}\n')
+
+        m.write('- (void)getAllLoginWithUsername:(NSString*)username password:(NSString*)password success:(void (^)(RKObjectRequestOperation *operation, RKMappingResult *mappingResult))success failure:(void (^)(RKObjectRequestOperation *operation, NSError *error))failure);\n')
 
 if __name__ == "__main__":
     print 'Please enter your JSON file!'

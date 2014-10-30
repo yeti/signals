@@ -246,3 +246,6 @@ if __name__ == "__main__":
 
         print "Writting URLS"
         manticom_ios_datamodels.create_mappings(urls, objects)
+
+
+
