@@ -114,6 +114,18 @@ def create_mappings(urls, objects):
             m.write('#import "'+ request_variable +'.h";\n')
         # Setup URL Descriptors For Get's
         for url in urls:
+            if 'patch' in url:
+                url_api = url['url']
+                get_info = url['patch']
+                key_path = 'nil'
+                if 'keyPath' in url['patch']['response']:
+                    key_path = get_info['response']['keyPath']
+                descriptor_name = get_info['response']['200+'][1:] + 'PatchDescriptor'
+                mapping = get_info['response']['200+'][1:]
+                mapping = mapping[0].upper()+mapping[1:]
+                h.write('RKResponseDescriptor *'+descriptor_name+' = [RKResponseDescriptor responseDescriptorWithMapping:'+my_dict[mapping]+' method:RKRequestMethodPATCH pathPattern:@"'+url_api+'" keyPath:@"'+key_path+'" statusCodes:RKStatusCodeIndexSetForClass(RKStatusCodeClassSuccessful)];\n')
+                h.write('[objectManager addResponseDescriptor:'+descriptor_name+'];\n')
+                h.write('\n')
             if 'get' in url and ':id' not in url['url']:
                 meta = url['get']['#meta']
                 if meta == '' or 'optional' in meta:
@@ -213,7 +225,7 @@ def create_mappings(urls, objects):
 
         for url in urls:
             if 'post' in url:
-                post_title = url['url'].replace('/',"")
+                post_title = url['url'].replace('/',"").replace(":id",'')
                 post_title = post_title.replace('_',"")
                 post_title = post_title.capitalize()
                 post_request = requests[url['post']['request']]
@@ -225,7 +237,6 @@ def create_mappings(urls, objects):
                     variable_type = post_request[post_request_key][field].split(',')
                     variable_type = OBJC_DATA_TYPES[variable_type[0]]
                     method_title += title_variable+":("+variable_type+")"+variable_variable + " "
-                    #print '\n'
                 if "id" in url['url']: 
                     method_title += "theID:(NSNumber*) theID "   
                 method_title_h = method_title[:-1] + ";\n"
@@ -251,8 +262,6 @@ def create_mappings(urls, objects):
                             obj_variable += next_word
 
                     method_variable = field.replace('_',"")
-                    #print "Method variable = " + method_variable
-                    #print "Object variable = " + obj_variable
                     h.write('    obj.'+obj_variable+' = ' + method_variable + ';\n') 
                 url_destination = str(url['url'])
                 # if "id" in url_destination:
@@ -264,9 +273,53 @@ def create_mappings(urls, objects):
                 h.write('        failure:failure];\n')
                 h.write('}\n')
             elif 'patch' in url:
-                if "id" not in url['url']:
-                    print "PATCH for " + url['patch']
-                    print url['post']
+                if "id" in url['url']:
+                    patch_title = url['url'].replace('/',"")
+                    patch_title = patch_title.replace('_',"")
+                    patch_title = patch_title.capitalize()
+                    patch_title = patch_title[:-3]
+                    patch_request = requests[url['patch']['request']]
+                    patch_request_key = patch_request.keys()[0]
+                    method_title = '- (void) patch'+post_title+'With'
+                    for field in patch_request[patch_request_key]:
+                        title_variable = field.replace('_',"").capitalize()
+                        variable_variable = field.replace('_',"")
+                        variable_type = patch_request[patch_request_key][field].split(',')
+                        variable_type = OBJC_DATA_TYPES[variable_type[0]]
+                        method_title += title_variable+":("+variable_type+")"+variable_variable + " "
+                    method_title += "theID:(NSNumber*) theID "   
+                    method_title_h = method_title[:-1] + ";\n"
+                    method_title = method_title[:-1] + " {\n"
+                    h.write(method_title)
+                    m.write(method_title_h)
+                    h.write('    RKObjectManager* sharedMgr = [RKObjectManager sharedManager];\n')
+                    request_variable = patch_request.keys()[0][1].capitalize() + patch_request.keys()[0][2:]
+                    h.write('    ' + request_variable + '* obj = [' + request_variable + ' new];\n')
+                    for field in patch_request[patch_request_key]: 
+                        obj_variable = field   
+                        #print "FIELD = " + field    
+                        if obj_variable == "id":
+                            obj_variable = "theID"
+                        elif obj_variable == "description":
+                            obj_variable = "theDescription"
+                        elif '_' in obj_variable:
+                            words = obj_variable.split('_')
+                            obj_variable = words[0]
+                            for x in range(1,len(words)):
+                                next_word = words[x]
+                                next_word = next_word.capitalize()
+                                obj_variable += next_word  
+                        method_variable = field.replace('_',"")
+                        h.write('    obj.'+obj_variable+' = ' + method_variable + ';\n') 
+                    url_destination = str(url['url'])
+                    # if "id" in url_destination:
+                    #     url_destination.replace("s",":theID")
+                    h.write('    [sharedMgr.HTTPClient setAuthorizationHeaderWithToken:[AppModel sharedModel].token];\n')
+                    h.write('    [sharedMgr patchObject:obj path:@"'+url_destination+'" parameters:nil success:^(RKObjectRequestOperation *operation,\n') 
+                    h.write('        RKMappingResult *mappingResult) {\n')
+                    h.write('        success(operation, mappingResult); }\n') 
+                    h.write('        failure:failure];\n')
+                    h.write('}\n')                                                
 
         h.write('\n')
         h.write('- (void)getAllLoginWithUsername:(NSString*)username password:(NSString*)password success:(void (^)(RKObjectRequestOperation *operation, RKMappingResult *mappingResult))success failure:(void (^)(RKObjectRequestOperation *operation, NSError *error))failure {\n')
@@ -275,7 +328,7 @@ def create_mappings(urls, objects):
         h.write('   [sharedMgr getObjectsAtPath:@"login/" parameters:nil success:success failure:failure];\n')
         h.write('}\n')
 
-        m.write('- (void)getAllLoginWithUsername:(NSString*)username password:(NSString*)password success:(void (^)(RKObjectRequestOperation *operation, RKMappingResult *mappingResult))success failure:(void (^)(RKObjectRequestOperation *operation, NSError *error))failure);\n')
+        m.write('- (void)getAllLoginWithUsername:(NSString*)username password:(NSString*)password success:(void (^)(RKObjectRequestOperation *operation, RKMappingResult *mappingResult))success failure:(void (^)(RKObjectRequestOperation *operation, NSError *error))failure;\n')
 
 if __name__ == "__main__":
     print 'Please enter your JSON file!'
