@@ -1,9 +1,3 @@
-import StringIO
-from lxml import etree
-from xml.dom import minidom
-import shutil
-import json
-
 # Add map to get Entities
 # Create dynamic objects in the correct way
 # need to add in content type
@@ -34,6 +28,7 @@ params = {}
 
 requests = {}
 
+
 def write_login_to_files(h_file, m_file):
     h_file.write('\n')
     h_file.write('- (void)getAllLoginWithUsername:(NSString*)username password:(NSString*)password success:(void (^)(RKObjectRequestOperation *operation, RKMappingResult *mappingResult))success failure:(void (^)(RKObjectRequestOperation *operation, NSError *error))failure {\n')
@@ -43,11 +38,13 @@ def write_login_to_files(h_file, m_file):
     h_file.write('}\n')
     m_file.write('- (void)getAllLoginWithUsername:(NSString*)username password:(NSString*)password success:(void (^)(RKObjectRequestOperation *operation, RKMappingResult *mappingResult))success failure:(void (^)(RKObjectRequestOperation *operation, NSError *error))failure;\n')
 
+
 def function():
         pass
 
+
 def write_post_calls_to_files(name, is_id, url, h_file, m_file):
-    if (is_id):
+    if is_id:
         h_file.write('- (void)get'+name+'WithID:(NSNumber*)theID  andSuccess:(void (^)(RKObjectRequestOperation *operation, RKMappingResult *result))success failure:(void (^)(RKObjectRequestOperation *operation, NSError *error))failure{\n')
         m_file.write('- (void)get'+name+'WithID:(NSNumber*)theID  andSuccess:(void (^)(RKObjectRequestOperation *operation, RKMappingResult *result))success failure:(void (^)(RKObjectRequestOperation *operation, NSError *error))failure;\n')
     else:
@@ -61,14 +58,14 @@ def write_post_calls_to_files(name, is_id, url, h_file, m_file):
     h_file.write('    }];\n')
     h_file.write('}\n\n')
 
+
 def create_mappings(urls, objects):
 
     #Mappings
-    with open("MachineDataModel.m", "w") as h, open ("MachineDataModel.h", 'w') as m:
+    with open("MachineDataModel.m", "w") as h, open("MachineDataModel.h", 'w') as m:
 
         # Setup Mappings
         for obj in objects:
-
 
             if "Request" in obj.keys()[0]:
                 requests[obj.keys()[0]] = obj
@@ -105,25 +102,25 @@ def create_mappings(urls, objects):
 
                 # Setup Attributes
                 if len(attributes) > 0:
-                    attributeMappings = '[' + name + ' addAttributeMappingsFromDictionary:@{'
+                    attribute_mappings = '[' + name + ' addAttributeMappingsFromDictionary:@{'
                     for attribute in attributes:
-                        attributeMappings += '@"' + attribute + '": '
+                        attribute_mappings += '@"' + attribute + '": '
                         if attribute == "id":
                             attribute = "theID"
-                            attributeMappings += '@"' + attribute + '",'
+                            attribute_mappings += '@"' + attribute + '",'
                         elif attribute == "description":
                             attribute = "theDescription"
-                            attributeMappings += '@"' + attribute + '",'
+                            attribute_mappings += '@"' + attribute + '",'
                         elif '_' in attribute:
                             words = attribute.split('_')
                             attribute = words[0]
                             for x in range(1,len(words)):
                                 attribute += words[x].capitalize()
-                            attributeMappings += '@"' + attribute + '",'
+                            attribute_mappings += '@"' + attribute + '",'
                         else:
-                            attributeMappings += '@"' + attribute + '",'
-                    attributeMappings = attributeMappings[:-1] + '}];\n'
-                    h.write(attributeMappings)
+                            attribute_mappings += '@"' + attribute + '",'
+                    attribute_mappings = attribute_mappings[:-1] + '}];\n'
+                    h.write(attribute_mappings)
                 h.write('\n')
 
                 # Setup Properties
@@ -197,7 +194,7 @@ def create_mappings(urls, objects):
                 api = url['url']
                 if ':id' not in url['url']:
                     if meta == '' or 'optional' in meta:
-                         write_post_calls_to_files(api[:-1].capitalize(), False, api, h, m)
+                        write_post_calls_to_files(api[:-1].capitalize(), False, api, h, m)
                 else:
                     name = api.split('/')[0]
                     api = api.replace(":id", "theID")
@@ -311,7 +308,7 @@ def create_mappings(urls, objects):
                     patch_title = patch_title[:-3]
                     patch_request = requests[url['patch']['request']]
                     patch_request_key = patch_request.keys()[0]
-                    method_title = '- (void) patch'+post_title+'With'
+                    method_title = '- (void) patch'+patch_title+'With'
                     for field in patch_request[patch_request_key]:
                         title_variable = field.replace('_',"").capitalize()
                         variable_variable = field.replace('_',"")
@@ -357,4 +354,4 @@ if __name__ == "__main__":
     print 'Please enter your JSON file!'
     in_json = raw_input('--> ')
     create_mappings(in_json)
-    create_relationships_and_properties(in_json)
+    # create_relationships_and_properties(in_json)

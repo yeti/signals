@@ -15,13 +15,11 @@
 # O2O case
 # correctly resize elements, dynamically
 
-import StringIO
 from lxml import etree
 from xml.dom import minidom
-import shutil
 import json
-import manticom_ios_datamodels
-import inflect
+
+from manticom_ios_datamodels import create_mappings
 
 # Conversions for use in CoreData
 DATA_TYPES = {
@@ -41,37 +39,35 @@ DATA_TYPES = {
     "boolean"    : "Boolean",
     "array"      : "Transformable"
 }
-# Database Relationships
-RELATIONSHIPS = set({
-    "O2O",
-    "M2M",
-    "O2M",
-    "M2O"
-})
 
-# A little logic to to make plural words more readable
-# this won't cover everything, there's a few python libraries out there you could use: https://pypi.python.org/pypi/inflect
+# Database Relationships
+RELATIONSHIPS = {"O2O", "M2M", "O2M", "M2O"}
+
+
+# A little logic to to make plural words more readable this won't cover everything,
+# there's a few python libraries out there you could use: https://pypi.python.org/pypi/inflect
 def get_word_plural(word):
-    p = inflect.engine()
     if word.endswith("y"):
         return word[:-1] + 'ies'
     else:
         return word + 's'
+
 
 # Adds an elements branch and element leaf for each object in the JSON file
 # TODO: come up with better way to compute height/position
 def add_elements(model, objects):
     elements = etree.SubElement(model, "elements")
     for obj in objects:
-        element = etree.SubElement(elements, "element", name = obj.keys()[0][1].upper() + obj.keys()[0][2:])
+        element = etree.SubElement(elements, "element", name=obj.keys()[0][1].upper() + obj.keys()[0][2:])
         element.set("positionX", "0")
         element.set("positionY", "0")
         element.set("width", "128")
         element.set("height", "600")
 
+
 # Sets up and returns a relationship between these two entities with all basic attributed filled in
 def get_basic_relationship(entity, relationship_name, destination_entity, inverse_name, inverse_entity):
-    relationship = etree.SubElement(entity, "relationship", name = relationship_name)
+    relationship = etree.SubElement(entity, "relationship", name=relationship_name)
     relationship.set("optional", "YES")
     relationship.set("deletionRule", "Nullify")
     relationship.set("destinationEntity", destination_entity)
@@ -80,34 +76,49 @@ def get_basic_relationship(entity, relationship_name, destination_entity, invers
     relationship.set("inverseEntity", inverse_entity)
     return relationship
 
-# it seems redundant that we pass around the entities as well as their names then also get their names again from the entity in the following functions
+
+# It seems redundant that we pass around the entities as well as their names
+# then also get their names again from the entity in the following functions.
+
 # Creates a one relationship between these two entities
 def add_one_relationship(entity_one, entity_two, entity_one_name, entity_two_name):
-    relationship = get_basic_relationship(entity_one, entity_two_name, entity_two.get('name'), entity_one_name, entity_two.get('name'))
+    relationship = get_basic_relationship(entity_one,
+                                          entity_two_name,
+                                          entity_two.get('name'),
+                                          entity_one_name,
+                                          entity_two.get('name'))
     relationship.set("minCount", "1")
     relationship.set("maxCount", "1")
 
+
 # Creates a many relationship between these two entities
 def add_many_relationship(entity_one, entity_two, entity_one_name, entity_two_name):
-    relationship = get_basic_relationship(entity_one, entity_two_name, entity_two.get('name'), entity_one_name, entity_two.get('name'))
+    relationship = get_basic_relationship(entity_one,
+                                          entity_two_name,
+                                          entity_two.get('name'),
+                                          entity_one_name,
+                                          entity_two.get('name'))
     relationship.set("ordered", "YES")
     relationship.set("toMany", "YES")
+
 
 # Doing stuff
 def add_M2O_relationship(many_entity, one_entity, many_entities_relationship_name, one_entities_relationship_name):
     add_many_relationship(one_entity, many_entity, one_entities_relationship_name, many_entities_relationship_name)
     add_one_relationship(many_entity, one_entity, many_entities_relationship_name, one_entities_relationship_name)
 
+
 # Adds O2M relationships between these two entities
 def add_M2M_relationships(entity_one, entity_two, entity_one_relationship_name, entity_two_relationship_name):
     add_many_relationship(entity_one, entity_two, entity_two_relationship_name, entity_one_relationship_name)
     add_many_relationship(entity_two, entity_one, entity_one_relationship_name, entity_two_relationship_name)
 
-# Adds O2M relationships between these two entities
 
+# Adds O2M relationships between these two entities
 def add_O2M_relationships(many_entity, one_entity, many_entities_relationship_name, one_entities_relationship_name):  
     add_many_relationship(many_entity, one_entity, many_entities_relationship_name, one_entities_relationship_name)
     add_one_relationship(one_entity, many_entity, one_entities_relationship_name, many_entities_relationship_name)
+
 
 # Adds relationships and inverse relationships for each required entity
 # Currently only supports M2M, O2M. TODO: dd in others
@@ -181,6 +192,7 @@ def add_entity_attribute(entity, name, att_type, optional):
     attribute.set("attributeType", att_type)
     attribute.set("syncable", "YES")
 
+
 # Adds entities for each object in the JSON tree
 def add_entities(model, objects):
     for obj in objects:
@@ -198,6 +210,7 @@ def add_entities(model, objects):
                 elif values[0] not in RELATIONSHIPS and values[0]:
                     add_entity_attribute(entity, key, DATA_TYPES[values[0]], "optional" in values)
 
+
 # Parses the given XML's model element and creates our initial root 
 def get_model(xml):
     xmldoc = minidom.parse(xml)
@@ -208,13 +221,13 @@ def get_model(xml):
         new_model.set(att, current_xml_model.attributes[att].value)
     return new_model
 
+
 def write_xml_to_file(xml, objects):
     print "Reading XML"
     model = get_model(xml)
 
-    print "Adding entitites"
-    add_entities(model,objects)
-
+    print "Adding entities"
+    add_entities(model, objects)
 
     print "Adding relationships"
     add_relationships(model, objects)
@@ -227,10 +240,11 @@ def write_xml_to_file(xml, objects):
     # print etree.tostring(model, pretty_print = True)
 
     # write tree
-    print "Writting XML"
+    print "Writing XML"
     tree = etree.ElementTree(model)
     tree.write(xml, pretty_print=True)
     #tree.write("new.xml", pretty_print=True)
+
 
 if __name__ == "__main__":
     print "Loading XML and JSON"
@@ -241,11 +255,8 @@ if __name__ == "__main__":
         read_json = json.loads(f.read())
         objects = read_json["objects"]
         urls = read_json["urls"] 
-        print "Writting XML"
+        print "Writing XML"
         #write_xml_to_file(xml,objects)
 
-        print "Writting URLS"
-        manticom_ios_datamodels.create_mappings(urls, objects)
-
-
-
+        print "Writing URLS"
+        create_mappings(urls, objects)
