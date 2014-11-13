@@ -14,7 +14,7 @@
 # TODO:
 # O2O case
 # correctly resize elements, dynamically
-
+import os
 from lxml import etree
 from xml.dom import minidom
 import json
@@ -160,7 +160,7 @@ def add_relationships(model, objects):
 
             elif values[0] == "M2O":
                 many_entity = None
-                one_entity  = None
+                one_entity = None
                 for entity in model.iter("entity"):
                     if entity.get('name') == obj_name[1].upper() + obj_name[2:]:
                         many_entity = entity
@@ -248,15 +248,16 @@ def write_xml_to_file(xml, objects):
 
 if __name__ == "__main__":
     print "Loading XML and JSON"
-    incoming_json = "/Users/Collin/Documents/Yeti/viddit/manticom-schema-1.0.json"
-    xml = "/Users/Collin/Documents/Yeti/viddit-ios/Viddit/Common/Models/VidditModel.xcdatamodeld/VidditModel.xcdatamodel/contents"
+    incoming_json = os.path.expanduser("~/projects/viddit/manticom-schema-1.0.json")
+    xml_path = "~/ios_projects/viddit-ios/Viddit/Common/Models/VidditModel.xcdatamodeld/VidditModel.xcdatamodel/contents"
+    xml = os.path.expanduser(xml_path)
     with open(incoming_json, "r") as f:
         print "Reading SML"
         read_json = json.loads(f.read())
         objects = read_json["objects"]
         urls = read_json["urls"] 
         print "Writing XML"
-        #write_xml_to_file(xml,objects)
+        # write_xml_to_file(xml, objects)
 
         print "Writing URLS"
         create_mappings(urls, objects)

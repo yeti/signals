@@ -2,6 +2,7 @@
 # Copyright (C) 2014, Collin Schupman at Yeti LLC
 
 # Assumes JSON is in format : TODO->Write format
+import os
 from manticom_ios import main
 
 if __name__ == "__main__":
@@ -14,13 +15,17 @@ if __name__ == "__main__":
     while True:
         print 'Please enter your JSON file!'
         json = raw_input('--> ')
-        if json.endswith('.json') or json == 'E':
+
+        if json == 'E':
+            break
+
+        if json.endswith('.json'):
+            json = os.path.expanduser(json)
             break
         else:
             print 'Unrecognized JSON file, please try again!\n'
 
     if json is not None and json != 'E':
-
         stack = None
         while True:
             print 'Please enter which stack you would like to generate code for (iOS) or "E" to exit the program'
