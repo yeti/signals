@@ -20,10 +20,11 @@ A Script for auto generating Core Data models and RestKit code with an API schem
 
 ### Instructions
 
-1. Run python manticom_ios_coredata.py, enable xml if the objects have changed
-2. If you changed the core data models, you'll need to have xcode auto generate the new model files
-3. Copy in MachineDataModel.h to your project's DataModel.h
-4. Copy in the appropriate sections of MachineDataModel.m to your project's DataModel.m
+1. If you're running the core data xml part of the script, exit xcode before running or restart afterwards
+2. Run python manticom_ios_coredata.py, enable xml if the objects have changed
+3. If you changed the core data models, you'll need to have xcode auto generate the new model files
+4. Copy in MachineDataModel.h to your project's DataModel.h
+5. Copy in the appropriate sections of MachineDataModel.m to your project's DataModel.m
 
 ### Improvements
 

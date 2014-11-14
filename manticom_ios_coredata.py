@@ -178,13 +178,12 @@ def add_entity_attribute(entity, name, att_type, optional):
     elif '_' in name:
         words = name.split('_')
         name = words[0]
-        for x in range(1,len(words)):
-
+        for x in range(1, len(words)):
             next_word = words[x]
             next_word = next_word.capitalize()
             name += next_word
 
-    attribute = etree.SubElement(entity, "attribute", name = name)
+    attribute = etree.SubElement(entity, "attribute", name=name)
     if optional:
         attribute.set("optional", "YES")
     else:
@@ -198,7 +197,7 @@ def add_entities(model, objects):
     for obj in objects:
         if "Parameters" not in obj.keys()[0]:
             obj_name = obj.keys()[0]
-            entity = etree.SubElement(model, "entity", name = obj_name[1].upper() + obj_name[2:])
+            entity = etree.SubElement(model, "entity", name=obj_name[1].upper() + obj_name[2:])
             obj_fields = obj[obj_name]
             for key, value in obj_fields.iteritems():
                 values = value.split(",")

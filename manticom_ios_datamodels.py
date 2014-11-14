@@ -137,10 +137,7 @@ def write_get_calls_to_files(is_id, api, url, h_file, m_file):
     h_file.write("{} {{\n".format(method_signature))
     h_file.write('    RKObjectManager* sharedMgr = [RKObjectManager sharedManager];\n')
 
-    # TODO: What to do about optional auth?
-    meta = url['get']['#meta']
-    if 'oauth2' in meta and 'optional' not in meta:
-        h_file.write('    [sharedMgr.HTTPClient setAuthorizationHeaderWithToken:[AppModel sharedModel].accessToken];\n')
+    write_authentication(h_file, url['get']['#meta'])
     h_file.write('    [sharedMgr getObjectsAtPath:@"{}" parameters:nil success:^(RKObjectRequestOperation *operation, RKMappingResult *mappingResult) {{\n'.format(api))
     h_file.write('       success(operation,mappingResult);\n')
     h_file.write('    } failure:^(RKObjectRequestOperation *operation, NSError *error) {\n')
@@ -171,7 +168,9 @@ def create_response_descriptor(h, url, method):
     mapping_name = get_mapping_name(object_variable_name)
 
     key_path = 'nil'
-    if method == "get":
+    if 'resource_type' in info:
+        key_path = 'nil' if info['resource_type'] == 'detail' else '@"results"'
+    elif method == "get":
         key_path = '@"results"'
 
     h.write('RKResponseDescriptor *{} = [RKResponseDescriptor responseDescriptorWithMapping:{} method:RKRequestMethod{} pathPattern:@"{}" keyPath:{} statusCodes:RKStatusCodeIndexSetForClass(RKStatusCodeClassSuccessful)];\n'.format(descriptor_name, mapping_name, method.upper(), url['url'], key_path))
@@ -185,6 +184,12 @@ def get_mapping_name(obj):
 
 def get_object_name(obj):
     return obj[1].upper() + obj[2:]
+
+
+def write_authentication(h, meta):
+    # TODO: What to do about optional auth?
+    if 'oauth2' in meta and 'optional' not in meta:
+        h.write('    [sharedMgr.HTTPClient setDefaultHeader:@"Authorization" value:[NSString stringWithFormat:@"Bearer %@", [AppModel sharedModel].accessToken]];\n')
 
 
 def create_mappings(urls, objects):
@@ -381,7 +386,7 @@ def create_mappings(urls, objects):
 
                 h.write('    RKObjectManager* sharedMgr = [RKObjectManager sharedManager];\n')
                 request_variable = post_request.keys()[0][1].capitalize() + post_request.keys()[0][2:]
-                h.write('{0} *obj = [NSEntityDescription insertNewObjectForEntityForName:@"{0}" inManagedObjectContext:sharedMgr.managedObjectStore.mainQueueManagedObjectContext];\n'.format(request_variable))
+                h.write('    {0} *obj = [NSEntityDescription insertNewObjectForEntityForName:@"{0}" inManagedObjectContext:sharedMgr.managedObjectStore.mainQueueManagedObjectContext];\n'.format(request_variable))
                 for field in post_request[post_request_key]: 
                     obj_variable = field   
                     if obj_variable == "id":
@@ -399,8 +404,7 @@ def create_mappings(urls, objects):
                     method_variable = field.replace('_', "")
                     h.write('    obj.'+obj_variable+' = ' + method_variable + ';\n') 
                 url_destination = str(url['url'])
-                if 'oauth2' in url['post']['#meta']:
-                    h.write('    [sharedMgr.HTTPClient setAuthorizationHeaderWithToken:[AppModel sharedModel].accessToken];\n')
+                write_authentication(h, url['post']['#meta'])
                 h.write('    [sharedMgr postObject:obj path:@"{}" parameters:nil success:^(RKObjectRequestOperation *operation,\n'.format(url_destination))
                 h.write('        RKMappingResult *mappingResult) {\n')
                 h.write('        success(operation, mappingResult); }\n') 
@@ -430,7 +434,7 @@ def create_mappings(urls, objects):
 
                     h.write('    RKObjectManager* sharedMgr = [RKObjectManager sharedManager];\n')
                     request_variable = patch_request.keys()[0][1].capitalize() + patch_request.keys()[0][2:]
-                    h.write('{0} *obj = [NSEntityDescription insertNewObjectForEntityForName:@"{0}" inManagedObjectContext:sharedMgr.managedObjectStore.mainQueueManagedObjectContext];\n'.format(request_variable))
+                    h.write('    {0} *obj = [NSEntityDescription insertNewObjectForEntityForName:@"{0}" inManagedObjectContext:sharedMgr.managedObjectStore.mainQueueManagedObjectContext];\n'.format(request_variable))
                     for field in patch_request[patch_request_key]: 
                         obj_variable = field   
                         if obj_variable == "id":
@@ -447,8 +451,8 @@ def create_mappings(urls, objects):
                         method_variable = field.replace('_',"")
                         h.write('    obj.'+obj_variable+' = ' + method_variable + ';\n') 
                     url_destination = str(url['url'])
-                    if 'oauth2' in url['patch']['#meta']:
-                        h.write('    [sharedMgr.HTTPClient setAuthorizationHeaderWithToken:[AppModel sharedModel].accessToken];\n')
+
+                    write_authentication(h, url['patch']['#meta'])
                     h.write('    [sharedMgr patchObject:obj path:@"'+url_destination+'" parameters:nil success:^(RKObjectRequestOperation *operation,\n') 
                     h.write('        RKMappingResult *mappingResult) {\n')
                     h.write('        success(operation, mappingResult); }\n') 
