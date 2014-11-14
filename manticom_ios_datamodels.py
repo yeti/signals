@@ -114,6 +114,19 @@ def sanitize_api_name(api):
     return sanitized_name
 
 
+def check_for_id(api):
+    return ':id' in api
+
+
+def check_and_write_for_id(h, url):
+    if check_for_id(url):
+        url = url.replace(":id", "%@")
+        h.write('    NSString* formattedUrl = [NSString stringWithFormat:@"{}", theID];\n'.format(url))
+        return 'formattedUrl'
+    else:
+        return '@"{}"'.format(url)
+
+
 def write_login_to_files(h_file, m_file):
     h_file.write('- (void) getAllLoginWithUsername:(NSString*)username password:(NSString*)password success:(void (^)(RKObjectRequestOperation *operation, RKMappingResult *mappingResult))success failure:(void (^)(RKObjectRequestOperation *operation, NSError *error))failure {\n')
     h_file.write('   RKObjectManager* sharedMgr = [RKObjectManager sharedManager];\n')
@@ -124,21 +137,23 @@ def write_login_to_files(h_file, m_file):
     m_file.write('- (void) getAllLoginWithUsername:(NSString*)username password:(NSString*)password success:(void (^)(RKObjectRequestOperation *operation, RKMappingResult *mappingResult))success failure:(void (^)(RKObjectRequestOperation *operation, NSError *error))failure;\n')
 
 
-def write_get_calls_to_files(is_id, api, url, h_file, m_file):
+def write_get_calls_to_files(url, h_file, m_file):
     write_doc_string(m_file, url, 'get')
 
-    if is_id:
+    has_id = check_for_id(url["url"])
+    if has_id:
         method_snippet = "WithID:(NSNumber*)theID  andSuccess:"
     else:
         method_snippet = "WithSuccess:"
 
-    name = sanitize_api_name(api)
+    name = sanitize_api_name(url["url"])
     method_signature = '- (void) get{}{}(void (^)(RKObjectRequestOperation *operation, RKMappingResult *result))success failure:(void (^)(RKObjectRequestOperation *operation, NSError *error))failure'.format(name, method_snippet)
     h_file.write("{} {{\n".format(method_signature))
     h_file.write('    RKObjectManager* sharedMgr = [RKObjectManager sharedManager];\n')
 
     write_authentication(h_file, url['get']['#meta'])
-    h_file.write('    [sharedMgr getObjectsAtPath:@"{}" parameters:nil success:^(RKObjectRequestOperation *operation, RKMappingResult *mappingResult) {{\n'.format(api))
+    api = check_and_write_for_id(h_file, url["url"])
+    h_file.write('    [sharedMgr getObjectsAtPath:{} parameters:nil success:^(RKObjectRequestOperation *operation, RKMappingResult *mappingResult) {{\n'.format(api))
     h_file.write('       success(operation,mappingResult);\n')
     h_file.write('    } failure:^(RKObjectRequestOperation *operation, NSError *error) {\n')
     h_file.write('       RKLogError(@"Load failed with error: %@", error);\n')
@@ -306,14 +321,7 @@ def create_mappings(urls, objects):
         print ''
         for url in urls:
             if 'get' in url:
-                api = url['url']
-                if ':id' not in url['url']:
-                    is_id = False
-                else:
-                    api = api.replace(":id", "theID")
-                    is_id = True
-
-                write_get_calls_to_files(is_id, api, url, h, m)
+                write_get_calls_to_files(url, h, m)
         h.write('\n')
         
         # GETS (PARAMETERS)
@@ -417,13 +425,13 @@ def create_mappings(urls, objects):
                     patch_title = sanitize_api_name(url['url'])
                     patch_request = requests[url['patch']['request']]
                     patch_request_key = patch_request.keys()[0]
-                    method_title = '- (void) patch'+patch_title+'With'
+                    method_title = '- (void) patch{}With'.format(patch_title)
                     for field in patch_request[patch_request_key]:
-                        title_variable = field.replace('_',"").capitalize()
-                        variable_variable = field.replace('_',"")
+                        title_variable = field.replace('_', "").capitalize()
+                        variable_variable = field.replace('_', "")
                         variable_type = patch_request[patch_request_key][field].split(',')
                         variable_type = OBJC_DATA_TYPES[variable_type[0]]
-                        method_title += title_variable+":("+variable_type+")"+variable_variable + " "
+                        method_title += "{}:({}){} ".format(title_variable, variable_type, variable_variable)
                     method_title += "theID:(NSNumber*) theID "   
                     method_title_h = method_title[:-1] + " success:(void (^)(RKObjectRequestOperation *operation, RKMappingResult *mappingResult))success failure:(void (^)(RKObjectRequestOperation *operation, NSError *error))failure;\n\n"
                     method_title = method_title[:-1] + " success:(void (^)(RKObjectRequestOperation *operation, RKMappingResult *mappingResult))success failure:(void (^)(RKObjectRequestOperation *operation, NSError *error))failure {\n"
@@ -433,10 +441,10 @@ def create_mappings(urls, objects):
                     m.write(method_title_h)
 
                     h.write('    RKObjectManager* sharedMgr = [RKObjectManager sharedManager];\n')
-                    request_variable = patch_request.keys()[0][1].capitalize() + patch_request.keys()[0][2:]
+                    request_variable = patch_request_key[1].capitalize() + patch_request_key[2:]
                     h.write('    {0} *obj = [NSEntityDescription insertNewObjectForEntityForName:@"{0}" inManagedObjectContext:sharedMgr.managedObjectStore.mainQueueManagedObjectContext];\n'.format(request_variable))
                     for field in patch_request[patch_request_key]: 
-                        obj_variable = field   
+                        obj_variable = field
                         if obj_variable == "id":
                             obj_variable = "theID"
                         elif obj_variable == "description":
@@ -446,14 +454,13 @@ def create_mappings(urls, objects):
                             obj_variable = words[0]
                             for x in range(1, len(words)):
                                 next_word = words[x]
-                                next_word = next_word.capitalize()
-                                obj_variable += next_word  
-                        method_variable = field.replace('_',"")
-                        h.write('    obj.'+obj_variable+' = ' + method_variable + ';\n') 
-                    url_destination = str(url['url'])
+                                obj_variable += next_word.capitalize()
+                        method_variable = field.replace('_', "")
+                        h.write('    obj.{} = {};\n'.format(obj_variable, method_variable))
 
                     write_authentication(h, url['patch']['#meta'])
-                    h.write('    [sharedMgr patchObject:obj path:@"'+url_destination+'" parameters:nil success:^(RKObjectRequestOperation *operation,\n') 
+                    api = check_and_write_for_id(h, url["url"])
+                    h.write('    [sharedMgr patchObject:obj path:{} parameters:nil success:^(RKObjectRequestOperation *operation,\n'.format(api))
                     h.write('        RKMappingResult *mappingResult) {\n')
                     h.write('        success(operation, mappingResult); }\n') 
                     h.write('        failure:failure];\n')
