@@ -48,7 +48,7 @@ def create_header_for_h_file(h):
 
 @interface DataModel : NSObject
 
-+ (id)sharedDataModel;
++ (DataModel *)sharedDataModel;
 
 """
     today = date.today()
@@ -168,7 +168,7 @@ def create_request_descriptor(h, url, method):
     info = url[method]
     object_variable_name = info['request']
     object_name = get_object_name(object_variable_name)
-    descriptor_name = '{}RequestDescriptor'.format(create_descriptor_name(url['url']))
+    descriptor_name = '{}{}RequestDescriptor'.format(create_descriptor_name(url['url']), method.capitalize())
     mapping_name = get_mapping_name(object_variable_name)
 
     h.write('RKRequestDescriptor *{} = [RKRequestDescriptor requestDescriptorWithMapping:[{} inverseMapping] objectClass:[{} class] rootKeyPath:nil method:RKRequestMethod{}];\n'.format(descriptor_name, mapping_name, object_name, method.upper()))
@@ -179,7 +179,7 @@ def create_request_descriptor(h, url, method):
 def create_response_descriptor(h, url, method):
     info = url[method]
     object_variable_name = info['response']['200+']
-    descriptor_name = '{}ResponseDescriptor'.format(create_descriptor_name(url['url']))
+    descriptor_name = '{}{}ResponseDescriptor'.format(create_descriptor_name(url['url']), method.capitalize())
     mapping_name = get_mapping_name(object_variable_name)
 
     key_path = 'nil'
@@ -307,9 +307,11 @@ def create_mappings(urls, objects):
             if 'patch' in url:
                 create_request_descriptor(h, url, "patch")
                 create_response_descriptor(h, url, "patch")
-            elif 'get' in url and ':id' not in url['url']:
+
+            if 'get' in url and ':id' not in url['url']:
                 create_response_descriptor(h, url, "get")
-            elif 'post' in url:
+
+            if 'post' in url:
                 create_request_descriptor(h, url, "post")
                 create_response_descriptor(h, url, "post")
         h.write('\n')

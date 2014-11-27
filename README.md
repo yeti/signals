@@ -10,13 +10,12 @@ A Script for auto generating Core Data models and RestKit code with an API schem
 
 ### Issues
 
-1. Duplicate relationship names if a model has 2+ relationships to the same object
+1. Duplicate field names if they have a field, as well as a relationship
 2. Need to appropriately generate the whole DataModel.m file (DateModel.h is done)
-3. Core Data migrations when creating new objects
-4. Proper dialog for asking to make core data models and relative paths to your core data config file
-5. Overwrite DataModel file instead of copy/paste
-6. One to one relationships
-7. Optional Auth
+3. Proper dialog for asking to make core data models and relative paths to your core data config file
+4. Overwrite DataModel file instead of copy/paste
+5. One to one relationships
+
 
 ### Instructions
 
@@ -32,3 +31,5 @@ A Script for auto generating Core Data models and RestKit code with an API schem
 2. Refactor all the things
 3. Can we automate refreshing core data?
 4. Use templates instead of writing to files line by line
+5. Core Data migrations when creating new objects
+6. Optional Auth

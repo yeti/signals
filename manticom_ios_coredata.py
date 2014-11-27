@@ -49,6 +49,8 @@ RELATIONSHIPS = {"O2O", "M2M", "O2M", "M2O"}
 def get_word_plural(word):
     if word.endswith("y"):
         return word[:-1] + 'ies'
+    elif word.endswith("ing"):
+        return word
     else:
         return word + 's'
 
@@ -58,7 +60,8 @@ def get_word_plural(word):
 def add_elements(model, objects):
     elements = etree.SubElement(model, "elements")
     for obj in objects:
-        element = etree.SubElement(elements, "element", name=obj.keys()[0][1].upper() + obj.keys()[0][2:])
+        obj_name = get_proper_object_name(obj.keys()[0])
+        element = etree.SubElement(elements, "element", name=obj_name)
         element.set("positionX", "0")
         element.set("positionY", "0")
         element.set("width", "128")
@@ -120,6 +123,18 @@ def add_O2M_relationships(many_entity, one_entity, many_entities_relationship_na
     add_one_relationship(one_entity, many_entity, one_entities_relationship_name, many_entities_relationship_name)
 
 
+def get_proper_object_name(obj):
+    return obj[1].upper() + obj[2:]
+
+
+# Checks to see if this key and related model are duplicated in this set of fields
+def conflicting_entity_name(fields, obj_key, obj_name, relationship_type):
+    for key, value in fields.iteritems():
+        if obj_key != key and obj_name in value and relationship_type in value:
+            return True
+    return False
+
+
 # Adds relationships and inverse relationships for each required entity
 # Currently only supports M2M, O2M. TODO: dd in others
 def add_relationships(model, objects):
@@ -134,39 +149,34 @@ def add_relationships(model, objects):
             if "primarykey" in values:
                 values.remove("primarykey")
 
-            # This isn't the most bulletproof way to do this if we ever want to add a new definition to the schema
-            # Might be better to loop over every value in values and see if it equals O2M or M2M?
-            # These two if/elif blocks are also identical minus the function being called, you could DRY this up
-            if values[0] == "O2M":
-                one_entity = None
-                many_entity = None
+            # TODO: This depends on the relationship mapping being the 1st value and the related object 2nd
+            relationship_mapping = values[0]
+            if relationship_mapping in ["O2M", "M2M", "M2O"]:
+                related_obj_name = values[1]
 
+                first_entity = second_entity = None
                 for entity in model.iter("entity"):
-                    if entity.get('name') == obj_name[1].upper() + obj_name[2:]:
-                        one_entity = entity
-                    elif entity.get('name') == values[1][1].upper() + values[1][2:]:
-                        many_entity = entity 
-                add_O2M_relationships(one_entity, many_entity, one_entity.get('name').lower().replace("response",""), key)
+                    if entity.get('name') == get_proper_object_name(obj_name):
+                        first_entity = entity
+                    elif entity.get('name') == get_proper_object_name(related_obj_name):
+                        second_entity = entity
 
-            elif values[0] == "M2M":
-                entity_one = None
-                entity_two = None
-                for entity in model.iter("entity"):
-                    if entity.get('name') == obj_name[1].upper() + obj_name[2:]:
-                        entity_one = entity
-                    elif entity.get('name') == values[1][1].upper() + values[1][2:]:
-                        entity_two = entity
-                add_M2M_relationships(entity_one, entity_two, key, get_word_plural(entity_one.get('name').lower().replace("response","")))
+                first_entity_name = first_entity.get('name').lower().replace("response", "")
+                if relationship_mapping == "O2M":
+                    add_O2M_relationships(first_entity, second_entity, first_entity_name, key)
+                elif relationship_mapping == "M2M":
+                    add_M2M_relationships(first_entity, second_entity, key, get_word_plural(first_entity_name))
+                elif relationship_mapping == "M2O":
+                    """
+                    If we have a entity which maps to another entity more than once, we can't use that entity's name
+                    instead, let's use the key of the field.
 
-            elif values[0] == "M2O":
-                many_entity = None
-                one_entity = None
-                for entity in model.iter("entity"):
-                    if entity.get('name') == obj_name[1].upper() + obj_name[2:]:
-                        many_entity = entity
-                    elif entity.get('name') == values[1][1].upper() + values[1][2:]:
-                        one_entity = entity
-                add_M2O_relationship(many_entity, one_entity, get_word_plural(many_entity.get('name').lower().replace("response","")), key)
+                    For example, if we had a user who has followers and is also following other users, our user entity
+                    would have two fields called "follow". This instead calls them followers and following.
+                    """
+                    conflicting = conflicting_entity_name(obj_fields, key, related_obj_name, relationship_mapping)
+                    entity_label = key if conflicting else first_entity_name
+                    add_M2O_relationship(first_entity, second_entity, get_word_plural(entity_label), key)
 
     
 # Adds attributes to the given entity for its name and type
@@ -184,10 +194,7 @@ def add_entity_attribute(entity, name, att_type, optional):
             name += next_word
 
     attribute = etree.SubElement(entity, "attribute", name=name)
-    if optional:
-        attribute.set("optional", "YES")
-    else:
-        attribute.set("optional", "YES")
+    attribute.set("optional", "YES" if optional else "NO")
     attribute.set("attributeType", att_type)
     attribute.set("syncable", "YES")
 
@@ -195,8 +202,8 @@ def add_entity_attribute(entity, name, att_type, optional):
 # Adds entities for each object in the JSON tree
 def add_entities(model, objects):
     for obj in objects:
-        if "Parameters" not in obj.keys()[0]:
-            obj_name = obj.keys()[0]
+        obj_name = obj.keys()[0]
+        if "Parameters" not in obj_name:
             entity = etree.SubElement(model, "entity", name=obj_name[1].upper() + obj_name[2:])
             obj_fields = obj[obj_name]
             for key, value in obj_fields.iteritems():
@@ -256,7 +263,7 @@ if __name__ == "__main__":
         objects = read_json["objects"]
         urls = read_json["urls"] 
         print "Writing XML"
-        # write_xml_to_file(xml, objects)
+        write_xml_to_file(xml, objects)
 
         print "Writing URLS"
         create_mappings(urls, objects)
