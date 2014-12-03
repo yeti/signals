@@ -20,7 +20,9 @@ OBJC_DATA_TYPES = {
     "text"       : "NSString*",
     "boolean"    : "NSNumber*",
     "array"      : "NSArray*",
-    "list"       : "NSArray*"
+    "list"       : "NSArray*",
+    "video"      : "NSURL*",
+    "image"      : "UIImage*"
 }
 
 
@@ -45,6 +47,7 @@ def create_header_for_h_file(h):
 
 @class RKObjectRequestOperation;
 @class RKMappingResult;
+@class UIImage;
 
 @interface DataModel : NSObject
 
@@ -153,12 +156,7 @@ def write_get_calls_to_files(url, h_file, m_file):
 
     write_authentication(h_file, url['get']['#meta'])
     api = check_and_write_for_id(h_file, url["url"])
-    h_file.write('    [sharedMgr getObjectsAtPath:{} parameters:nil success:^(RKObjectRequestOperation *operation, RKMappingResult *mappingResult) {{\n'.format(api))
-    h_file.write('       success(operation,mappingResult);\n')
-    h_file.write('    } failure:^(RKObjectRequestOperation *operation, NSError *error) {\n')
-    h_file.write('       RKLogError(@"Load failed with error: %@", error);\n')
-    h_file.write('       failure(operation,error);\n')
-    h_file.write('    }];\n')
+    h_file.write('    [sharedMgr getObjectsAtPath:{} parameters:nil success:success failure:failure];\n'.format(api))
     h_file.write('}\n\n')
 
     m_file.write("{};\n\n".format(method_signature))
@@ -207,6 +205,104 @@ def write_authentication(h, meta):
         h.write('    [sharedMgr.HTTPClient setDefaultHeader:@"Authorization" value:[NSString stringWithFormat:@"Bearer %@", [AppModel sharedModel].accessToken]];\n')
 
 
+# Changes a python variable name to an objective c version
+# ex. access_token_secret -> accessTokenSecret
+def python_to_objc_variable(python_variable_name):
+    words = python_variable_name.split('_')
+    return words[0] + "".join(word.capitalize() for word in words[1:])
+
+
+# id and description are reserved words in Objective C so we'll replace them with our own
+def sanitize_field_name(field_name):
+    if field_name == "id":
+        return "theID"
+    elif field_name == "description":
+        return "theDescription"
+    else:
+        return field_name
+
+
+def assign_fields(m, request_object):
+    for field_name, values in request_object.iteritems():
+        # Don't assign images or videos to the object
+        if 'image' in values or 'video' in values:
+            continue
+
+        obj_variable = sanitize_field_name(field_name)
+        obj_variable = python_to_objc_variable(obj_variable)
+        m.write('    obj.{0} = {0};\n'.format(obj_variable))
+
+
+def write_method_signature(h, m, request_object, url, method_type):
+    method_title = sanitize_api_name(url['url'])
+    method_signature = '- (void) {}{}With'.format(method_type, method_title)
+
+    # Create all of the parameters based on the request object's fields
+    for index, (field_name, field_values) in enumerate(request_object.iteritems()):
+        field_name = sanitize_field_name(field_name)
+        variable_name = python_to_objc_variable(field_name)
+
+        # TODO: this depends on the type (i.e. int or string) being the first value
+        # changes schema value to Objective C variable type (i.e. image -> UIImage)
+        variable_type = OBJC_DATA_TYPES[field_values.split(',')[0]]
+
+        # The tag name is only capitalized if it's part of the method name, when it's the first field
+        tag_name = variable_name[0].upper() + variable_name[1:] if index == 0 else variable_name
+
+        method_signature += "{0}:({1}){2} ".format(tag_name, variable_type, variable_name)
+
+    # Also add an ID parameter if we need an ID for the url and it's not already a field on our object
+    if "id" in url['url'] and 'id' not in request_object:
+        method_signature += "theID:(NSNumber*)theID "
+
+    method_signature = method_signature[:-1] + " success:(void (^)(RKObjectRequestOperation *operation, RKMappingResult *mappingResult))success failure:(void (^)(RKObjectRequestOperation *operation, NSError *error))failure"
+
+    h.write("{} {{\n".format(method_signature))
+
+    write_doc_string(m, url, method_type)
+    m.write("{};\n\n".format(method_signature))
+
+
+def write_api_call(m, path, method, request_object):
+    json_api_call = '[sharedMgr {}Object:obj path:{} parameters:nil success:success failure:failure];'.format(method, path)
+
+    # If we have any videos or images, we'll need to make a multipart form request
+    media_fields = filter(lambda (_, values): 'image' in values or 'video' in values, request_object.items())
+    if len(media_fields) > 0:
+
+        multipart_upload_template = """
+    if ({}) {{
+        NSMutableURLRequest *request = [sharedMgr multipartFormRequestWithObject:obj method:RKRequestMethod{} path:{} parameters:nil
+                                                       constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {{
+                                                           {}
+                                                       }}];
+        RKManagedObjectRequestOperation *operation = [sharedMgr managedObjectRequestOperationWithRequest:request managedObjectContext:nil success:success failure:failure];
+        [sharedMgr enqueueObjectRequestOperation:operation];
+    }} else {{
+        {}
+    }}
+"""
+
+        variable_conditional = " || ".join("{} != nil".format(python_to_objc_variable(field_name)) for (field_name, _) in media_fields)
+
+        appended_files = ""
+        for field_name, values in media_fields:
+            if 'image' in values:
+                image_upload_template = """                [formData appendPartWithFileData:UIImageJPEGRepresentation({0}, 1)
+                                                                                       name:@"{1}"
+                                                                                   fileName:@"{1}.jpeg"
+                                                                                   mimeType:@"image/jpeg"];
+"""
+                appended_files += image_upload_template.format(python_to_objc_variable(field_name), field_name)
+            elif 'video' in values:
+                appended_files += '[formData appendPartWithFileURL:{0} name:@"{1}" fileName:@"{1}.mp4" mimeType:@"video/mp4" error:nil];\n'.format(python_to_objc_variable(field_name), field_name)
+
+        m.write(multipart_upload_template.format(variable_conditional, method.upper(), path, appended_files, json_api_call))
+    else:
+        # else we can just use RestKit's normal JSON API call
+        write(m, '{}\n'.format(json_api_call), indent=1)
+
+
 def create_mappings(urls, objects):
     # TODO: Rename and clean these globals up
     params = {}
@@ -225,7 +321,7 @@ def create_mappings(urls, objects):
         h.write('#import <RestKit/RestKit.h>\n')
         h.write('#import "Viddit-Swift.h"\n')
 
-        # TODO: ideally we don't loop over objects twice, but easiest for now do to order of writing into .m file
+        # TODO: ideally we don't loop over objects twice, but easiest for now due to order of writing into .m file
         for obj in objects:
             # ex. $userRequest
             obj_variable_name = obj.keys()[0]
@@ -257,6 +353,7 @@ def create_mappings(urls, objects):
                         if primary_key == 'id':
                             primary_key = 'theID'
                         h.write('{}.identificationAttributes = @[@"{}"];\n'.format(name, primary_key))
+
                     values = value.split(',')
                     if "primarykey" in values:
                         values.remove("primarykey")
@@ -339,7 +436,7 @@ def create_mappings(urls, objects):
 
                     write_doc_string(m, url, "get")
 
-                    title = '- (void) get'+name.capitalize()+'With'
+                    title = '- (void) get{}With'.format(name.capitalize())
                     for par in paras:
                         split = paras[par].split(',')
                         if "__" in par:
@@ -347,11 +444,15 @@ def create_mappings(urls, objects):
                             par = parameter_names[1]
                         elif "_" in par:
                             parameter_names = par.split('_')
-                            par = parameter_names[1]     
-                        title += par.capitalize() + ":(" + OBJC_DATA_TYPES[split[0]] + ")" + par + " "
-                    h.write(title + "andSuccess:(void (^)(RKObjectRequestOperation *operation, RKMappingResult *result))success failure:(void (^)(RKObjectRequestOperation *operation, NSError *error))failure {\n")
-                    m.write(title + "andSuccess:(void (^)(RKObjectRequestOperation *operation, RKMappingResult *result))success failure:(void (^)(RKObjectRequestOperation *operation, NSError *error))failure;\n\n")
+                            par = parameter_names[1]
+                        title += "{}:({}){} ".format(par.capitalize(), OBJC_DATA_TYPES[split[0]], par)
+
+                    success_failure_params = "success:(void (^)(RKObjectRequestOperation *operation, RKMappingResult *result))success failure:(void (^)(RKObjectRequestOperation *operation, NSError *error))failure"
+
+                    h.write("{}{} {{\n".format(title, success_failure_params))
+                    m.write("{}{};\n\n".format(title, success_failure_params))
                     h.write('    NSDictionary *queryParams;\n')
+
                     query_params = "queryParams = @{"
                     for par in paras:
                         our_par = par
@@ -364,108 +465,52 @@ def create_mappings(urls, objects):
                         query_params += '@"' + par + '": @"' + our_par + '", '
                     query_params = query_params[:-2] + "};\n"
                     h.write('    ' + query_params)
-                    h.write('    [[RKObjectManager sharedManager] getObjectsAtPath:@"{}" parameters:queryParams success:^(RKObjectRequestOperation *operation, RKMappingResult *mappingResult) {{\n'.format(url_path))
-                    h.write('       success(operation,mappingResult);\n')
-                    h.write('    } failure:^(RKObjectRequestOperation *operation, NSError *error) {\n')
-                    h.write('       RKLogError(@"Load failed with error: %@", error);\n')
-                    h.write('       failure(operation,error);\n')
-                    h.write('    }];\n')
+                    h.write('    [[RKObjectManager sharedManager] getObjectsAtPath:@"{}" parameters:queryParams success:success failure:failure];\n'.format(url_path))
                     h.write('}\n\n')
 
         for url in urls:
             # POSTS
             if 'post' in url:
-                post_title = sanitize_api_name(url['url'])
                 post_request = requests[url['post']['request']]
                 post_request_key = post_request.keys()[0]
-                method_title = '- (void) post'+post_title+'With'
-                for field in post_request[post_request_key]:
-                    title_variable = field.replace('_',"").capitalize()
-                    variable_variable = field.replace('_',"")
-                    variable_type = post_request[post_request_key][field].split(',')
-                    variable_type = OBJC_DATA_TYPES[variable_type[0]]
-                    method_title += title_variable+":("+variable_type+")"+variable_variable + " "
-                if "id" in url['url']: 
-                    method_title += "theID:(NSNumber*) theID "   
-                method_title_h = method_title[:-1] + " success:(void (^)(RKObjectRequestOperation *operation, RKMappingResult *mappingResult))success failure:(void (^)(RKObjectRequestOperation *operation, NSError *error))failure;\n\n"
-                method_title = method_title[:-1] + " success:(void (^)(RKObjectRequestOperation *operation, RKMappingResult *mappingResult))success failure:(void (^)(RKObjectRequestOperation *operation, NSError *error))failure {\n"
-                h.write(method_title)
+                request_object = post_request[post_request_key]
 
-                write_doc_string(m, url, "post")
-                m.write(method_title_h)
+                write_method_signature(h, m, request_object, url, "post")
 
                 h.write('    RKObjectManager* sharedMgr = [RKObjectManager sharedManager];\n')
-                request_variable = post_request.keys()[0][1].capitalize() + post_request.keys()[0][2:]
+                request_variable = post_request_key[1].capitalize() + post_request_key[2:]
                 h.write('    {0} *obj = [NSEntityDescription insertNewObjectForEntityForName:@"{0}" inManagedObjectContext:sharedMgr.managedObjectStore.mainQueueManagedObjectContext];\n'.format(request_variable))
-                for field in post_request[post_request_key]: 
-                    obj_variable = field   
-                    if obj_variable == "id":
-                        obj_variable = "theID"
-                    elif obj_variable == "description":
-                        obj_variable = "theDescription"
-                    elif '_' in obj_variable:
-                        words = obj_variable.split('_')
-                        obj_variable = words[0]
-                        for x in range(1,len(words)):
-                            next_word = words[x]
-                            next_word = next_word.capitalize()
-                            obj_variable += next_word
 
-                    method_variable = field.replace('_', "")
-                    h.write('    obj.'+obj_variable+' = ' + method_variable + ';\n') 
-                url_destination = str(url['url'])
+                assign_fields(h, request_object)
+
+                path = '@"{}"'.format(str(url['url']))
                 write_authentication(h, url['post']['#meta'])
-                h.write('    [sharedMgr postObject:obj path:@"{}" parameters:nil success:^(RKObjectRequestOperation *operation,\n'.format(url_destination))
-                h.write('        RKMappingResult *mappingResult) {\n')
-                h.write('        success(operation, mappingResult); }\n') 
-                h.write('        failure:failure];\n')
+
+                write_api_call(h, path, "post", request_object)
+
                 h.write('}\n\n')
 
             # PATCH
             elif 'patch' in url:
                 if "id" in url['url']:
-                    patch_title = sanitize_api_name(url['url'])
                     patch_request = requests[url['patch']['request']]
                     patch_request_key = patch_request.keys()[0]
-                    method_title = '- (void) patch{}With'.format(patch_title)
-                    for field in patch_request[patch_request_key]:
-                        title_variable = field.replace('_', "").capitalize()
-                        variable_variable = field.replace('_', "")
-                        variable_type = patch_request[patch_request_key][field].split(',')
-                        variable_type = OBJC_DATA_TYPES[variable_type[0]]
-                        method_title += "{}:({}){} ".format(title_variable, variable_type, variable_variable)
-                    method_title += "theID:(NSNumber*) theID "   
-                    method_title_h = method_title[:-1] + " success:(void (^)(RKObjectRequestOperation *operation, RKMappingResult *mappingResult))success failure:(void (^)(RKObjectRequestOperation *operation, NSError *error))failure;\n\n"
-                    method_title = method_title[:-1] + " success:(void (^)(RKObjectRequestOperation *operation, RKMappingResult *mappingResult))success failure:(void (^)(RKObjectRequestOperation *operation, NSError *error))failure {\n"
-                    h.write(method_title)
+                    request_object = patch_request[patch_request_key]
 
-                    write_doc_string(m, url, "patch")
-                    m.write(method_title_h)
+                    write_method_signature(h, m, request_object, url, "patch")
 
                     h.write('    RKObjectManager* sharedMgr = [RKObjectManager sharedManager];\n')
                     request_variable = patch_request_key[1].capitalize() + patch_request_key[2:]
                     h.write('    {0} *obj = [NSEntityDescription insertNewObjectForEntityForName:@"{0}" inManagedObjectContext:sharedMgr.managedObjectStore.mainQueueManagedObjectContext];\n'.format(request_variable))
-                    for field in patch_request[patch_request_key]: 
-                        obj_variable = field
-                        if obj_variable == "id":
-                            obj_variable = "theID"
-                        elif obj_variable == "description":
-                            obj_variable = "theDescription"
-                        elif '_' in obj_variable:
-                            words = obj_variable.split('_')
-                            obj_variable = words[0]
-                            for x in range(1, len(words)):
-                                next_word = words[x]
-                                obj_variable += next_word.capitalize()
-                        method_variable = field.replace('_', "")
-                        h.write('    obj.{} = {};\n'.format(obj_variable, method_variable))
+
+                    assign_fields(h, request_object)
 
                     write_authentication(h, url['patch']['#meta'])
-                    api = check_and_write_for_id(h, url["url"])
-                    h.write('    [sharedMgr patchObject:obj path:{} parameters:nil success:^(RKObjectRequestOperation *operation,\n'.format(api))
-                    h.write('        RKMappingResult *mappingResult) {\n')
-                    h.write('        success(operation, mappingResult); }\n') 
-                    h.write('        failure:failure];\n')
+
+                    path = check_and_write_for_id(h, url["url"])
+
+                    write_api_call(h, path, "patch", request_object)
+
                     h.write('}\n\n')
         
         # LOGIN

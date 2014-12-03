@@ -22,6 +22,8 @@ import json
 from manticom_ios_datamodels import create_mappings
 
 # Conversions for use in CoreData
+# TODO: images and videos on request objects don't even need to be saved?
+# or possibly we shouldn't even be generating core data objects for requests?
 DATA_TYPES = {
     "date"       : "Date",
     "datetime"   : "Date",
@@ -37,7 +39,9 @@ DATA_TYPES = {
     "string"     : "String",
     "text"       : "String",
     "boolean"    : "Boolean",
-    "array"      : "Transformable"
+    "array"      : "Transformable",
+    "image"      : "String",
+    "video"      : "String"
 }
 
 # Database Relationships
@@ -263,7 +267,7 @@ if __name__ == "__main__":
         objects = read_json["objects"]
         urls = read_json["urls"] 
         print "Writing XML"
-        write_xml_to_file(xml, objects)
+        # write_xml_to_file(xml, objects)
 
         print "Writing URLS"
         create_mappings(urls, objects)
