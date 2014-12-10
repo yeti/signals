@@ -169,7 +169,14 @@ def create_request_descriptor(h, url, method):
     descriptor_name = '{}{}RequestDescriptor'.format(create_descriptor_name(url['url']), method.capitalize())
     mapping_name = get_mapping_name(object_variable_name)
 
-    h.write('RKRequestDescriptor *{} = [RKRequestDescriptor requestDescriptorWithMapping:[{} inverseMapping] objectClass:[{} class] rootKeyPath:nil method:RKRequestMethod{}];\n'.format(descriptor_name, mapping_name, object_name, method.upper()))
+    # If this is a patch, we need to set `assignsDefaultValueForMissingAttributes`
+    inverse_mapping = "[{} inverseMapping]".format(mapping_name)
+    if method == "patch":
+        inverse_mapping = "{}Inverse".format(mapping_name)
+        h.write('RKEntityMapping *{} = [{} inverseMapping];\n'.format(inverse_mapping, mapping_name))
+        h.write('{}.assignsDefaultValueForMissingAttributes = NO;\n'.format(inverse_mapping))
+
+    h.write('RKRequestDescriptor *{} = [RKRequestDescriptor requestDescriptorWithMapping:{} objectClass:[{} class] rootKeyPath:nil method:RKRequestMethod{}];\n'.format(descriptor_name, inverse_mapping, object_name, method.upper()))
     h.write('[objectManager addRequestDescriptor:{}];\n'.format(descriptor_name))
     h.write('\n')
 
@@ -300,7 +307,7 @@ def write_api_call(m, path, method, request_object):
         m.write(multipart_upload_template.format(variable_conditional, method.upper(), path, appended_files, json_api_call))
     else:
         # else we can just use RestKit's normal JSON API call
-        write(m, '{}\n'.format(json_api_call), indent=1)
+        m.write('  {}\n'.format(json_api_call))
 
 
 def create_mappings(urls, objects):
