@@ -271,7 +271,10 @@ def write_method_signature(h, m, request_object, url, method_type):
 
 
 def write_api_call(m, path, method, request_object):
-    json_api_call = '[sharedMgr {}Object:obj path:{} parameters:nil success:success failure:failure];'.format(method, path)
+    obj_variable_name = "obj" if request_object else "nil"
+    json_api_call = '[sharedMgr {}Object:{} path:{} parameters:nil success:success failure:failure];'.format(method,
+                                                                                                             obj_variable_name,
+                                                                                                             path)
 
     # If we have any videos or images, we'll need to make a multipart form request
     media_fields = filter(lambda (_, values): 'image' in values or 'video' in values, request_object.items())
@@ -498,7 +501,7 @@ def create_mappings(urls, objects):
                 h.write('}\n\n')
 
             # PATCH
-            elif 'patch' in url:
+            if 'patch' in url:
                 if "id" in url['url']:
                     patch_request = requests[url['patch']['request']]
                     patch_request_key = patch_request.keys()[0]
@@ -518,6 +521,16 @@ def create_mappings(urls, objects):
 
                     write_api_call(h, path, "patch", request_object)
 
+                    h.write('}\n\n')
+
+            # DELETE
+            if 'delete' in url:
+                if "id" in url['url']:
+                    write_method_signature(h, m, {}, url, "delete")
+                    h.write('    RKObjectManager* sharedMgr = [RKObjectManager sharedManager];\n')
+                    write_authentication(h, url['delete']['#meta'])
+                    path = check_and_write_for_id(h, url["url"])
+                    write_api_call(h, path, "delete", {})
                     h.write('}\n\n')
         
         # LOGIN
