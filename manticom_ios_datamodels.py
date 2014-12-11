@@ -190,7 +190,8 @@ def create_response_descriptor(h, url, method):
     key_path = 'nil'
     if 'resource_type' in info:
         key_path = 'nil' if info['resource_type'] == 'detail' else '@"results"'
-    elif method == "get":
+    elif method == "get" and ':id' not in url['url']:
+        # Get requests with an ID only return 1 object, not a list of results
         key_path = '@"results"'
 
     h.write('RKResponseDescriptor *{} = [RKResponseDescriptor responseDescriptorWithMapping:{} method:RKRequestMethod{} pathPattern:@"{}" keyPath:{} statusCodes:RKStatusCodeIndexSetForClass(RKStatusCodeClassSuccessful)];\n'.format(descriptor_name, mapping_name, method.upper(), url['url'], key_path))
@@ -411,11 +412,12 @@ def create_mappings(urls, objects):
         print "URLs for Patches and Gets"
         print ''
         for url in urls:
+            # Delete's don't need descriptors
             if 'patch' in url:
                 create_request_descriptor(h, url, "patch")
                 create_response_descriptor(h, url, "patch")
 
-            if 'get' in url and ':id' not in url['url']:
+            if 'get' in url:
                 create_response_descriptor(h, url, "get")
 
             if 'post' in url:

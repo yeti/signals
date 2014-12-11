@@ -27,9 +27,8 @@ A Script for auto generating Core Data models and RestKit code with an API schem
 
 ### Improvements
 
-1. DELETEs
-2. Refactor all the things
-3. Can we automate refreshing core data?
-4. Use templates instead of writing to files line by line
-5. Core Data migrations when creating new objects
-6. Optional Auth
+1. Refactor all the things
+2. Can we automate refreshing core data?
+3. Use templates instead of writing to files line by line
+4. Core Data migrations when creating new objects
+5. Optional Auth
