@@ -207,6 +207,17 @@ def get_object_name(obj):
     return obj[1].upper() + obj[2:]
 
 
+def get_parameter_variable_name(parameter):
+    parameter_variable_name = parameter
+    if "__" in parameter:
+        parameter_names = parameter.split('__')
+        parameter_variable_name = parameter_names[1]
+    elif "_" in parameter:
+        parameter_names = parameter.split('_')
+        parameter_variable_name = parameter_names[1]
+    return parameter_variable_name
+
+
 def write_authentication(h, meta):
     # TODO: What to do about optional auth?
     if 'oauth2' in meta and 'optional' not in meta:
@@ -449,38 +460,28 @@ def create_mappings(urls, objects):
                     write_doc_string(m, url, "get")
 
                     title = '- (void) get{}With'.format(name.capitalize())
-                    for par in paras:
-                        split = paras[par].split(',')
-                        if "__" in par:
-                            parameter_names = par.split('__')
-                            par = parameter_names[1]
-                        elif "_" in par:
-                            parameter_names = par.split('_')
-                            par = parameter_names[1]
-                        title += "{}:({}){} ".format(par.capitalize(), OBJC_DATA_TYPES[split[0]], par)
+                    for parameter in paras:
+                        split = paras[parameter].split(',')
+                        parameter_variable_name = get_parameter_variable_name(parameter)
+                        title += "{}:({}){} ".format(parameter_variable_name.capitalize(),
+                                                     OBJC_DATA_TYPES[split[0]],
+                                                     parameter_variable_name)
 
                     success_failure_params = "success:(void (^)(RKObjectRequestOperation *operation, RKMappingResult *result))success failure:(void (^)(RKObjectRequestOperation *operation, NSError *error))failure"
 
                     h.write("{}{} {{\n".format(title, success_failure_params))
                     m.write("{}{};\n\n".format(title, success_failure_params))
-                    h.write('    NSDictionary *queryParams;\n')
+                    h.write("    NSMutableDictionary* queryParams = [NSMutableDictionary dictionaryWithCapacity:{}];\n".format(len(paras)))
 
-                    query_params = "queryParams = @{"
-                    for par in paras:
-                        our_par = par
-                        if "__" in par:
-                            parameter_names = par.split('__')
-                            our_par = parameter_names[1]
-                        elif "_" in par:
-                            parameter_names = par.split('_')
-                            our_par = parameter_names[1]  
-                        query_params += '@"' + par + '": @"' + our_par + '", '
-                    query_params = query_params[:-2] + "};\n"
-                    h.write('    ' + query_params)
+                    for parameter in paras:
+                        parameter_variable_name = get_parameter_variable_name(parameter)
+                        h.write("    if ({}) {{\n".format(parameter_variable_name))
+                        h.write('      [queryParams setObject:{} forKey:@"{}"];\n'.format(parameter_variable_name, parameter))
+                        h.write("    }\n")
+
                     h.write('    [[RKObjectManager sharedManager] getObjectsAtPath:@"{}" parameters:queryParams success:success failure:failure];\n'.format(url_path))
                     h.write('}\n\n')
 
-        for url in urls:
             # POSTS
             if 'post' in url:
                 post_request = requests[url['post']['request']]

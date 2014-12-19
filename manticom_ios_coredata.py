@@ -39,7 +39,7 @@ DATA_TYPES = {
     "string"     : "String",
     "text"       : "String",
     "boolean"    : "Boolean",
-    "array"      : "Transformable",
+    "array"      : "Binary",
     "image"      : "String",
     "video"      : "String"
 }
@@ -215,9 +215,7 @@ def add_entities(model, objects):
                 if "primarykey" in values:
                     values.remove("primarykey")
 
-                if values[0] == "array":
-                    add_entity_attribute(entity, key, DATA_TYPES[values[1]], "optional" in values)
-                elif values[0] not in RELATIONSHIPS and values[0]:
+                if values[0] not in RELATIONSHIPS and values[0]:
                     add_entity_attribute(entity, key, DATA_TYPES[values[0]], "optional" in values)
 
 
@@ -258,8 +256,10 @@ def write_xml_to_file(xml, objects):
 
 if __name__ == "__main__":
     print "Loading XML and JSON"
-    incoming_json = os.path.expanduser("~/projects/viddit/manticom-schema-1.0.json")
-    xml_path = "~/ios_projects/viddit-ios/Viddit/Common/Models/VidditModel.xcdatamodeld/VidditModel.xcdatamodel/contents"
+    # incoming_json = os.path.expanduser("~/projects/viddit/manticom-schema-1.0.json")
+    incoming_json = os.path.expanduser("~/projects/basicspace/api-schema-1.0.json")
+    # xml_path = "~/ios_projects/viddit-ios/Viddit/Common/Viddit.xcdatamodeld/Viddit.xcdatamodel/contents"
+    xml_path = "~/ios_projects/basicspace-ios/BasicSpace/Common/BasicSpace.xcdatamodeld/BasicSpace.xcdatamodel/contents"
     xml = os.path.expanduser(xml_path)
     with open(incoming_json, "r") as f:
         print "Reading SML"
