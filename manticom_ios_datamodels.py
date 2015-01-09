@@ -384,29 +384,23 @@ def create_mappings(urls, objects):
                     
                     if "M2M" in values or "M2O" in values or "O2M" in values or "O2O" in values:
                         properties.append((key, values[1]))
-                    else:
+                    elif "video" not in values and "image" not in values:  # don't create attributes for files
                         attributes.append(key)
 
                 # Setup Attributes
                 if len(attributes) > 0:
-                    attribute_mappings = '[' + name + ' addAttributeMappingsFromDictionary:@{'
+                    attribute_mappings = '[{} addAttributeMappingsFromDictionary:@{{'.format(name)
                     for attribute in attributes:
-                        attribute_mappings += '@"' + attribute + '": '
-                        if attribute == "id":
-                            attribute = "theID"
-                            attribute_mappings += '@"' + attribute + '",'
-                        elif attribute == "description":
-                            attribute = "theDescription"
-                            attribute_mappings += '@"' + attribute + '",'
-                        elif '_' in attribute:
-                            words = attribute.split('_')
-                            attribute = words[0]
-                            for x in range(1,len(words)):
-                                attribute += words[x].capitalize()
-                            attribute_mappings += '@"' + attribute + '",'
-                        else:
-                            attribute_mappings += '@"' + attribute + '",'
-                    attribute_mappings = attribute_mappings[:-1] + '}];\n'
+                        field_name = sanitize_field_name(attribute)
+                        if '_' in attribute:
+                            words = field_name.split('_')
+                            field_name = words[0]
+                            for x in range(1, len(words)):
+                                field_name += words[x].capitalize()
+
+                        attribute_mappings += '@"{}": @"{}", '.format(attribute, field_name)
+                    # remove last comma and space then close the statement
+                    attribute_mappings = attribute_mappings[:-2] + '}];\n'
                     h.write(attribute_mappings)
                 h.write('\n')
 
