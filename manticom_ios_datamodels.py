@@ -449,11 +449,10 @@ def create_mappings(urls, objects):
                     parameters = url['get']['parameters']
                     paras = params[parameters]
                     url_path = url['url']
-                    name = url_path.split('/')[0]
 
                     write_doc_string(m, url, "get")
 
-                    title = '- (void) get{}With'.format(name.capitalize())
+                    title = '- (void) get{}With'.format(sanitize_api_name(url_path))
                     for parameter in paras:
                         split = paras[parameter].split(',')
                         parameter_variable_name = get_parameter_variable_name(parameter)
