@@ -134,6 +134,7 @@ def write_login_to_files(h_file, m_file):
     h_file.write('- (void) getAllLoginWithUsername:(NSString*)username password:(NSString*)password success:(void (^)(RKObjectRequestOperation *operation, RKMappingResult *mappingResult))success failure:(void (^)(RKObjectRequestOperation *operation, NSError *error))failure {\n')
     h_file.write('   RKObjectManager* sharedMgr = [RKObjectManager sharedManager];\n')
     h_file.write('   [sharedMgr.HTTPClient setAuthorizationHeaderWithUsername:username password:password];\n')
+    h_file.write('   sharedMgr.requestSerializationMIMEType = RKMIMETypeFormURLEncoded;\n')
     h_file.write('   [sharedMgr getObjectsAtPath:@"login/" parameters:nil success:success failure:failure];\n')
     h_file.write('}\n')
 
@@ -152,9 +153,9 @@ def write_get_calls_to_files(url, h_file, m_file):
     name = sanitize_api_name(url["url"])
     method_signature = '- (void) get{}{}(void (^)(RKObjectRequestOperation *operation, RKMappingResult *result))success failure:(void (^)(RKObjectRequestOperation *operation, NSError *error))failure'.format(name, method_snippet)
     h_file.write("{} {{\n".format(method_signature))
-    h_file.write('    RKObjectManager* sharedMgr = [RKObjectManager sharedManager];\n')
-
+    write_shared_manager(h_file)
     write_authentication(h_file, url['get']['#meta'])
+    write_content_type(h_file, url['get'].get('content_type', 'json'))
     api = check_and_write_for_id(h_file, url["url"])
     h_file.write('    [sharedMgr getObjectsAtPath:{} parameters:nil success:success failure:failure];\n'.format(api))
     h_file.write('}\n\n')
@@ -218,10 +219,21 @@ def get_parameter_variable_name(parameter):
     return parameter_variable_name
 
 
+def write_shared_manager(h):
+    h.write('    RKObjectManager* sharedMgr = [RKObjectManager sharedManager];\n')
+
+
 def write_authentication(h, meta):
     # TODO: What to do about optional auth?
     if 'oauth2' in meta and 'optional' not in meta:
         h.write('    [sharedMgr.HTTPClient setDefaultHeader:@"Authorization" value:[NSString stringWithFormat:@"Bearer %@", [AppModel sharedModel].accessToken]];\n')
+
+
+def write_content_type(h, content_type):
+    if content_type == 'json':
+        h.write('    sharedMgr.requestSerializationMIMEType = RKMIMETypeJSON;\n')
+    elif content_type == 'form':
+        h.write('    sharedMgr.requestSerializationMIMEType = RKMIMETypeFormURLEncoded;\n')
 
 
 # Changes a python variable name to an objective c version
@@ -472,7 +484,9 @@ def create_mappings(urls, objects):
                         h.write('      [queryParams setObject:{} forKey:@"{}"];\n'.format(parameter_variable_name, parameter))
                         h.write("    }\n")
 
-                    h.write('    [[RKObjectManager sharedManager] getObjectsAtPath:@"{}" parameters:queryParams success:success failure:failure];\n'.format(url_path))
+                    write_shared_manager(h)
+                    write_content_type(h, url['get'].get('content_type', 'json'))
+                    h.write('    [sharedMgr getObjectsAtPath:@"{}" parameters:queryParams success:success failure:failure];\n'.format(url_path))
                     h.write('}\n\n')
 
             # POSTS
@@ -483,15 +497,14 @@ def create_mappings(urls, objects):
 
                 write_method_signature(h, m, request_object, url, "post")
 
-                h.write('    RKObjectManager* sharedMgr = [RKObjectManager sharedManager];\n')
+                write_shared_manager(h)
                 request_variable = post_request_key[1].capitalize() + post_request_key[2:]
                 h.write('    {0} *obj = [NSEntityDescription insertNewObjectForEntityForName:@"{0}" inManagedObjectContext:sharedMgr.managedObjectStore.mainQueueManagedObjectContext];\n'.format(request_variable))
 
                 assign_fields(h, request_object)
-
                 path = '@"{}"'.format(str(url['url']))
                 write_authentication(h, url['post']['#meta'])
-
+                write_content_type(h, url['post'].get('content_type', 'json'))
                 write_api_call(h, path, "post", request_object)
 
                 h.write('}\n\n')
@@ -505,16 +518,14 @@ def create_mappings(urls, objects):
 
                     write_method_signature(h, m, request_object, url, "patch")
 
-                    h.write('    RKObjectManager* sharedMgr = [RKObjectManager sharedManager];\n')
+                    write_shared_manager(h)
                     request_variable = patch_request_key[1].capitalize() + patch_request_key[2:]
                     h.write('    {0} *obj = [NSEntityDescription insertNewObjectForEntityForName:@"{0}" inManagedObjectContext:sharedMgr.managedObjectStore.mainQueueManagedObjectContext];\n'.format(request_variable))
 
                     assign_fields(h, request_object)
-
                     write_authentication(h, url['patch']['#meta'])
-
+                    write_content_type(h, url['patch'].get('content_type', 'json'))
                     path = check_and_write_for_id(h, url["url"])
-
                     write_api_call(h, path, "patch", request_object)
 
                     h.write('}\n\n')
@@ -523,8 +534,9 @@ def create_mappings(urls, objects):
             if 'delete' in url:
                 if "id" in url['url']:
                     write_method_signature(h, m, {}, url, "delete")
-                    h.write('    RKObjectManager* sharedMgr = [RKObjectManager sharedManager];\n')
+                    write_shared_manager(h)
                     write_authentication(h, url['delete']['#meta'])
+                    write_content_type(h, url['delete'].get('content_type', 'json'))
                     path = check_and_write_for_id(h, url["url"])
                     write_api_call(h, path, "delete", {})
                     h.write('}\n\n')
