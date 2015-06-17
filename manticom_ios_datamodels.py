@@ -212,7 +212,7 @@ def get_parameter_variable_name(parameter):
     parameter_variable_name = parameter
     if "__" in parameter:
         parameter_names = parameter.split('__')
-        parameter_variable_name = parameter_names[1]
+        parameter_variable_name = parameter_names[1] + parameter_names[0].capitalize()
     elif "_" in parameter:
         parameter_names = parameter.split('_')
         parameter_variable_name = parameter_names[1]
@@ -502,7 +502,7 @@ def create_mappings(urls, objects):
                 h.write('    {0} *obj = [NSEntityDescription insertNewObjectForEntityForName:@"{0}" inManagedObjectContext:sharedMgr.managedObjectStore.mainQueueManagedObjectContext];\n'.format(request_variable))
 
                 assign_fields(h, request_object)
-                path = '@"{}"'.format(str(url['url']))
+                path = check_and_write_for_id(h, url["url"])
                 write_authentication(h, url['post']['#meta'])
                 write_content_type(h, url['post'].get('content_type', 'json'))
                 write_api_call(h, path, "post", request_object)
