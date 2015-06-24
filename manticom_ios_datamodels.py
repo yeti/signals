@@ -275,7 +275,14 @@ def write_method_signature(h, m, request_object, url, method_type):
 
         # TODO: this depends on the type (i.e. int or string) being the first value
         # changes schema value to Objective C variable type (i.e. image -> UIImage)
-        variable_type = OBJC_DATA_TYPES[field_values.split(',')[0]]
+        field_parts = field_values.split(',')
+        if len(field_parts) > 1 and field_parts[0] in ["O2O", "M2M", "O2M", "M2O"]:
+            if field_parts[0] in ["M2M", "O2M"]:
+                variable_type = 'NSOrderedSet*'
+            else:
+                variable_type = get_object_name(field_parts[1])
+        else:
+            variable_type = OBJC_DATA_TYPES[field_parts[0]]
 
         # The tag name is only capitalized if it's part of the method name, when it's the first field
         tag_name = variable_name[0].upper() + variable_name[1:] if index == 0 else variable_name
