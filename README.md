@@ -1,4 +1,4 @@
-manticom-coreDataGenerator
+YAK-communication
 ==========================
 
 A Script for auto generating Core Data models and RestKit code with an API schema file

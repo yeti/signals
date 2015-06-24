@@ -1,0 +1,4 @@
+
+
+class BaseGenerator(object):
+    pass

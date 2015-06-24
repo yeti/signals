@@ -1,6 +1,3 @@
-# manticom_ios_coredata
-# Copyright (C) 2014, Collin Schupman at Yeti LLC
-
 # This is a script to update an existing CoreDataModel with a given JSON file
 
 # Assumes JSON is in format : TODO->Write format
@@ -15,11 +12,14 @@
 # O2O case
 # correctly resize elements, dynamically
 import os
-from lxml import etree
 from xml.dom import minidom
 import json
 
-from manticom_ios_datamodels import create_mappings
+from lxml import etree
+from data_model import create_mappings
+
+
+
 
 # Conversions for use in CoreData
 # TODO: images and videos on request objects don't even need to be saved?
@@ -254,20 +254,20 @@ def write_xml_to_file(xml, objects):
     #tree.write("new.xml", pretty_print=True)
 
 
-if __name__ == "__main__":
-    print "Loading XML and JSON"
-    incoming_json = os.path.expanduser("~/projects/viddit/viddit/manticom-schema-1.0.json")
-    xml_path = "~/ios_projects/viddit-ios/Viddit/Common/Models/VidditModel.xcdatamodeld/VidditModel.xcdatamodel/contents"
-    # incoming_json = os.path.expanduser("~/projects/basicspace/api-schema-1.0.json")
-    # xml_path = "~/ios_projects/basicspace-ios/BasicSpace/Common/BasicSpace.xcdatamodeld/BasicSpace.xcdatamodel/contents"
-    xml = os.path.expanduser(xml_path)
-    with open(incoming_json, "r") as f:
-        print "Reading SML"
-        read_json = json.loads(f.read())
-        objects = read_json["objects"]
-        urls = read_json["urls"] 
-        print "Writing XML"
-        # write_xml_to_file(xml, objects)
-
-        print "Writing URLS"
-        create_mappings(urls, objects)
+# if __name__ == "__main__":
+#     print "Loading XML and JSON"
+#     incoming_json = os.path.expanduser("~/projects/viddit/viddit/manticom-schema-1.0.json")
+#     xml_path = "~/ios_projects/viddit-ios/Viddit/Common/Models/VidditModel.xcdatamodeld/VidditModel.xcdatamodel/contents"
+#     # incoming_json = os.path.expanduser("~/projects/basicspace/api-schema-1.0.json")
+#     # xml_path = "~/ios_projects/basicspace-ios/BasicSpace/Common/BasicSpace.xcdatamodeld/BasicSpace.xcdatamodel/contents"
+#     xml = os.path.expanduser(xml_path)
+#     with open(incoming_json, "r") as f:
+#         print "Reading SML"
+#         read_json = json.loads(f.read())
+#         objects = read_json["objects"]
+#         urls = read_json["urls"]
+#         print "Writing XML"
+#         # write_xml_to_file(xml, objects)
+#
+#         print "Writing URLS"
+#         create_mappings(urls, objects)

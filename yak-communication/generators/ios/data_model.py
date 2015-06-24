@@ -1,6 +1,3 @@
-# Add map to get Entities
-# Create dynamic objects in the correct way
-# need to add in content type
 from datetime import date
 import re
 
