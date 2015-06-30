@@ -1,6 +1,6 @@
-from generators.base.base_generator import BaseGenerator
-from core_data import write_xml_to_file
-from data_model import create_mappings
+from yak_communication.generators.base.base_generator import BaseGenerator
+from yak_communication.generators.ios.core_data import write_xml_to_file
+from yak_communication.generators.ios.data_model import create_mappings
 
 
 class iOSGenerator(BaseGenerator):

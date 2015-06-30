@@ -31,7 +31,7 @@ An example for running the script is: `python yak_communication/main.py --schema
 ### Development
 
 1. To run the tests, just run `nosetests`.
-2. You can also run the tests with coverage: `nosetests --with-coverage --cover-package=yak_communication`
+2. You can also run the tests with coverage: `nosetests --with-coverage --cover-package=yak_communication --cover-inclusive`
 
 
 ### TODOs

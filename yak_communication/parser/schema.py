@@ -1,6 +1,6 @@
 import json
-from api import GetAPI, PostAPI, PutAPI, PatchAPI, DeleteAPI
-from fields import Relationship, Field
+from yak_communication.parser.api import GetAPI, PostAPI, PutAPI, PatchAPI, DeleteAPI
+from yak_communication.parser.fields import Relationship, Field
 
 __author__ = 'rudy'
 
@@ -45,9 +45,6 @@ class DataObject(object):
 
     def properties(self):
         return self.fields + self.relationships
-
-    def __unicode__(self):
-        print u"{}".format(self.name)
 
 
 class URL(object):

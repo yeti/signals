@@ -1,6 +1,6 @@
 from xml.dom import minidom
 from lxml import etree
-from parser.fields import Relationship, Field
+from yak_communication.parser.fields import Relationship, Field
 
 DATA_TYPES = {
     Field.DATE: "Date",
