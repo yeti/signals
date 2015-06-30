@@ -2,6 +2,7 @@ YAK-communication
 ==========================
 
 [ ![Codeship Status for yeti/YAK-communication](https://codeship.com/projects/d2fa74a0-01ab-0133-75b8-2226f6cba81b/status?branch=master)](https://codeship.com/projects/88715)
+[ ![Coverage Status](https://coveralls.io/repos/yeti/YAK-communication/badge.svg?branch=HEAD&t=YrPM9o)](https://coveralls.io/r/yeti/YAK-communication?branch=HEAD)
 
 A tool for auto generating libraries for different platforms to communicate with your API. 
 
