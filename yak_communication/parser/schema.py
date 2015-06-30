@@ -1,6 +1,5 @@
 import json
-from api import GetAPI, PutAPI, PatchAPI, DeleteAPI
-from api import PostAPI
+from api import GetAPI, PostAPI, PutAPI, PatchAPI, DeleteAPI
 from fields import Relationship, Field
 
 __author__ = 'rudy'
@@ -14,9 +13,9 @@ class Schema(object):
 
         print("Parsing your schema file")
         with open(schema_path, "r") as schema_file:
-            read_json = json.loads(schema_file.read())
-            self.create_objects(read_json["objects"])
-            self.create_apis(read_json["urls"])
+            schema_json = json.loads(schema_file.read())
+            self.create_objects(schema_json["objects"])
+            self.create_apis(schema_json["urls"])
 
     def create_apis(self, urls_json):
         for url_json in urls_json:
@@ -71,3 +70,5 @@ class URL(object):
             if endpoint_json is not None:
                 api = api_mapping(self.url_path, endpoint_json)
             setattr(self, endpoint, api)
+
+        # TODO: verify there are no extra/misspelled endpoints

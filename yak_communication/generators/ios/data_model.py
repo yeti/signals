@@ -476,7 +476,7 @@ def create_mappings(urls, data_objects, project_name):
                         h.write("    }\n")
 
                     write_shared_manager(h)
-                    write_content_type(h, url['get'].get('content_type', 'json'))
+                    write_content_type(h, api.content_type)
                     h.write('    [sharedMgr getObjectsAtPath:@"{}" parameters:queryParams success:success failure:failure];\n'.format(url.url_path))
                     h.write('}\n\n')
 

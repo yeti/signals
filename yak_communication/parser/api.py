@@ -17,7 +17,7 @@ class API(object):
 
     def set_authorization(self, endpoint_json):
         meta = endpoint_json.get('#meta')
-        if meta is not None and meta != "":
+        if meta:
             meta_values = meta.split(",")
             self.authorization = meta_values[0]
             if len(meta_values) > 1 and meta_values[1] == Field.OPTIONAL:

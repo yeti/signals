@@ -8,6 +8,7 @@ A tool for auto generating libraries for different platforms to communicate with
 1. Create a new python virtual environment
 2. `pip install yak-communication/requirements.txt`
 
+
 ### Instructions
 
 The script is ran from `python yak-communication/main.py`.
@@ -27,6 +28,12 @@ An example for running the script is: `python yak-communication/main.py --schema
 5. Copy in the appropriate sections of MachineDataModel.m to your project's DataModel.m
 
 
+### Development
+
+1. To run the tests, just run `nosetests`.
+2. You can also run the tests with coverage: `nosetests --with-coverage --cover-package=yak_communication`
+
+
 ### TODOs
 
 1. Generate RestKit code in Swift instead of Objective C
@@ -38,3 +45,4 @@ An example for running the script is: `python yak-communication/main.py --schema
 4. Auto-generate API schemas and/or Improve current API schema and remove unnecessary parts
 5. Better error checking and validation
 6. Better logging (use different terminal colors for warnings/progress messages)
+7. Figure out a best-way to handle generator specific arguments (click has some utilities built-in for prompting)
