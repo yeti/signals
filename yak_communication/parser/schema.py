@@ -58,11 +58,15 @@ class URL(object):
         'patch': PatchAPI,
         'delete': DeleteAPI
     }
+    VALID_ATTRIBUTES = ['url', 'doc'] + URL_ENDPOINTS.keys()
 
     def __init__(self, url_json):
         self.url_path = url_json["url"]
         self.documentation = url_json.get("doc")
+        self.parse_apis(url_json)
+        self.validate_json(url_json)
 
+    def parse_apis(self, url_json):
         # Check for each URL endpoint and create
         for endpoint, api_mapping in self.URL_ENDPOINTS.iteritems():
             api = None
@@ -71,4 +75,8 @@ class URL(object):
                 api = api_mapping(self.url_path, endpoint_json)
             setattr(self, endpoint, api)
 
-        # TODO: verify there are no extra/misspelled endpoints
+    def validate_json(self, url_json):
+        # Verify there are no extra or improperly formatted attributes
+        for attribute, value in url_json.iteritems():
+            if attribute not in self.VALID_ATTRIBUTES:
+                print("Found unsupported attribute, {}, for url: {}".format(attribute, self.url_path))

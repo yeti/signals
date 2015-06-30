@@ -162,9 +162,9 @@ def write_get_calls_to_files(url, api, h_file, m_file):
     m_file.write("{};\n\n".format(method_signature))
 
 
-def create_request_descriptor(h, url, api):
+def create_request_descriptor(h, api):
     object_name = get_object_name(api.request_object)
-    descriptor_name = '{}{}RequestDescriptor'.format(create_descriptor_name(url.url_path), api.method.capitalize())
+    descriptor_name = '{}{}RequestDescriptor'.format(create_descriptor_name(api.url_path), api.method.capitalize())
     mapping_name = get_mapping_name(api.request_object)
 
     # If this is a patch, we need to set `assignsDefaultValueForMissingAttributes`
@@ -179,18 +179,18 @@ def create_request_descriptor(h, url, api):
     h.write('\n')
 
 
-def create_response_descriptor(h, url, api):
-    descriptor_name = '{}{}ResponseDescriptor'.format(create_descriptor_name(url.url_path), api.method.capitalize())
+def create_response_descriptor(h, api):
+    descriptor_name = '{}{}ResponseDescriptor'.format(create_descriptor_name(api.url_path), api.method.capitalize())
     mapping_name = get_mapping_name(api.response_object)
 
     key_path = 'nil'
     if hasattr(api, 'resource_type'):
         key_path = 'nil' if api.resource_type == GetAPI.RESOURCE_DETAIL else '@"results"'
-    elif isinstance(api, GetAPI) and ':id' not in url.url_path:
+    elif isinstance(api, GetAPI) and ':id' not in api.url_path:
         # Get requests with an ID only return 1 object, not a list of results
         key_path = '@"results"'
 
-    h.write('RKResponseDescriptor *{} = [RKResponseDescriptor responseDescriptorWithMapping:{} method:RKRequestMethod{} pathPattern:@"{}" keyPath:{} statusCodes:RKStatusCodeIndexSetForClass(RKStatusCodeClassSuccessful)];\n'.format(descriptor_name, mapping_name, api.method.upper(), url.url_path, key_path))
+    h.write('RKResponseDescriptor *{} = [RKResponseDescriptor responseDescriptorWithMapping:{} method:RKRequestMethod{} pathPattern:@"{}" keyPath:{} statusCodes:RKStatusCodeIndexSetForClass(RKStatusCodeClassSuccessful)];\n'.format(descriptor_name, mapping_name, api.method.upper(), api.url_path, key_path))
     h.write('[objectManager addResponseDescriptor:{}];\n'.format(descriptor_name))
     h.write('\n')
 
@@ -431,15 +431,15 @@ def create_mappings(urls, data_objects, project_name):
         for url in urls:
             # Delete's don't need descriptors
             if url.patch:
-                create_request_descriptor(h, url, url.patch)
-                create_response_descriptor(h, url, url.patch)
+                create_request_descriptor(h, url.patch)
+                create_response_descriptor(h, url.patch)
 
             if url.get:
-                create_response_descriptor(h, url, url.get)
+                create_response_descriptor(h, url.get)
 
             if url.post:
-                create_request_descriptor(h, url, url.post)
-                create_response_descriptor(h, url, url.post)
+                create_request_descriptor(h, url.post)
+                create_response_descriptor(h, url.post)
         h.write('\n')
 
         # Get requests with no ID's, ID's and no Parameters"

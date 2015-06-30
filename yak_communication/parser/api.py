@@ -1,3 +1,4 @@
+import sys
 from fields import Field
 
 
@@ -6,8 +7,10 @@ class API(object):
     CONTENT_TYPE_FORM = 'form'
     OAUTH2 = "oauth2"
     BASIC_AUTH = "basicauth"
+    VALID_AUTH = [OAUTH2, BASIC_AUTH]
 
     def __init__(self, url_path, endpoint_json):
+        self.url_path = url_path
         self.documentation = endpoint_json.get('doc')
         self.content_type = endpoint_json.get('content_type', self.CONTENT_TYPE_JSON)
 
@@ -18,10 +21,17 @@ class API(object):
     def set_authorization(self, endpoint_json):
         meta = endpoint_json.get('#meta')
         if meta:
-            meta_values = meta.split(",")
-            self.authorization = meta_values[0]
-            if len(meta_values) > 1 and meta_values[1] == Field.OPTIONAL:
-                self.authorization_optional = True
+            for authorization_attribute in meta.split(","):
+                self.process_authorization_attribute(authorization_attribute)
+
+    def process_authorization_attribute(self, attribute):
+        if attribute == Field.OPTIONAL:
+            self.authorization_optional = True
+        elif attribute in self.VALID_AUTH:
+            self.authorization = attribute
+        else:
+            print("Found invalid authorization attribute: {} for {}, exiting.".format(attribute, self.url_path))
+            sys.exit()
 
 
 class GetAPI(API):
