@@ -1,5 +1,5 @@
 import click
-from parser.api import Schema
+from parser.schema import Schema
 from generators.ios.ios_generator import iOSGenerator
 
 generators = {
@@ -15,8 +15,6 @@ generators = {
               prompt='name of generator to use',
               help='The name of the generator you\'d like to use.',
               type=click.Choice(generators.keys()))
-# TODO: These are iOS specific settings and we'll need to figure out a way to handle generator specific arguments
-# when we add more generators in the future.
 @click.option('data_models', '--datamodels',
               prompt='path to iOS data models',
               help='The location where you\'d like your iOS data model files stored.',
@@ -24,12 +22,18 @@ generators = {
 @click.option('core_data', '--coredata',
               help='The location of your core data configuration xcdatamodel file.',
               type=click.Path(exists=True))
-def main_loop(schema, generator, data_models, core_data):
+@click.option('project_name', '--projectname',
+              prompt="name of your iOS project and main target",
+              help='The name of your iOS project and main target.',
+              type=click.STRING)
+# TODO: These are iOS specific settings and we'll need to figure out a way to handle generator specific arguments
+# when we add more generators in the future.
+def main_loop(schema, generator, data_models, core_data, project_name):
     schema = Schema(schema)
-    generator = generators[generator](schema, data_models, core_data)
+    generator = generators[generator](schema, data_models, core_data, project_name)
     generator.process()
 
-    print("Finished generator your files!")
+    print("Finished generating your files!")
 
 
 if __name__ == '__main__':

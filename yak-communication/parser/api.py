@@ -1,150 +1,64 @@
-import json
-import sys
-
-__author__ = 'rudy'
+from fields import Field
 
 
-class Schema(object):
-    def __init__(self, schema_path):
-        self.data_objects = {}
-        self.schema_path = schema_path
-
-        with open(schema_path, "r") as schema_file:
-            read_json = json.loads(schema_file.read())
-            self.create_objects(read_json["objects"])
-            self.create_apis(read_json["urls"])
-
-    def create_apis(self, api_json):
-        pass
-
-    def create_objects(self, object_json):
-        for data_object_json in object_json:
-            object_name = data_object_json.keys()[0]
-            data_object = DataObject(object_name, data_object_json[object_name])
-            self.data_objects[data_object.name] = data_object
-
-
-class DataObject(object):
-    def __init__(self, name, json_fields):
-        self.fields = []
-        self.relationships = []
-        self.name = name
-        for field_name, field_attributes in json_fields.iteritems():
-            self.create_field(field_name, field_attributes)
-
-    def create_field(self, field_name, field_attributes):
-        field_attributes = field_attributes.split(",")
-        is_relationship = reduce(lambda x, y: x or y in Relationship.TYPES, field_attributes, False)
-        if is_relationship:
-            self.relationships.append(Relationship(field_name, field_attributes))
-        else:
-            self.fields.append(Field(field_name, field_attributes))
-
-    def __unicode__(self):
-        print u"{}".format(self.name)
-
-
-class Field(object):
-    DATE = "date"
-    DATETIME = "datetime"
-    INTEGER = "int"
-    DECIMAL = "decimal"
-    FLOAT = "float"
-    STRING = "string"
-    TEXT = "text"
-    BOOLEAN = "boolean"
-    VIDEO = "video"
-    IMAGE = "image"
-    TYPES = [DATE, DATETIME, INTEGER, DECIMAL, FLOAT, STRING, TEXT, BOOLEAN, VIDEO, IMAGE]
-    OPTIONAL = "optional"
-    PRIMARY_KEY = "primarykey"
-    ARRAY = "array"
-
-    optional = False
-    primary_key = False
-    array = False
-    field_type = None
-
-    def __init__(self, field_name, field_attributes):
-        self.name = field_name
-
-        for attribute in field_attributes:
-            self.process_attribute(attribute)
-
-        self.validate_field()
-
-    def process_attribute(self, attribute):
-        if attribute == self.OPTIONAL:
-            self.optional = True
-        elif attribute == self.PRIMARY_KEY:
-            self.primary_key = True
-        elif attribute == self.ARRAY:
-            self.array = True
-        elif attribute in self.TYPES:
-            self.field_type = attribute
-        else:
-            if attribute[0] == "$":
-                print("Found an unexpected attribute: {} on {}. "
-                      "Likely it's missing relationship type.".format(attribute, self.name))
-            print("Found an unexpected attribute: {} on {}.".format(attribute, self.name))
-
-    def validate_field(self):
-        if self.field_type is None:
-            print("Didn't find field type for {}, exiting.".format(self.name))
-            sys.exit()
-
-    def __unicode__(self):
-        print u"{}".format(self.name)
-
-
-class Relationship(Field):
-    ONE_TO_ONE = "O2O"
-    MANY_TO_MANY = "M2M"
-    ONE_TO_MANY = "O2M"
-    MANY_TO_ONE = "M2O"
-    TYPES = [ONE_TO_ONE, MANY_TO_MANY, ONE_TO_MANY, MANY_TO_ONE]
-
-    relationship_type = None
-    related_object = None
-
-    def process_attribute(self, attribute):
-        if attribute in self.TYPES:
-            self.relationship_type = attribute
-        elif attribute[0] == "$":
-            self.related_object = attribute
-        else:
-            super(Relationship, self).process_attribute(attribute)
-
-    def validate_field(self):
-        if self.related_object is None:
-            print("Didn't find related object for {}, exiting.".format(self.name))
-            sys.exit()
-
-
-# abstract
 class API(object):
-    # url
-    # doc
-    # #meta
-    # response
-    pass
+    CONTENT_TYPE_JSON = 'json'
+    CONTENT_TYPE_FORM = 'form'
+    OAUTH2 = "oauth2"
+    BASIC_AUTH = "basicauth"
+
+    def __init__(self, url_path, endpoint_json):
+        self.documentation = endpoint_json.get('doc')
+        self.content_type = endpoint_json.get('content_type', self.CONTENT_TYPE_JSON)
+
+        self.authorization = None
+        self.authorization_optional = False
+        self.set_authorization(endpoint_json)
+
+    def set_authorization(self, endpoint_json):
+        meta = endpoint_json.get('#meta')
+        if meta is not None and meta != "":
+            meta_values = meta.split(",")
+            self.authorization = meta_values[0]
+            if len(meta_values) > 1 and meta_values[1] == Field.OPTIONAL:
+                self.authorization_optional = True
 
 
 class GetAPI(API):
-    pass
+    RESOURCE_DETAIL = "detail"
+    RESOURCE_LIST = "list"
+    method = "get"
+
+    def __init__(self, url_path, endpoint_json):
+        super(GetAPI, self).__init__(url_path, endpoint_json)
+
+        default_resource_type = self.RESOURCE_DETAIL if ":id" in url_path else self.RESOURCE_LIST
+        self.resource_type = endpoint_json.get('resource_type', default_resource_type)
+
+        self.parameters_object = endpoint_json.get('parameters')
+        self.response_code = endpoint_json['response'].keys()[0]
+        self.response_object = endpoint_json['response'][self.response_code]
 
 
-class PostAPI(API):
-    pass
+class RequestResponseAPI(API):
+    def __init__(self, url_path, endpoint_json):
+        super(RequestResponseAPI, self).__init__(url_path, endpoint_json)
+        self.request_object = endpoint_json['request']
+        self.response_code = endpoint_json['response'].keys()[0]
+        self.response_object = endpoint_json['response'][self.response_code]
 
 
-class PatchAPI(API):
-    pass
+class PostAPI(RequestResponseAPI):
+    method = "post"
 
 
-class PutAPI(API):
-    pass
+class PatchAPI(RequestResponseAPI):
+    method = "patch"
+
+
+class PutAPI(RequestResponseAPI):
+    method = "put"
 
 
 class DeleteAPI(API):
-    pass
+    method = "delete"
