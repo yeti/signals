@@ -1,52 +1,25 @@
-# This is a script to update an existing CoreDataModel with a given JSON file
-
-# Assumes JSON is in format : TODO->Write format
-
-# Please pass in contents file from your xcode project, located here:
-# project_name.xcdatamodeld
-#    project_name.xcdatamodel
-#       contents (XML)
-# this script will make appropiate changes and update the file
-
-# TODO:
-# O2O case
-# correctly resize elements, dynamically
-import os
 from xml.dom import minidom
-import json
-
 from lxml import etree
-from data_model import create_mappings
+from parser.api import Relationship, Field
 
-
-
-
-# Conversions for use in CoreData
-# TODO: images and videos on request objects don't even need to be saved?
-# or possibly we shouldn't even be generating core data objects for requests?
 DATA_TYPES = {
-    "date"       : "Date",
-    "datetime"   : "Date",
-    "int"        : "Integer 32",
-    "integer"    : "Integer 32",
-    "integer16"  : "Integer 16",
-    "integer32"  : "Integer 32",
-    "integer64"  : "Integer 64",
-    "decimal"    : "Decimal",
-    "double"     : "Double",
-    "real"       : "Double",
-    "float"      : "Float",
-    "string"     : "String",
-    "text"       : "String",
-    "boolean"    : "Boolean",
-    "array"      : "Transformable",
-    "image"      : "String",
-    "video"      : "String"
+    Field.DATE: "Date",
+    Field.DATETIME: "Date",
+    Field.INTEGER: "Integer 32",
+    Field.DECIMAL: "Decimal",
+    Field.FLOAT: "Float",
+    Field.STRING: "String",
+    Field.TEXT: "String",
+    Field.BOOLEAN: "Boolean",
+    Field.IMAGE: "String",
+    Field.VIDEO: "String"
 }
 
-# Database Relationships
-RELATIONSHIPS = {"O2O", "M2M", "O2M", "M2O"}
-
+def get_data_type(field_type):
+    if field_type == Field.ARRAY:
+        return "Transformable"
+    else:
+        return DATA_TYPES[field_type]
 
 # A little logic to to make plural words more readable this won't cover everything,
 # there's a few python libraries out there you could use: https://pypi.python.org/pypi/inflect
@@ -60,12 +33,11 @@ def get_word_plural(word):
 
 
 # Adds an elements branch and element leaf for each object in the JSON file
-# TODO: come up with better way to compute height/position
 def add_elements(model, objects):
     elements = etree.SubElement(model, "elements")
-    for obj in objects:
-        obj_name = get_proper_object_name(obj.keys()[0])
-        element = etree.SubElement(elements, "element", name=obj_name)
+    for object_name, data_object in objects.iteritems():
+        element = etree.SubElement(elements, "element", name=get_proper_object_name(object_name))
+        # TODO: come up with better way to compute height/position
         element.set("positionX", "0")
         element.set("positionY", "0")
         element.set("width", "128")
@@ -83,9 +55,6 @@ def get_basic_relationship(entity, relationship_name, destination_entity, invers
     relationship.set("inverseEntity", inverse_entity)
     return relationship
 
-
-# It seems redundant that we pass around the entities as well as their names
-# then also get their names again from the entity in the following functions.
 
 # Creates a one relationship between these two entities
 def add_one_relationship(entity_one, entity_two, entity_one_name, entity_two_name):
@@ -132,45 +101,34 @@ def get_proper_object_name(obj):
 
 
 # Checks to see if this key and related model are duplicated in this set of fields
-def conflicting_entity_name(fields, obj_key, obj_name, relationship_type):
-    for key, value in fields.iteritems():
-        if obj_key != key and obj_name in value and relationship_type in value:
-            return True
-    return False
+def conflicting_entity_name(relationships, current_relationship):
+    for relationship in relationships:
+        return current_relationship.name != relationship.name and \
+               current_relationship.related_object == relationship.related_object and \
+               current_relationship.relationship_type == relationship.relationship_type
 
 
 # Adds relationships and inverse relationships for each required entity
 # Currently only supports M2M, O2M. TODO: dd in others
 def add_relationships(model, objects):
-    for obj in objects:
-        obj_name = obj.keys()[0]
-        obj_fields = obj[obj_name]
-
-        for key, value in obj_fields.iteritems():
-            values = value.split(",")
-            if "optional" in values:
-                values.remove("optional")
-            if "primarykey" in values:
-                values.remove("primarykey")
-
-            # TODO: This depends on the relationship mapping being the 1st value and the related object 2nd
-            relationship_mapping = values[0]
-            if relationship_mapping in ["O2M", "M2M", "M2O"]:
-                related_obj_name = values[1]
-
+    for object_name, data_object in objects.iteritems():
+        for relationship in data_object.relationships:
+            # TODO: We don't support ONE_TO_ONE relationships in core data currently
+            if relationship.relationship_type != Relationship.ONE_TO_ONE:
                 first_entity = second_entity = None
                 for entity in model.iter("entity"):
-                    if entity.get('name') == get_proper_object_name(obj_name):
+                    if entity.get('name') == get_proper_object_name(object_name):
                         first_entity = entity
-                    elif entity.get('name') == get_proper_object_name(related_obj_name):
+                    elif entity.get('name') == get_proper_object_name(relationship.related_object):
                         second_entity = entity
 
                 first_entity_name = first_entity.get('name').lower().replace("response", "")
-                if relationship_mapping == "O2M":
-                    add_O2M_relationships(first_entity, second_entity, first_entity_name, key)
-                elif relationship_mapping == "M2M":
-                    add_M2M_relationships(first_entity, second_entity, key, get_word_plural(first_entity_name))
-                elif relationship_mapping == "M2O":
+                if relationship.relationship_type == Relationship.ONE_TO_MANY:
+                    add_O2M_relationships(first_entity, second_entity, first_entity_name, relationship.name)
+                elif relationship.relationship_type == Relationship.MANY_TO_MANY:
+                    add_M2M_relationships(first_entity, second_entity, relationship.name,
+                                          get_word_plural(first_entity_name))
+                elif relationship.relationship_type == Relationship.MANY_TO_ONE:
                     """
                     If we have a entity which maps to another entity more than once, we can't use that entity's name
                     instead, let's use the key of the field.
@@ -178,13 +136,13 @@ def add_relationships(model, objects):
                     For example, if we had a user who has followers and is also following other users, our user entity
                     would have two fields called "follow". This instead calls them followers and following.
                     """
-                    conflicting = conflicting_entity_name(obj_fields, key, related_obj_name, relationship_mapping)
-                    entity_label = key if conflicting else first_entity_name
-                    add_M2O_relationship(first_entity, second_entity, get_word_plural(entity_label), key)
+                    conflicting = conflicting_entity_name(data_object.relationships, relationship)
+                    entity_label = relationship.name if conflicting else first_entity_name
+                    add_M2O_relationship(first_entity, second_entity, get_word_plural(entity_label), relationship.name)
 
     
 # Adds attributes to the given entity for its name and type
-def add_entity_attribute(entity, name, att_type, optional):
+def add_entity_attribute(entity, name, core_data_type, optional):
     if name == "id":
         name = "theID"
     elif name == "description":
@@ -199,75 +157,40 @@ def add_entity_attribute(entity, name, att_type, optional):
 
     attribute = etree.SubElement(entity, "attribute", name=name)
     attribute.set("optional", "YES" if optional else "NO")
-    attribute.set("attributeType", att_type)
+    attribute.set("attributeType", core_data_type)
     attribute.set("syncable", "YES")
 
 
 # Adds entities for each object in the JSON tree
 def add_entities(model, objects):
-    for obj in objects:
-        obj_name = obj.keys()[0]
-        if "Parameters" not in obj_name:
-            entity = etree.SubElement(model, "entity", name=obj_name[1].upper() + obj_name[2:])
-            obj_fields = obj[obj_name]
-            for key, value in obj_fields.iteritems():
-                values = value.split(",")
-                if "primarykey" in values:
-                    values.remove("primarykey")
+    for object_name, data_object in sorted(objects.iteritems()):
+        # TODO: I don't think this is documented or used heavily as a standard
+        if "Parameters" not in object_name:
+            proper_object_name = get_proper_object_name(object_name)
+            entity = etree.SubElement(model, "entity", name=proper_object_name)
+            entity.set("representedClassName", proper_object_name)
 
-                if values[0] not in RELATIONSHIPS and values[0]:
-                    add_entity_attribute(entity, key, DATA_TYPES[values[0]], "optional" in values)
+            for field in data_object.fields:
+                add_entity_attribute(entity, field.name, get_data_type(field.field_type), field.optional)
 
 
 # Parses the given XML's model element and creates our initial root 
 def get_model(xml):
-    xmldoc = minidom.parse(xml)
-    itemlist = xmldoc.getElementsByTagName('model') 
+    xml_doc = minidom.parse(xml)
+    item_list = xml_doc.getElementsByTagName('model')
     new_model = etree.Element("model")
-    current_xml_model = itemlist[0]
+    current_xml_model = item_list[0]
     for att in current_xml_model.attributes.keys():
         new_model.set(att, current_xml_model.attributes[att].value)
     return new_model
 
 
 def write_xml_to_file(xml, objects):
-    print "Reading XML"
     model = get_model(xml)
-
-    print "Adding entities"
     add_entities(model, objects)
-
-    print "Adding relationships"
     add_relationships(model, objects)
-
-    print "Adding elements"
     add_elements(model, objects)
-    
-    # print tree (FOR DEBUGGING)
-    # print "Printing XML"
-    # print etree.tostring(model, pretty_print = True)
 
     # write tree
-    print "Writing XML"
     tree = etree.ElementTree(model)
     tree.write(xml, pretty_print=True)
-    #tree.write("new.xml", pretty_print=True)
-
-
-# if __name__ == "__main__":
-#     print "Loading XML and JSON"
-#     incoming_json = os.path.expanduser("~/projects/viddit/viddit/manticom-schema-1.0.json")
-#     xml_path = "~/ios_projects/viddit-ios/Viddit/Common/Models/VidditModel.xcdatamodeld/VidditModel.xcdatamodel/contents"
-#     # incoming_json = os.path.expanduser("~/projects/basicspace/api-schema-1.0.json")
-#     # xml_path = "~/ios_projects/basicspace-ios/BasicSpace/Common/BasicSpace.xcdatamodeld/BasicSpace.xcdatamodel/contents"
-#     xml = os.path.expanduser(xml_path)
-#     with open(incoming_json, "r") as f:
-#         print "Reading SML"
-#         read_json = json.loads(f.read())
-#         objects = read_json["objects"]
-#         urls = read_json["urls"]
-#         print "Writing XML"
-#         # write_xml_to_file(xml, objects)
-#
-#         print "Writing URLS"
-#         create_mappings(urls, objects)
