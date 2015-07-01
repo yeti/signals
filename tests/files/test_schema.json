@@ -1,0 +1,45 @@
+{
+  "urls": [
+    {
+      "url": "sign_up/",
+      "doc": "Creates a new user and returns client_id and client_secret",
+      "post": {
+        "#meta": "",
+        "doc": "Expects a base64 encoded password",
+        "request": "$signUpRequest",
+        "response": {
+          "200+": "$signUpResponse"
+        }
+      }
+    },
+    {
+      "url": "login/",
+      "doc": "Authenticates an existing user and returns client_id and client_secret",
+      "get": {
+        "#meta": "basicauth",
+        "response": {
+          "200+": "$loginResponse"
+        }
+      }
+    }
+  ],
+  "objects": [
+    {"$signUpRequest": {
+        "fullname": "string",
+        "username": "string",
+        "email": "string,optional",
+        "password": "string"
+    }},
+    {"$signUpResponse": {
+        "fullname": "string",
+        "username": "string",
+        "email": "string,optional",
+        "client_id": "string",
+        "client_secret": "string"
+    }},
+    {"$loginResponse": {
+        "client_id": "string",
+        "client_secret": "string"
+    }}
+  ]
+}
