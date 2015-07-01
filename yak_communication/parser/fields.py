@@ -43,15 +43,13 @@ class Field(object):
             if attribute.startswith("$"):
                 print("Found an unexpected attribute: {} on {}. "
                       "Likely it's missing relationship type.".format(attribute, self.name))
+                sys.exit()
             print("Found an unexpected attribute: {} on {}.".format(attribute, self.name))
 
     def validate_field(self):
         if self.field_type is None:
             print("Didn't find field type for {}, exiting.".format(self.name))
             sys.exit()
-
-    def __unicode__(self):
-        print u"{}".format(self.name)
 
 
 class Relationship(Field):
