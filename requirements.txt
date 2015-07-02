@@ -1,4 +1,6 @@
 ## The following requirements were added by pip --freeze:
+Jinja2==2.7.3
+MarkupSafe==0.23
 PyYAML==3.11
 click==4.0
 coverage==3.7.1

@@ -1,7 +1,6 @@
-from __future__ import absolute_import
 import click
-from yak_communication.parser.schema import Schema
-from yak_communication.generators.ios.ios_generator import iOSGenerator
+from signals.parser.schema import Schema
+from signals.generators.ios.ios_generator import iOSGenerator
 
 generators = {
     'ios': iOSGenerator

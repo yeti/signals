@@ -1,5 +1,5 @@
 import unittest
-from yak_communication.parser.fields import Relationship, Field
+from signals.parser.fields import Relationship, Field
 from tests.utils import captured_stdout
 
 

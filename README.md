@@ -1,4 +1,4 @@
-YAK-communication
+signals
 ==========================
 
 [ ![Codeship Status for yeti/YAK-communication](https://codeship.com/projects/d2fa74a0-01ab-0133-75b8-2226f6cba81b/status?branch=master)](https://codeship.com/projects/88715)
@@ -14,18 +14,18 @@ A tool for auto generating libraries for different platforms to communicate with
 
 ### Instructions
 
-The script is ran from `python -m yak_communication`.
+The script is ran from `python -m signals`.
 
-To see a list of arguments run `python -m yak_communication`.
+To see a list of arguments run `python -m signals --help`.
 
 If you do not supply the required arguments when running, the script will prompt you for them one by one.
 
-An example for running the script is: `python -m yak_communication --schema ~/projects/your-project/api-schema.json --generator ios`
+An example for running the script is: `python -m signals --schema ~/projects/your-project/api-schema.json --generator ios`
 
 #### iOS
 
 1. If you're running the iOS generator and writing to core data make sure you quit xcode
-2. Run `python -m yak_communication`, and pass the `--coredata` flag if you want to override core data.
+2. Run `python -m signals`, and pass the `--coredata` flag if you want to override core data.
 3. If you changed the core data models, you'll need to have xcode auto generate the new model files
 4. Copy in MachineDataModel.h to your project's DataModel.h
 5. Copy in the appropriate sections of MachineDataModel.m to your project's DataModel.m
@@ -34,7 +34,7 @@ An example for running the script is: `python -m yak_communication --schema ~/pr
 ### Development
 
 1. To run the tests, just run `nosetests`.
-2. You can also run the tests with coverage: `nosetests --with-coverage --cover-package=yak_communication --cover-inclusive --cover-branches`
+2. You can also run the tests with coverage: `nosetests --with-coverage --cover-package=signals --cover-inclusive --cover-branches`
 
 
 ### TODOs
@@ -52,3 +52,6 @@ An example for running the script is: `python -m yak_communication --schema ~/pr
 6. Better logging (use different terminal colors for warnings/progress messages)
 7. Figure out a best-way to handle generator specific arguments (click has some utilities built-in for prompting)
 8. Documentation (ex. a demo app w/ demo api schema file)
+9. Create setup.py for pip installing and make a release for pypi
+    * Part of this would include making this a command you could run from anywhere (yak_communication vs. python -m yak_communication)
+10. Prompt user if xcode is open when generating core data file

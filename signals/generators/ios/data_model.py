@@ -1,9 +1,9 @@
 from datetime import date
 import os
 import re
-from yak_communication.generators.base.base_generator import BaseGenerator
-from yak_communication.parser.fields import Field, Relationship
-from yak_communication.parser.api import PatchAPI, GetAPI, API
+from signals.generators.base.base_generator import BaseGenerator
+from signals.parser.fields import Field, Relationship
+from signals.parser.api import PatchAPI, GetAPI, API
 
 DATA_TYPES = {
     Field.DATE: "NSDate*",

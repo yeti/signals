@@ -1,5 +1,5 @@
 import sys
-from yak_communication.parser.fields import Field
+from signals.parser.fields import Field
 
 
 class API(object):

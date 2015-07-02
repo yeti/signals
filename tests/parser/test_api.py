@@ -1,6 +1,6 @@
 import unittest
 from tests.utils import captured_stdout
-from yak_communication.parser.api import API, GetAPI, RequestResponseAPI
+from signals.parser.api import API, GetAPI, RequestResponseAPI
 
 
 class APITestCase(unittest.TestCase):
