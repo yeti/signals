@@ -1,4 +1,4 @@
-import sys
+from yak_communication.logging import SignalsError
 
 
 class Field(object):
@@ -41,15 +41,13 @@ class Field(object):
             self.field_type = attribute
         else:
             if attribute.startswith("$"):
-                print("Found an unexpected attribute: {} on {}. "
-                      "Likely it's missing relationship type.".format(attribute, self.name))
-                sys.exit()
+                raise SignalsError("Found an unexpected attribute: {} on {}. "
+                                   "Likely it's missing relationship type.".format(attribute, self.name))
             print("Found an unexpected attribute: {} on {}.".format(attribute, self.name))
 
     def validate_field(self):
         if self.field_type is None:
-            print("Didn't find field type for {}, exiting.".format(self.name))
-            sys.exit()
+            raise SignalsError("Didn't find field type for {}, exiting.".format(self.name))
 
 
 class Relationship(Field):
@@ -72,8 +70,7 @@ class Relationship(Field):
 
     def validate_field(self):
         if self.related_object is None:
-            print("Didn't find related object for {}, exiting.".format(self.name))
-            sys.exit()
+            raise SignalsError("Didn't find related object for {}, exiting.".format(self.name))
 
     @staticmethod
     def is_relationship(field_attributes):
