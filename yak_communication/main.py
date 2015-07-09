@@ -20,20 +20,24 @@ def run_main(schema, generator_name, data_models, core_data, project_name):
     generator = generators[generator_name](schema, data_models, core_data, project_name)
     try:
         generator.process()
+        save_settings([data_models, core_data], schema, generator_name, data_models, core_data, project_name)
     except SignalsError as e:
         print(e.msg)
     else:
         print('Finished generating your files!')
 
-    # TODO: Prompt user to save settings?
-    save_settings([data_models, core_data], schema, generator_name, data_models, core_data, project_name)
 
 def project_specified(ctx, param, value):
     if not value or ctx.resilient_parsing:
         return
 
-    schema, generator, data_models, core_data, project_name = load_settings(value)
-    run_main(schema, generator, data_models, core_data, project_name)
+    try:
+        schema, generator, data_models, core_data, project_name = load_settings(value)
+    except SignalsError as e:
+        print(e.msg)
+    else:
+        run_main(schema, generator, data_models, core_data, project_name)
+
     ctx.exit()
 
 

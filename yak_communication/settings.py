@@ -1,16 +1,15 @@
+from yak_communication.logging import SignalsError
 import os.path
 import glob
 
 def load_settings(settings_path):
     if not os.path.isdir(settings_path):
-        print("Invalid path.  Please specify project path.")
-        # TODO: throw exception
+        raise SignalsError("Invalid path.  Please specify project path.")
 
     settings_filename = settings_path + os.path.sep + ".signalsconfig"
     settings_filename = os.path.normpath(settings_filename)
     if not os.path.isfile(settings_filename):
-        print("Settings file \"{}\" not found.".format(settings_filename))
-        # TODO: throw exception
+        raise SignalsError("Settings file \"{}\" not found.".format(settings_filename))
 
     myvars = {}
     with open(settings_filename) as settings_file:
@@ -23,16 +22,19 @@ def load_settings(settings_path):
 
 def save_settings(paths, schema, generator_name, data_models, core_data, project_name):
     project_root = find_project_root(paths)
-    if len(project_root) > 0:
+    if project_root is not None and len(project_root) > 0:
         output_settings(project_root, schema, generator_name, data_models, core_data, project_name)
     else:
-        print("Failed to locate project root")
+        raise SignalsError("Failed to locate project root")
 
 
 def find_project_root(paths):
     for curpath in paths:
-        if len(curpath) == 0:
+        if curpath is None or len(curpath) == 0:
             continue
+
+        # Convert to absolute path, in case we received relative path from user
+        curpath = os.path.abspath(curpath)
         while curpath != os.sep:
             # Check if this path has the .xcodeproj or .xcworkspace files
             if len(glob.glob(curpath + os.sep + "*.xcodeproj")) > 0:
