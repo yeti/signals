@@ -1,4 +1,4 @@
-import sys
+from yak_communication.logging import SignalsError
 from yak_communication.parser.fields import Field
 
 
@@ -30,8 +30,7 @@ class API(object):
         elif attribute in self.VALID_AUTH:
             self.authorization = attribute
         else:
-            print("Found invalid authorization attribute: {} for {}, exiting.".format(attribute, self.url_path))
-            sys.exit()
+            raise SignalsError("Found invalid authorization attribute: {} for {}, exiting.".format(attribute, self.url_path))
 
 
 class GetAPI(API):
