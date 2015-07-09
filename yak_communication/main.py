@@ -38,7 +38,7 @@ def project_specified(ctx, param, value):
 
 
 @click.command()
-@click.option('--settingspath',
+@click.option('settings_path', '--settingspath',
               help='The project path where Signals should look for a .signalsconfig file.  If specified, the contents'
                    ' of the file are used instead of any other specified options',
               type=click.Path(),
@@ -65,5 +65,5 @@ def project_specified(ctx, param, value):
               type=click.STRING)
 # TODO: These are iOS specific settings and we'll need to figure out a way to handle generator specific arguments
 # when we add more generators in the future.
-def main(schema, generator, data_models, core_data, project_name):
+def main(settings_path, schema, generator, data_models, core_data, project_name):
     run_main(schema, generator, data_models, core_data, project_name)

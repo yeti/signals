@@ -31,7 +31,8 @@ def save_settings(paths, schema, generator_name, data_models, core_data, project
 
 def find_project_root(paths):
     for curpath in paths:
-        #print curpath
+        if len(curpath) == 0:
+            continue
         while curpath != os.sep:
             # Check if this path has the .xcodeproj or .xcworkspace files
             if len(glob.glob(curpath + os.sep + "*.xcodeproj")) > 0:
@@ -40,17 +41,16 @@ def find_project_root(paths):
                 return curpath
 
             curpath = os.path.normpath(os.path.join(curpath, ".."))
-            # print curpath
     return
 
 
 def output_settings(project_root, schema, generator_name, data_models, core_data, project_name):
     settings_filename = project_root + os.sep + ".signalsconfig"
-    print "writing settings to: " + settings_filename
+    print "Writing settings to " + settings_filename
     with open(settings_filename, "w") as settings_file:
-        settings_file.write("schema=" + schema.schema_path + "\n")
-        settings_file.write("generator=" + generator_name + "\n")
-        settings_file.write("data_models=" + data_models + "\n")
-        settings_file.write("core_data=" + core_data + "\n")
-        settings_file.write("project_name=" + project_name + "\n")
+        settings_file.write("schema=" + (schema.schema_path if not (schema.schema_path is str) else "") + "\n")
+        settings_file.write("generator=" + (generator_name if not (generator_name is str) else "") + "\n")
+        settings_file.write("data_models=" + (data_models if not (data_models is str) else "") + "\n")
+        settings_file.write("core_data=" + (core_data if not (core_data is None) else "") + "\n")
+        settings_file.write("project_name=" + (project_name if not (project_name is None) else "") + "\n")
 
