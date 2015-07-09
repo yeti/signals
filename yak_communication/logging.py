@@ -15,8 +15,8 @@ class SignalsError(Exception):
 def colorize_string(color, msg):
     return "{}{}{}".format(terminal_colors[color], msg, terminal_colors["reset"])
 
-def print_warning(msg):
+def warn(msg):
     print(colorize_string("yellow", msg))
 
-def print_progress(msg):
+def progress(msg):
     print(colorize_string("green", msg))

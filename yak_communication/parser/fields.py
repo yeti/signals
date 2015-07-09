@@ -1,4 +1,4 @@
-from yak_communication.logging import SignalsError, print_warning
+from yak_communication.logging import SignalsError, warn
 
 
 class Field(object):
@@ -43,7 +43,7 @@ class Field(object):
             if attribute.startswith("$"):
                 raise SignalsError("Found an unexpected attribute: {} on {}. "
                                    "Likely it's missing relationship type.".format(attribute, self.name))
-            print_warning("Found an unexpected attribute: {} on {}.".format(attribute, self.name))
+            warn("Found an unexpected attribute: {} on {}.".format(attribute, self.name))
 
     def validate_field(self):
         if self.field_type is None:
