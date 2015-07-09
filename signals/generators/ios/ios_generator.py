@@ -1,46 +1,48 @@
-from collections import namedtuple
 from datetime import datetime
 from jinja2 import Environment, PackageLoader
 import re
-from signals.parser.fields import Field, Relationship
+import shutil
+from signals.generators.ios.utils import python_to_objc_variable, sanitize_field_name, get_object_name, \
+    get_objc_data_type
+from signals.parser.api import GetAPI, API
+from signals.parser.fields import Relationship, Field
 from signals.parser.schema import URL
 from signals.generators.base.base_generator import BaseGenerator
 from signals.generators.ios.core_data import write_xml_to_file
 from signals.generators.ios.data_model import create_mappings
 
 class iOSGenerator(BaseGenerator):
-    OBJC_DATA_TYPES = {
-        Field.DATE: "NSDate*",
-        Field.DATETIME: "NSDate*",
-        Field.INTEGER: "NSNumber*",
-        Field.DECIMAL: "NSNumber*",
-        Field.FLOAT: "NSNumber*",
-        Field.STRING: "NSString*",
-        Field.TEXT: "NSString*",
-        Field.BOOLEAN: "NSNumber*",
-        Field.IMAGE: "UIImage*",
-        Field.VIDEO: "NSURL*"
-    }
-
-    def __init__(self, schema, data_models_path, core_data_path, project_name):
+    def __init__(self, schema, data_models_path, core_data_path, project_name, api_url):
         super(iOSGenerator, self).__init__(schema)
+        # Command flags
         self.data_models_path = data_models_path
         self.core_data_path = core_data_path
         self.project_name = project_name
-        self.jinja2_environment = Environment(loader=PackageLoader(__name__), extensions=['jinja2.ext.with_'])
+        self.api_url = api_url
+
+        # Setup
+        self.header_file = "{}/{}DataModel.h".format(BaseGenerator.BUILD_DIR, self.project_name)
+        self.implementation_file = "{}/{}DataModel.m".format(BaseGenerator.BUILD_DIR, self.project_name)
+        self.jinja2_environment = Environment(loader=PackageLoader(__name__),
+                                              extensions=['jinja2.ext.with_'],
+                                              trim_blocks=True,
+                                              lstrip_blocks=True)
 
     def process(self):
         print("Creating data model file")
+        # TODO: Remove create_mappings and delete file
         create_mappings(self.schema.urls, self.schema.data_objects, self.project_name)
 
         self.create_header_file()
+        self.create_implementation_file()
+        self.copy_data_models()
 
         if self.core_data_path is not None:
             print("Creating core data file")
             write_xml_to_file(self.core_data_path, self.schema.data_objects)
 
     def create_header_file(self):
-        header_template = self.jinja2_environment.get_template('data_model.h.j2')
+        template = self.jinja2_environment.get_template('data_model.h.j2')
         context = {
             'today': datetime.today(),
             'endpoints': URL.URL_ENDPOINTS.keys(),
@@ -48,39 +50,50 @@ class iOSGenerator(BaseGenerator):
             'method_name': self.method_name,
             'method_parameters': self.method_parameters
         }
-        template_output = header_template.render(**context)
-        header_file_path = "{}/GeneratedDataModel.h".format(BaseGenerator.BUILD_DIR)
-        with open(header_file_path, "w") as header_file:
-            header_file.write(template_output)
+        template_output = template.render(**context)
+        with open(self.header_file, "w") as output_file:
+            output_file.write(template_output)
 
-    # Changes a python variable name to an objective c version
-    @staticmethod
-    def python_to_objc_variable(python_variable_name, capitalize_first=False):
-        words = python_variable_name.split('_')
+    def create_implementation_file(self):
+        template = self.jinja2_environment.get_template('data_model.m.j2')
+        context = {
+            'today': datetime.today(),
+            'project_name': self.project_name,
+            'request_objects': self.get_request_objects(),
+            'request_object_name': get_object_name,
+            'api_url': self.api_url,
+            'endpoints': URL.URL_ENDPOINTS.keys(),
+            'urls': self.schema.urls,
+            'data_objects': self.schema.data_objects,
+            'key_path': self.key_path,
+            'get_url_name': self.get_url_name,
+            'get_object_name': self.get_object_name,
+            'sanitize_field_name': sanitize_field_name,
+            'attribute_mappings': self.attribute_mappings,
+            'is_oauth': self.is_oauth,
+            'content_type': self.content_type,
+            'method_name': self.method_name,
+            'method_parameters': self.method_parameters,
+            'get_proper_name': self.get_proper_name,
+            'has_media_fields': self.has_media_fields
+        }
+        template_output = template.render(**context)
+        with open(self.implementation_file, "w") as output_file:
+            output_file.write(template_output)
 
-        def upper_camel_case(words):
-            return "".join(word.capitalize() for word in words)
+    def copy_data_models(self):
+        shutil.copyfile(self.header_file, "{}/DataModel.h".format(self.data_models_path))
+        shutil.copyfile(self.implementation_file, "{}/DataModel.m".format(self.data_models_path))
 
-        if capitalize_first:
-            return upper_camel_case(words)
-        else:
-            return words[0] + upper_camel_case(words[1:])
+    # Template Methods #
 
-    # Some field names are reserved in Objective C
-    @staticmethod
-    def sanitize_field_name(field_name):
-        if field_name == "id":
-            return "theID"
-        elif field_name == "description":
-            return "theDescription"
-        else:
-            return field_name
-
-    def get_api_request_object(self, api):
-        # We treat both request and parameter objects equally in method signatures
-        request_object_name = getattr(api, 'request_object', getattr(api, 'parameters_object', None))
-        if request_object_name:
-            return self.schema.data_objects[request_object_name]
+    def get_request_objects(self):
+        request_objects = []
+        for name, data_object in self.schema.data_objects.iteritems():
+            # TODO: Naming request objects as XRequest is not a standard we always keep true
+            if 'Request' in name:
+                request_objects.append(data_object)
+        return request_objects
 
     def method_name(self, api):
         # First create camel cased name from snake case
@@ -95,60 +108,135 @@ class iOSGenerator(BaseGenerator):
         request_object = self.get_api_request_object(api)
         if request_object and len(request_object.properties()) > 0:
             first_field = request_object.properties()[0]
-            sanitized_field_name = self.sanitize_field_name(first_field.name)
-            objc_variable_name = self.python_to_objc_variable(sanitized_field_name, capitalize_first=True)
-            first_parameter_name = objc_variable_name
+            first_parameter_name = self.get_proper_name(first_field.name, capitalize_first=True)
 
         return "{}With{}".format(method_name, first_parameter_name)
 
-    def get_objc_data_type(self, field_type):
-        if field_type == Field.ARRAY:
-            return "NSArray*"
-        else:
-            return self.OBJC_DATA_TYPES[field_type]
-
-    @staticmethod
-    def get_object_name(obj):
-        return obj[1].upper() + obj[2:]
-
     def method_parameters(self, api):
-        has_id = False
+        parameters = []
+
+        # Create request object parameters
         request_object = self.get_api_request_object(api)
-        MethodField = namedtuple('MethodField', 'name objc_type')
-        method_fields = []
         if request_object:
-            # Create all of the parameters based on the request object's fields
-            for index, field in enumerate(request_object.fields):
-                if field.name == 'id':
-                    has_id = True
+            parameters.extend(self.generate_field_parameters(request_object))
+            parameters.extend(self.generate_relationship_parameters(request_object))
 
-                variable_type = self.get_objc_data_type(field.field_type)
-                method_fields.append(MethodField(name=field.name, objc_type=variable_type))
-
-            for relationship in request_object.relationships:
-                if relationship.relationship_type in [Relationship.MANY_TO_MANY, Relationship.ONE_TO_MANY]:
-                    variable_type = 'NSOrderedSet*'
-                else:
-                    variable_type = self.get_object_name(relationship.related_object)
-                method_fields.append(MethodField(name=relationship.name, objc_type=variable_type))
-
-        # Also add an ID parameter if we need an ID for the url and it's not already a field on our object
-        if "id" in api.url_path and not has_id:
-            method_fields.append(MethodField(name="theID", objc_type="NSNumber*"))
+        # Add id parameter if we need it
+        id_parameter = self.create_id_parameter(api.url_path, request_object)
+        if id_parameter:
+            parameters.append(id_parameter)
 
         # Add required RestKit parameters
-        restkit_method_fields = [
-            MethodField(name="success", objc_type="void (^)(RKObjectRequestOperation *operation, "
-                                                  "RKMappingResult *mappingResult)"),
-            MethodField(name="failure", objc_type="void (^)(RKObjectRequestOperation *operation, NSError *error)")
-        ]
-        method_fields.extend(restkit_method_fields)
+        parameters.extend([
+            Parameter(name="success",
+                      objc_type="void (^)(RKObjectRequestOperation *operation, RKMappingResult *mappingResult)"),
+            Parameter(name="failure",
+                      objc_type="void (^)(RKObjectRequestOperation *operation, NSError *error)")
+        ])
 
+        return self.create_parameter_signature(parameters)
+
+    @staticmethod
+    def key_path(api):
+        key_path = 'nil'
+        if hasattr(api, 'resource_type'):
+            key_path = 'nil' if api.resource_type == GetAPI.RESOURCE_DETAIL else '@"results"'
+        elif isinstance(api, GetAPI) and ':id' not in api.url_path:
+            # Get requests with an ID only return 1 object, not a list of results
+            key_path = '@"results"'
+        return key_path
+
+    @staticmethod
+    def get_object_name(request_object, upper_camel_case=False):
+        first_letter = request_object[1]
+        if upper_camel_case:
+            first_letter = first_letter.upper()
+        return first_letter + request_object[2:]
+
+    @staticmethod
+    def get_url_name(url_path):
+        name = ""
+        for index, part in enumerate(re.split(r'[/_]+', url_path)):
+            if part in [":id", "theID"]:
+                name += "WithId"
+            elif index == 0:
+                name += part
+            else:
+                name += part.capitalize()
+
+        return name
+
+    @staticmethod
+    def attribute_mappings(fields):
+        attribute_mapping_string = ""
+        for index, field in enumerate(fields):
+            leading_comma = '' if index == 0 else ', '
+            objc_variable_name = iOSGenerator.get_proper_name(field.name)
+            attribute_mapping_string += '{}@"{}": @"{}"'.format(leading_comma, field.name, objc_variable_name)
+        return attribute_mapping_string
+
+    @staticmethod
+    def is_oauth(api):
+        return api.authorization == API.OAUTH2 and not api.authorization_optional
+
+    @staticmethod
+    def content_type(api):
+        if api.content_type == API.CONTENT_TYPE_FORM:
+            return "RKMIMETypeFormURLEncoded"
+        else:
+            return "RKMIMETypeJSON"
+
+    @staticmethod
+    def has_media_fields(fields):
+        return reduce(lambda bool, field: bool and field.field_type in [Field.IMAGE, Field.VIDEO], fields, False)
+
+    # Utility methods for template functions #
+
+    def get_api_request_object(self, api):
+        # We treat both request and parameter objects equally in method signatures
+        request_object_name = getattr(api, 'request_object', getattr(api, 'parameters_object', None))
+        if request_object_name:
+            return self.schema.data_objects[request_object_name]
+
+    @staticmethod
+    def generate_relationship_parameters(request_object):
+        parameters = []
+        for relationship in request_object.relationships:
+            if relationship.relationship_type in [Relationship.MANY_TO_MANY, Relationship.ONE_TO_MANY]:
+                variable_type = 'NSOrderedSet*'
+            else:
+                variable_type = get_object_name(relationship.related_object)
+            parameters.append(Parameter(name=relationship.name, objc_type=variable_type))
+        return parameters
+
+    @staticmethod
+    def generate_field_parameters(request_object):
+        parameters = []
+        for index, field in enumerate(request_object.fields):
+            variable_type = get_objc_data_type(field.field_type)
+            parameters.append(Parameter(name=field.name, objc_type=variable_type))
+        return parameters
+
+    @staticmethod
+    def has_id_field(request_object):
+        return request_object and reduce(lambda x, y: x or y.name == 'id', request_object.fields, False)
+
+    @staticmethod
+    def create_id_parameter(url_path, request_object):
+        # Also add an ID parameter if we need an ID for the url and it's not already a field on our object
+        if "id" in url_path and not iOSGenerator.has_id_field(request_object):
+            return Parameter(name="theID", objc_type="NSNumber*")
+
+    @staticmethod
+    def get_proper_name(name, capitalize_first=False):
+        sanitized_field_name = sanitize_field_name(name)
+        return python_to_objc_variable(sanitized_field_name, capitalize_first=capitalize_first)
+
+    @staticmethod
+    def create_parameter_signature(parameters):
         method_parts = []
-        for index, method_field in enumerate(method_fields):
-            sanitized_field_name = self.sanitize_field_name(method_field.name)
-            objc_variable_name = self.python_to_objc_variable(sanitized_field_name)
-
+        for index, method_field in enumerate(parameters):
+            objc_variable_name = iOSGenerator.get_proper_name(method_field.name)
             parameter_signature = "({}){}".format(method_field.objc_type, objc_variable_name)
             # If this isn't the first parameter, also include the variable name before the type
             if index > 0:
@@ -157,3 +245,9 @@ class iOSGenerator(BaseGenerator):
             method_parts.append(parameter_signature)
 
         return " ".join(method_parts)
+
+
+class Parameter(object):
+    def __init__(self, name, objc_type):
+        self.name = name
+        self.objc_type = objc_type

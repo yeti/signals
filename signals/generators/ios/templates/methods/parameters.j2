@@ -1,0 +1,7 @@
+  NSMutableDictionary* queryParams = [NSMutableDictionary dictionaryWithCapacity:{{ api.parameters_object|length }}];
+  {% for field in api.parameters_object.fields %}
+  if ({{ get_proper_name(field.name) }}) {
+    [queryParams setObject:search forKey:@"{{ field.name }}"];
+  }
+  {% endfor %}
+  [sharedMgr getObjectsAtPath:@"{{ api.url_path }}" parameters:queryParams success:success failure:failure];

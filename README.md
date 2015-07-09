@@ -49,9 +49,8 @@ An example for running the script is: `python -m signals --schema ~/projects/you
     * Our comma delimited lists can just become real attributes and flags now
     * No need to have our objects wrapped in an extra dictionary
 5. Better error checking and validation
-6. Better logging (use different terminal colors for warnings/progress messages)
-7. Figure out a best-way to handle generator specific arguments (click has some utilities built-in for prompting)
-8. Documentation (ex. a demo app w/ demo api schema file)
-9. Create setup.py for pip installing and make a release for pypi
+6. Figure out a best-way to handle generator specific arguments (click has some utilities built-in for prompting)
+7. Documentation (ex. a demo app w/ demo api schema file)
+8. Create setup.py for pip installing and make a release for pypi
     * Part of this would include making this a command you could run from anywhere (yak_communication vs. python -m yak_communication)
-10. Prompt user if xcode is open when generating core data file
+9. Use something like https://github.com/rentzsch/mogenerator to auto generate core data files

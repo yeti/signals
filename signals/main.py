@@ -8,9 +8,9 @@ generators = {
 
 # Create a separate function so that we can unit test.
 # Issues unit testing `main` due to click decorators.
-def run_main(schema, generator, data_models, core_data, project_name):
+def run_main(schema, generator, data_models, core_data, project_name, api_url):
     schema = Schema(schema)
-    generator = generators[generator](schema, data_models, core_data, project_name)
+    generator = generators[generator](schema, data_models, core_data, project_name, api_url)
     generator.process()
 
     print("Finished generating your files!")
@@ -36,7 +36,11 @@ def run_main(schema, generator, data_models, core_data, project_name):
               prompt="name of your iOS project and main target",
               help='The name of your iOS project and main target.',
               type=click.STRING)
+@click.option('api_url', '--apiurl',
+              prompt='the url of your api',
+              help='The fully qualified url of your API for making calls',
+              type=click.STRING)
 # TODO: These are iOS specific settings and we'll need to figure out a way to handle generator specific arguments
 # when we add more generators in the future.
-def main(schema, generator, data_models, core_data, project_name):
-    run_main(schema, generator, data_models, core_data, project_name)
+def main(schema, generator, data_models, core_data, project_name, api_url):
+    run_main(schema, generator, data_models, core_data, project_name, api_url)

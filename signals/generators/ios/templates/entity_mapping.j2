@@ -1,0 +1,10 @@
+  {% set mapping_name = get_object_name(data_object.name) %}
+  RKEntityMapping *{{ mapping_name }}Mapping = [RKEntityMapping mappingForEntityForName:@"{{ get_object_name(data_object.name, upper_camel_case=True) }}" inManagedObjectStore:managedObjectStore];
+  {% if data_object.fields|length > 0 %}
+  {% for field in data_object.fields %}
+    {% if field.primary_key %}
+  {{ mapping_name }}Mapping.identificationAttributes = @[@"{{ sanitize_field_name(field.name) }}"];
+    {% endif %}
+  {% endfor %}
+  [{{ mapping_name }}Mapping addAttributeMappingsFromDictionary:@{{ "{" + attribute_mappings(data_object.fields) + "}"}}];
+  {% endif %}
