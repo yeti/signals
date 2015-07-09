@@ -2,7 +2,7 @@ from __future__ import absolute_import
 import click
 from yak_communication.parser.schema import Schema
 from yak_communication.generators.ios.ios_generator import iOSGenerator
-from yak_communication.logging import SignalsError
+from yak_communication.logging import SignalsError, progress
 
 generators = {
     'ios': iOSGenerator
@@ -16,9 +16,9 @@ def run_main(schema, generator, data_models, core_data, project_name):
     try:
         generator.process()
     except SignalsError as e:
-        print(e.msg)
+        print(str(e))
     else:
-        print('Finished generating your files!')
+        progress('Finished generating your files!')
 
 
 @click.command()
