@@ -50,9 +50,8 @@ def output_settings(project_root, schema, generator_name, data_models, core_data
     settings_filename = project_root + os.sep + ".signalsconfig"
     print "Writing settings to " + settings_filename
     with open(settings_filename, "w") as settings_file:
-        settings_file.write("schema=" + (schema.schema_path if not (schema.schema_path is str) else "") + "\n")
+        settings_file.write("schema=" + (os.path.abspath(schema.schema_path) if not (schema.schema_path is str) else "") + "\n")
         settings_file.write("generator=" + (generator_name if not (generator_name is str) else "") + "\n")
-        settings_file.write("data_models=" + (data_models if not (data_models is str) else "") + "\n")
-        settings_file.write("core_data=" + (core_data if not (core_data is None) else "") + "\n")
+        settings_file.write("data_models=" + (os.path.abspath(data_models) if not (data_models is str) else "") + "\n")
+        settings_file.write("core_data=" + (os.path.abspath(core_data) if not (core_data is None) else "") + "\n")
         settings_file.write("project_name=" + (project_name if not (project_name is None) else "") + "\n")
-
