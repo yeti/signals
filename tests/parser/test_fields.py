@@ -27,13 +27,13 @@ class FieldsTestCase(unittest.TestCase):
     def test_field_process_attribute_error_relationship(self):
         with self.assertRaises(SignalsError) as e:
             Field("message", ["int", "$messageResponse"])
-            self.assertEqual(e.msg, "Found an unexpected attribute: $messageResponse on message. "
-                                    "Likely it's missing relationship type.\n")
+        self.assertEqual(e.exception.msg, "Found an unexpected attribute: $messageResponse on message. "
+                                          "Likely it's missing relationship type.")
 
     def test_field_validate_field(self):
         with self.assertRaises(SignalsError) as e:
             Field("follow", ["optional"])
-            self.assertEqual(e.msg, "Didn't find field type for follow, exiting.")
+        self.assertEqual(e.exception.msg, "Didn't find field type for follow, exiting.")
 
     def test_create_relationship(self):
         relationship = Relationship("purchases", ["M2O", "$purchaseResponse", "optional"])
@@ -43,7 +43,7 @@ class FieldsTestCase(unittest.TestCase):
     def test_relationship_validate_field(self):
         with self.assertRaises(SignalsError) as e:
             Relationship("purchases", ["M2O"])
-            self.assertEqual(e.msg, "Didn't find related object for purchases, exiting.")
+        self.assertEqual(e.exception.msg, "Didn't find related object for purchases, exiting.")
 
     def test_is_relationship(self):
         self.assertTrue(Relationship.is_relationship(["O2M", "$messageResponse"]))

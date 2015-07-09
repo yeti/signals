@@ -19,4 +19,4 @@ class iOSGeneratorTestCase(unittest.TestCase):
         generator = iOSGenerator(Schema("./tests/files/test_schema.json"), "./tests/files/", "./core/data/path", "YetiProject")
         with self.assertRaises(SignalsError) as e:
             generator.process()
-            self.assertEqual(e.msg, "Must quit XCode before writing to core data")
+        self.assertEqual(e.exception.msg, "Must quit Xcode before writing to core data")
