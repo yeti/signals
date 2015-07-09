@@ -1,6 +1,7 @@
 import click
 from signals.parser.schema import Schema
 from signals.generators.ios.ios_generator import iOSGenerator
+from signals.logging import SignalsError, progress
 
 generators = {
     'ios': iOSGenerator
@@ -11,9 +12,12 @@ generators = {
 def run_main(schema, generator, data_models, core_data, project_name, api_url):
     schema = Schema(schema)
     generator = generators[generator](schema, data_models, core_data, project_name, api_url)
-    generator.process()
-
-    print("Finished generating your files!")
+    try:
+        generator.process()
+    except SignalsError as e:
+        print(str(e))
+    else:
+        progress('Finished generating your files!')
 
 
 @click.command()

@@ -1,6 +1,7 @@
 import unittest
-from signals.parser.fields import Relationship, Field
 from tests.utils import captured_stdout
+from signals.parser.fields import Relationship, Field
+from signals.logging import SignalsError, colorize_string
 
 
 class FieldsTestCase(unittest.TestCase):
@@ -19,20 +20,19 @@ class FieldsTestCase(unittest.TestCase):
     def test_field_process_attribute_error(self):
         with captured_stdout() as out:
             Field("username", ["string", "option"])
-            self.assertEqual(out.getvalue(), "Found an unexpected attribute: option on username.\n")
+            self.assertEqual(out.getvalue().rstrip("\n"),
+                             colorize_string("yellow", "Found an unexpected attribute: option on username."))
 
     def test_field_process_attribute_error_relationship(self):
-        with captured_stdout() as out:
-            with self.assertRaises(SystemExit):
-                Field("message", ["int", "$messageResponse"])
-                self.assertEqual(out.getvalue(), "Found an unexpected attribute: $messageResponse on message. "
-                                                 "Likely it's missing relationship type.\n")
+        with self.assertRaises(SignalsError) as e:
+            Field("message", ["int", "$messageResponse"])
+        self.assertEqual(e.exception.msg, "Found an unexpected attribute: $messageResponse on message. "
+                                          "Likely it's missing relationship type.")
 
     def test_field_validate_field(self):
-        with captured_stdout() as out:
-            with self.assertRaises(SystemExit):
-                Field("follow", ["optional"])
-                self.assertEqual(out.getvalue(), "Didn't find field type for follow, exiting.")
+        with self.assertRaises(SignalsError) as e:
+            Field("follow", ["optional"])
+        self.assertEqual(e.exception.msg, "Didn't find field type for follow, exiting.")
 
     def test_create_relationship(self):
         relationship = Relationship("purchases", ["M2O", "$purchaseResponse", "optional"])
@@ -40,10 +40,9 @@ class FieldsTestCase(unittest.TestCase):
         self.assertEqual(relationship.relationship_type, Relationship.MANY_TO_ONE)
 
     def test_relationship_validate_field(self):
-        with captured_stdout() as out:
-            with self.assertRaises(SystemExit):
-                Relationship("purchases", ["M2O"])
-                self.assertEqual(out.getvalue(), "Didn't find related object for purchases, exiting.")
+        with self.assertRaises(SignalsError) as e:
+            Relationship("purchases", ["M2O"])
+        self.assertEqual(e.exception.msg, "Didn't find related object for purchases, exiting.")
 
     def test_is_relationship(self):
         self.assertTrue(Relationship.is_relationship(["O2M", "$messageResponse"]))

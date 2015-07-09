@@ -2,6 +2,7 @@ import unittest
 from tests.utils import captured_stdout
 from signals.parser.fields import Field, Relationship
 from signals.parser.schema import DataObject, Schema, URL
+from signals.logging import colorize_string
 
 
 class SchemaTestCase(unittest.TestCase):
@@ -123,4 +124,5 @@ class SchemaTestCase(unittest.TestCase):
                     }
                 }
             })
-            self.assertEqual(s.getvalue(), "Found unsupported attribute, gets, for url: posts/\n")
+            self.assertEqual(s.getvalue().rstrip("\n"),
+                             colorize_string("yellow", "Found unsupported attribute, gets, for url: posts/"))

@@ -1,6 +1,6 @@
 import unittest
-from tests.utils import captured_stdout
 from signals.parser.api import API, GetAPI, RequestResponseAPI
+from signals.logging import SignalsError
 
 
 class APITestCase(unittest.TestCase):
@@ -25,12 +25,11 @@ class APITestCase(unittest.TestCase):
         self.assertEqual(api.authorization, API.BASIC_AUTH)
 
     def test_process_authorization_attribute_error(self):
-        with captured_stdout() as out:
-            with self.assertRaises(SystemExit):
-                API("post/", {
-                    "#meta": "oauth"
-                })
-                self.assertEqual(out.getvalue(), "Found invalid authorization attribute: oauth for post/, exiting.")
+        with self.assertRaises(SignalsError) as e:
+            API("post/", {
+                "#meta": "oauth"
+            })
+        self.assertEqual(e.exception.msg, "Found invalid authorization attribute: oauth for post/, exiting.")
 
     def test_create_get_api(self):
         api = GetAPI("post/", {

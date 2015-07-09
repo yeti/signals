@@ -1,3 +1,4 @@
+import mock
 import unittest
 import subprocess
 from signals.main import run_main
@@ -19,3 +20,11 @@ class MainTestCase(unittest.TestCase):
                      "http://test.com/api/v1/")
             self.assertEqual(error.getvalue(), "")
             self.assertIn("Finished generating your files!", out.getvalue())
+
+    @mock.patch("signals.generators.ios.ios_generator.subprocess")
+    def test_run_main_error(self, mock_subprocess):
+        mock_subprocess.check_output.return_value = "Xcode.app"
+        with captured_stdout() as out:
+            run_main("./tests/files/test_schema.json", "ios", "./tests/files/", "./core/data/path", "YetiProject",
+                     "http://test.com/api/v1/")
+            self.assertIn("Must quit Xcode before writing to core data", out.getvalue())

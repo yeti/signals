@@ -1,7 +1,9 @@
 from datetime import datetime
+import subprocess
 from jinja2 import Environment, PackageLoader
 import re
 import shutil
+from signals.logging import SignalsError
 from signals.generators.ios.utils import python_to_objc_variable, sanitize_field_name, get_object_name, \
     get_objc_data_type
 from signals.parser.api import GetAPI, API
@@ -29,6 +31,12 @@ class iOSGenerator(BaseGenerator):
                                               lstrip_blocks=True)
 
     def process(self):
+        if self.core_data_path is not None:
+            if self.is_xcode_running():
+                raise SignalsError("Must quit Xcode before writing to core data")
+            print("Creating core data file")
+            write_xml_to_file(self.core_data_path, self.schema.data_objects)
+
         print("Creating data model file")
         # TODO: Remove create_mappings and delete file
         create_mappings(self.schema.urls, self.schema.data_objects, self.project_name)
@@ -36,10 +44,6 @@ class iOSGenerator(BaseGenerator):
         self.create_header_file()
         self.create_implementation_file()
         self.copy_data_models()
-
-        if self.core_data_path is not None:
-            print("Creating core data file")
-            write_xml_to_file(self.core_data_path, self.schema.data_objects)
 
     def create_header_file(self):
         template = self.jinja2_environment.get_template('data_model.h.j2')
@@ -84,6 +88,10 @@ class iOSGenerator(BaseGenerator):
     def copy_data_models(self):
         shutil.copyfile(self.header_file, "{}/DataModel.h".format(self.data_models_path))
         shutil.copyfile(self.implementation_file, "{}/DataModel.m".format(self.data_models_path))
+
+    @staticmethod
+    def is_xcode_running():
+        return "Xcode.app" in subprocess.check_output(["ps", "-Ax"])
 
     # Template Methods #
 
