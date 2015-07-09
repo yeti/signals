@@ -2,6 +2,7 @@ import unittest
 from yak_communication.parser.fields import Relationship, Field
 from yak_communication.logging import SignalsError
 from tests.utils import captured_stdout
+from yak_communication.logging import colorize_string
 
 
 class FieldsTestCase(unittest.TestCase):
@@ -20,7 +21,8 @@ class FieldsTestCase(unittest.TestCase):
     def test_field_process_attribute_error(self):
         with captured_stdout() as out:
             Field("username", ["string", "option"])
-            self.assertEqual(out.getvalue(), "Found an unexpected attribute: option on username.\n")
+            self.assertEqual(out.getvalue().rstrip("\n"),
+                             colorize_string("yellow", "Found an unexpected attribute: option on username."))
 
     def test_field_process_attribute_error_relationship(self):
         with self.assertRaises(SignalsError) as e:
