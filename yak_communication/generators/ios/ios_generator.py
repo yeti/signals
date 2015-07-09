@@ -2,7 +2,7 @@ import subprocess
 from yak_communication.generators.base.base_generator import BaseGenerator
 from yak_communication.generators.ios.core_data import write_xml_to_file
 from yak_communication.generators.ios.data_model import create_mappings
-from yak_communication.logging import Error
+from yak_communication.logging import SignalsError
 
 
 class iOSGenerator(BaseGenerator):
@@ -19,7 +19,7 @@ class iOSGenerator(BaseGenerator):
     def process(self):
         if self.core_data_path is not None:
             if self.is_xcode_running():
-                raise Error("Must quit Xcode before writing to core data")
+                raise SignalsError("Must quit Xcode before writing to core data")
             print("Creating core data file")
             write_xml_to_file(self.core_data_path, self.schema.data_objects)
 
