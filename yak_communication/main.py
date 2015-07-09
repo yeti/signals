@@ -1,23 +1,44 @@
 from __future__ import absolute_import
 import click
+
 from yak_communication.parser.schema import Schema
 from yak_communication.generators.ios.ios_generator import iOSGenerator
+from yak_communication.settings import save_settings
+from yak_communication.settings import load_settings
 
 generators = {
     'ios': iOSGenerator
 }
 
+
 # Create a separate function so that we can unit test.
 # Issues unit testing `main` due to click decorators.
-def run_main(schema, generator, data_models, core_data, project_name):
+def run_main(schema, generator_name, data_models, core_data, project_name):
     schema = Schema(schema)
-    generator = generators[generator](schema, data_models, core_data, project_name)
+    generator = generators[generator_name](schema, data_models, core_data, project_name)
     generator.process()
 
     print("Finished generating your files!")
 
+    # TODO: Prompt user to save settings?
+    save_settings([data_models, core_data], schema, generator_name, data_models, core_data, project_name)
+
+def project_specified(ctx, param, value):
+    if not value or ctx.resilient_parsing:
+        return
+
+    schema, generator, data_models, core_data, project_name = load_settings(value)
+    run_main(schema, generator, data_models, core_data, project_name)
+    ctx.exit()
+
 
 @click.command()
+@click.option('--settingspath',
+              help='The project path where Signals should look for a .signalsconfig file.  If specified, the contents'
+                   ' of the file are used instead of any other specified options',
+              type=click.Path(),
+              callback=project_specified,
+              is_eager=True)
 @click.option('--schema',
               prompt='path to api schema file',
               help='The server\'s API schema file.',

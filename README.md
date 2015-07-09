@@ -9,14 +9,16 @@ A tool for auto generating libraries for different platforms to communicate with
 ### Recommended Setup
 
 1. Create a new python virtual environment
-2. `pip install requirements.txt`
+2. Ensure you have the latest Xcode Commane Line Tools: 'xcode-select --install'
+3. `pip install -r requirements.txt`
+
 
 
 ### Instructions
 
 The script is ran from `python -m yak_communication`.
 
-To see a list of arguments run `python -m yak_communication`.
+To see a list of arguments run `python -m yak_communication --help`.
 
 If you do not supply the required arguments when running, the script will prompt you for them one by one.
 
