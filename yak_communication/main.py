@@ -5,6 +5,8 @@ from yak_communication.parser.schema import Schema
 from yak_communication.generators.ios.ios_generator import iOSGenerator
 from yak_communication.settings import save_settings
 from yak_communication.settings import load_settings
+from yak_communication.logging import SignalsError
+
 
 generators = {
     'ios': iOSGenerator
@@ -16,9 +18,12 @@ generators = {
 def run_main(schema, generator_name, data_models, core_data, project_name):
     schema = Schema(schema)
     generator = generators[generator_name](schema, data_models, core_data, project_name)
-    generator.process()
-
-    print("Finished generating your files!")
+    try:
+        generator.process()
+    except SignalsError as e:
+        print(e.msg)
+    else:
+        print('Finished generating your files!')
 
     # TODO: Prompt user to save settings?
     save_settings([data_models, core_data], schema, generator_name, data_models, core_data, project_name)
