@@ -1,3 +1,4 @@
+import mock
 import unittest
 import subprocess
 from yak_communication.main import run_main
@@ -18,3 +19,10 @@ class MainTestCase(unittest.TestCase):
             run_main("./tests/files/test_schema.json", "ios", "./tests/files/", None, "YetiProject")
             self.assertEqual(error.getvalue(), "")
             self.assertIn("Finished generating your files!", out.getvalue())
+
+    @mock.patch("yak_communication.generators.ios.ios_generator.subprocess")
+    def test_run_main_error(self, mock_subprocess):
+        mock_subprocess.check_output.return_value = "Xcode.app"
+        with captured_stdout() as out:
+            run_main("./tests/files/test_schema.json", "ios", "./tests/files/", "./core/data/path", "YetiProject")
+            self.assertIn("Must quit Xcode before writing to core data", out.getvalue())
