@@ -7,7 +7,7 @@ class SettingsTestCase(unittest.TestCase):
         return ""
 
     # @mock.patch("yak_communication.generators.ios.ios_generator.subprocess")
-    @mock.patch('subprocess.check_output', side_effect=empty_string)
+    @mock.patch('yak_communication.generators.ios.ios_generator.subprocess.check_output', side_effect=empty_string)
     def test_run_command(self, mock_subprocess):
         # mock_subprocess.check_output.return_value = ""
         command = "python -m yak_communication --schema ./tests/files/test_schema.json --generator ios " \
