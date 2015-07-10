@@ -20,7 +20,7 @@ def run_main(schema, generator_name, data_models, core_data, project_name, save)
     generator = generators[generator_name](schema, data_models, core_data, project_name)
     try:
         generator.process()
-        if save == True:
+        if save:
             save_settings([data_models, core_data], schema, generator_name, data_models, core_data, project_name)
     except SignalsError as e:
         print(str(e))
@@ -33,11 +33,16 @@ def project_specified(ctx, param, value):
         return
 
     try:
-        schema, generator, data_models, core_data, project_name = load_settings(value)
+        setting_dict = load_settings(value)
     except SignalsError as e:
         print(str(e))
     else:
-        run_main(schema, generator, data_models, core_data, project_name, False)
+        run_main(setting_dict["schema"],
+                 setting_dict["generator"],
+                 setting_dict["data_models"],
+                 setting_dict["core_data"],
+                 setting_dict["project_name"],
+                 False)
 
     if not ctx is None:
         ctx.exit()

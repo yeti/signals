@@ -1,4 +1,4 @@
-from yak_communication.logging import SignalsError
+from yak_communication.logging import SignalsError, progress
 import os.path
 import glob
 
@@ -11,13 +11,13 @@ def load_settings(settings_path):
     if not os.path.isfile(settings_filename):
         raise SignalsError("Settings file \"{}\" not found.".format(settings_filename))
 
-    myvars = {}
+    setting_dict = {}
     with open(settings_filename) as settings_file:
         for line in settings_file:
             name, var = line.partition("=")[::2]
-            myvars[name.strip()] = str(var).rstrip('\n')
+            setting_dict[name.strip()] = str(var).rstrip('\n')
 
-    return myvars["schema"], myvars["generator"], myvars["data_models"], myvars["core_data"], myvars["project_name"]
+    return setting_dict
 
 
 def save_settings(paths, schema, generator_name, data_models, core_data, project_name):
@@ -48,7 +48,7 @@ def find_project_root(paths):
 
 def output_settings(project_root, schema, generator_name, data_models, core_data, project_name):
     settings_filename = project_root + os.sep + ".signalsconfig"
-    print "Writing settings to " + settings_filename
+    progress("Writing settings to {}".format(settings_filename))
     with open(settings_filename, "w") as settings_file:
         settings_file.write("schema=" + (os.path.abspath(schema.schema_path) if not (schema.schema_path is str) else "") + "\n")
         settings_file.write("generator=" + (generator_name if not (generator_name is str) else "") + "\n")
