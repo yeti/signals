@@ -15,7 +15,6 @@ class SettingsTestCase(unittest.TestCase):
         self.assertEqual(error, "")
         self.assertIn("Finished generating your files!", output)
 
-
         # Verify successful generation using the --settingspath argument
         command = "python -m yak_communication --settingspath ./tests/files"
         process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
