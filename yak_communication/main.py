@@ -8,7 +8,6 @@ from yak_communication.settings import load_settings
 from yak_communication.logging import SignalsError, progress
 
 
-
 generators = {
     'ios': iOSGenerator
 }
@@ -29,18 +28,18 @@ def run_main(schema, generator_name, data_models, core_data, project_name):
 
 
 def project_specified(ctx, param, value):
-    if not value or ctx.resilient_parsing:
+    if not value or (not ctx is None and ctx.resilient_parsing):
         return
 
     try:
         schema, generator, data_models, core_data, project_name = load_settings(value)
     except SignalsError as e:
-        print(e.msg)
+        print(str(e))
     else:
         run_main(schema, generator, data_models, core_data, project_name)
 
-    ctx.exit()
-
+    if not ctx is None:
+        ctx.exit()
 
 @click.command()
 @click.option('settings_path', '--settingspath',
