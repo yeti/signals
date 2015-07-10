@@ -4,7 +4,7 @@ import glob
 
 def load_settings(settings_path):
     if not os.path.isdir(settings_path):
-        raise SignalsError("Invalid path.  Please specify project path.")
+        raise SignalsError("Invalid path. Please specify project path.")
 
     settings_filename = settings_path + os.path.sep + ".signalsconfig"
     settings_filename = os.path.normpath(settings_filename)
