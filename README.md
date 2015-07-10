@@ -24,6 +24,10 @@ If you do not supply the required arguments when running, the script will prompt
 
 An example for running the script is: `python -m yak_communication --schema ~/projects/your-project/api-schema.json --generator ios`
 
+After a successful run, the settings will be saved in a .signalsconfig file in your destination project's root, as defined by containing an .xcodeproj or .xcworkspace file
+
+Subsequent generations can be run using the same settings by calling 'python -m yak_communication --settingspath <your_project_root>'
+
 #### iOS
 
 1. If you're running the iOS generator and writing to core data make sure you quit xcode
