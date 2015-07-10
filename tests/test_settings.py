@@ -1,13 +1,9 @@
-import mock
 import unittest
 import subprocess
-from yak_communication.main import run_main
-from tests.utils import captured_stderr, captured_stdout
 
 
 class SettingsTestCase(unittest.TestCase):
     def test_run_command(self):
-
         command = "python -m yak_communication --schema ./tests/files/test_schema.json --generator ios " \
                   "--datamodels ./tests/files/ --coredata ./tests/files/dummycontents --projectname YetiProject"
         process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
