@@ -40,9 +40,6 @@ An example for running the script is: `python -m signals --schema ~/projects/you
 ### TODOs
 
 1. Generate RestKit code in Swift instead of Objective C
-    * Use separate template files instead of inline multi-line strings
-    * Fully copy over the generated code into the iOS project
-    * Write tests for new iOS generator code
 2. Create a config file that will save your input for the various flags if you're inside the correct project
 3. Build other generators!
 4. Auto-generate API schemas and/or Improve current API schema and remove unnecessary parts
@@ -52,7 +49,7 @@ An example for running the script is: `python -m signals --schema ~/projects/you
 6. Figure out a best-way to handle generator specific arguments (click has some utilities built-in for prompting)
 7. Documentation (ex. a demo app w/ demo api schema file)
 8. Create setup.py for pip installing and make a release for pypi
-    * Part of this would include making this a command you could run from anywhere (yak_communication vs. python -m yak_communication)
+    * Part of this would include making this a command you could run from anywhere (signals vs. python -m signals)
 9. Use something like https://github.com/rentzsch/mogenerator to auto generate core data files
 10. Don't require the user to have the ap-schema file on their computer but point to a URL
 11. Preserve existing edits to core data or data model file.
