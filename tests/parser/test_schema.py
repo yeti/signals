@@ -3,6 +3,7 @@ from tests.utils import captured_stdout
 from yak_communication.parser.fields import Field
 from yak_communication.parser.fields import Relationship
 from yak_communication.parser.schema import DataObject, Schema, URL
+from yak_communication.logging import colorize_string
 
 
 class SchemaTestCase(unittest.TestCase):
@@ -124,4 +125,5 @@ class SchemaTestCase(unittest.TestCase):
                     }
                 }
             })
-            self.assertEqual(s.getvalue(), "Found unsupported attribute, gets, for url: posts/\n")
+            self.assertEqual(s.getvalue().rstrip("\n"),
+                             colorize_string("yellow", "Found unsupported attribute, gets, for url: posts/"))

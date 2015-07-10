@@ -29,7 +29,7 @@ class APITestCase(unittest.TestCase):
             API("post/", {
                 "#meta": "oauth"
             })
-            self.assertEqual(e.msg, "Found invalid authorization attribute: oauth for post/, exiting.")
+        self.assertEqual(e.exception.msg, "Found invalid authorization attribute: oauth for post/, exiting.")
 
     def test_create_get_api(self):
         api = GetAPI("post/", {

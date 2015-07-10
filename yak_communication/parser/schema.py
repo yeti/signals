@@ -1,6 +1,7 @@
 import json
 from yak_communication.parser.api import GetAPI, PostAPI, PutAPI, PatchAPI, DeleteAPI
 from yak_communication.parser.fields import Relationship, Field
+from yak_communication.logging import warn, progress
 
 __author__ = 'rudy'
 
@@ -11,7 +12,7 @@ class Schema(object):
         self.urls = []
         self.schema_path = schema_path
 
-        print("Parsing your schema file")
+        progress("Parsing your schema file")
         with open(schema_path, "r") as schema_file:
             schema_json = json.loads(schema_file.read())
             self.create_objects(schema_json["objects"])
@@ -76,4 +77,4 @@ class URL(object):
         # Verify there are no extra or improperly formatted attributes
         for attribute, value in url_json.iteritems():
             if attribute not in self.VALID_ATTRIBUTES:
-                print("Found unsupported attribute, {}, for url: {}".format(attribute, self.url_path))
+                warn("Found unsupported attribute, {}, for url: {}".format(attribute, self.url_path))

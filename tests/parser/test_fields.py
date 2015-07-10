@@ -2,6 +2,7 @@ import unittest
 from yak_communication.parser.fields import Relationship, Field
 from yak_communication.logging import SignalsError
 from tests.utils import captured_stdout
+from yak_communication.logging import colorize_string
 
 
 class FieldsTestCase(unittest.TestCase):
@@ -20,18 +21,19 @@ class FieldsTestCase(unittest.TestCase):
     def test_field_process_attribute_error(self):
         with captured_stdout() as out:
             Field("username", ["string", "option"])
-            self.assertEqual(out.getvalue(), "Found an unexpected attribute: option on username.\n")
+            self.assertEqual(out.getvalue().rstrip("\n"),
+                             colorize_string("yellow", "Found an unexpected attribute: option on username."))
 
     def test_field_process_attribute_error_relationship(self):
         with self.assertRaises(SignalsError) as e:
             Field("message", ["int", "$messageResponse"])
-            self.assertEqual(e.msg, "Found an unexpected attribute: $messageResponse on message. "
-                                    "Likely it's missing relationship type.\n")
+        self.assertEqual(e.exception.msg, "Found an unexpected attribute: $messageResponse on message. "
+                                          "Likely it's missing relationship type.")
 
     def test_field_validate_field(self):
         with self.assertRaises(SignalsError) as e:
             Field("follow", ["optional"])
-            self.assertEqual(e.msg, "Didn't find field type for follow, exiting.")
+        self.assertEqual(e.exception.msg, "Didn't find field type for follow, exiting.")
 
     def test_create_relationship(self):
         relationship = Relationship("purchases", ["M2O", "$purchaseResponse", "optional"])
@@ -41,7 +43,7 @@ class FieldsTestCase(unittest.TestCase):
     def test_relationship_validate_field(self):
         with self.assertRaises(SignalsError) as e:
             Relationship("purchases", ["M2O"])
-            self.assertEqual(e.msg, "Didn't find related object for purchases, exiting.")
+        self.assertEqual(e.exception.msg, "Didn't find related object for purchases, exiting.")
 
     def test_is_relationship(self):
         self.assertTrue(Relationship.is_relationship(["O2M", "$messageResponse"]))
