@@ -1,4 +1,5 @@
 from datetime import datetime
+import os
 import subprocess
 from urlparse import urlparse
 from jinja2 import Environment, PackageLoader
@@ -23,6 +24,8 @@ class iOSGenerator(BaseGenerator):
         self.api_url = api_url
 
         # Setup
+        if not os.path.exists(BaseGenerator.BUILD_DIR):
+            os.makedirs(BaseGenerator.BUILD_DIR)
         self.header_file = "{}/{}DataModel.h".format(BaseGenerator.BUILD_DIR, self.project_name)
         self.implementation_file = "{}/{}DataModel.m".format(BaseGenerator.BUILD_DIR, self.project_name)
         self.jinja2_environment = Environment(loader=PackageLoader(__name__),
