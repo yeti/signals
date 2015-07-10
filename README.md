@@ -54,3 +54,6 @@ An example for running the script is: `python -m signals --schema ~/projects/you
 8. Create setup.py for pip installing and make a release for pypi
     * Part of this would include making this a command you could run from anywhere (yak_communication vs. python -m yak_communication)
 9. Use something like https://github.com/rentzsch/mogenerator to auto generate core data files
+10. Don't require the user to have the ap-schema file on their computer but point to a URL
+11. Preserve existing edits to core data or data model file.
+12. Use a decorator system to register template methods so we can better organize our code

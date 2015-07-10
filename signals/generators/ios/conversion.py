@@ -53,6 +53,6 @@ def sanitize_field_name(field_name):
         return field_name
 
 
-# Remove the $ in front of data object names and upper camel case the name
-def get_object_name(obj):
-    return obj[1].upper() + obj[2:]
+def get_proper_name(name, capitalize_first=False):
+    sanitized_field_name = sanitize_field_name(name)
+    return python_to_objc_variable(sanitized_field_name, capitalize_first=capitalize_first)

@@ -10,7 +10,7 @@
 
 // Request object imports
 {% for request_object in request_objects %}
-#import "{{ request_object_name(request_object.name) }}.h"
+#import "{{ get_object_name(request_object.name, upper_camel_case=True) }}.h"
 {% endfor %}
 
 @implementation DataModel
@@ -44,7 +44,7 @@
   objectManager.managedObjectStore = managedObjectStore;
 
   // MARK: RestKit Entity Mappings
-  {% for name, data_object in data_objects.iteritems() %}
+  {% for name, data_object in schema.data_objects.iteritems() %}
     {% if 'Parameters' not in name %}
       {% include 'entity_mapping.j2' %}
 
@@ -53,7 +53,7 @@
 
   // MARK: RestKit Entity Relationship Mappings
   // We place the relationship mappings after the entities so that we don't need to worry about ordering
-  {% for name, data_object in data_objects.iteritems() %}
+  {% for name, data_object in schema.data_objects.iteritems() %}
     {% for relationship in data_object.relationships %}
       {% include 'relationship_mapping.j2' %}
 
@@ -61,7 +61,7 @@
   {% endfor %}
 
   // MARK: RestKit URL Descriptors
-  {% for url in urls %}
+  {% for url in schema.urls %}
   {% for endpoint in endpoints %}
     {% if url[endpoint] %}
       {% with api = url[endpoint] %}
@@ -104,7 +104,7 @@
 }
 
 // MARK: API Calls
-{% for url in urls -%}
+{% for url in schema.urls -%}
 {% for endpoint in endpoints %}
   {% if url[endpoint] %}
     {% with api = url[endpoint] %}

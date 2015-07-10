@@ -1,4 +1,4 @@
-- (void) {{ api.method }}{{ method_name(api) }}:{{ method_parameters(api) }} {
+- (void) {{ api.method }}{{ method_name(api, schema.data_objects) }}:{{ method_parameters(api, schema.data_objects) }} {
   RKObjectManager* sharedMgr = [RKObjectManager sharedManager];
   sharedMgr.requestSerializationMIMEType = {{ content_type(api) }};
   {% if is_oauth(api) %}

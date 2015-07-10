@@ -1,5 +1,5 @@
   {% set request_object_name = get_object_name(api.request_object, upper_camel_case=True) %}
-  {% set request_object = data_objects[api.request_object] %}
+  {% set request_object = schema.data_objects[api.request_object] %}
   {{ request_object_name }} *obj = [NSEntityDescription insertNewObjectForEntityForName:@"{{ request_object_name }}" inManagedObjectContext:sharedMgr.managedObjectStore.mainQueueManagedObjectContext];
   {% for field in request_object.properties() %}
     {% if field.field_type not in [VIDEO_FIELD, IMAGE_FIELD] %}
