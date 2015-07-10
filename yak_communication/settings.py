@@ -23,7 +23,12 @@ def load_settings(settings_path):
 def save_settings(paths, schema, generator_name, data_models, core_data, project_name):
     project_root = find_project_root(paths)
     if project_root is not None and len(project_root) > 0:
-        output_settings(project_root, schema, generator_name, data_models, core_data, project_name)
+        output_settings(project_root,
+                        os.path.abspath(schema.schema_path),
+                        generator_name,
+                        os.path.abspath(data_models),
+                        os.path.abspath(core_data) if core_data else "",
+                        project_name)
     else:
         raise SignalsError("Failed to locate project root")
 
@@ -49,9 +54,9 @@ def find_project_root(paths):
 def output_settings(project_root, schema, generator_name, data_models, core_data, project_name):
     settings_filename = project_root + os.sep + ".signalsconfig"
     progress("Writing settings to {}".format(settings_filename))
+    keys = ["schema", "generator", "data_models", "core_data", "project_name"]
+    values = [schema, generator_name, data_models, core_data, project_name]
+
     with open(settings_filename, "w") as settings_file:
-        settings_file.write("schema=" + (os.path.abspath(schema.schema_path) if not (schema.schema_path is str) else "") + "\n")
-        settings_file.write("generator=" + (generator_name if not (generator_name is str) else "") + "\n")
-        settings_file.write("data_models=" + (os.path.abspath(data_models) if not (data_models is str) else "") + "\n")
-        settings_file.write("core_data=" + (os.path.abspath(core_data) if not (core_data is None) else "") + "\n")
-        settings_file.write("project_name=" + (project_name if not (project_name is None) else "") + "\n")
+        for (key, val) in zip(keys, values):
+            settings_file.write("{}={}\n".format(key, val))
