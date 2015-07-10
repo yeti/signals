@@ -1,9 +1,12 @@
+import mock
 import unittest
 import subprocess
 
 
 class SettingsTestCase(unittest.TestCase):
-    def test_run_command(self):
+    @mock.patch("yak_communication.generators.ios.ios_generator.subprocess")
+    def test_run_command(self, mock_subprocess):
+        mock_subprocess.check_output.return_value = "Xcode.app"
         command = "python -m yak_communication --schema ./tests/files/test_schema.json --generator ios " \
                   "--datamodels ./tests/files/ --coredata ./tests/files/dummycontents --projectname YetiProject"
         process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
