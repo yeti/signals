@@ -13,11 +13,23 @@ OBJC_DATA_TYPES = {
     Field.VIDEO: "NSURL*"
 }
 
-def get_objc_data_type(field_type):
-    if field_type == Field.ARRAY:
+# More listed here: http://www.binpress.com/tutorial/objective-c-reserved-keywords/43
+RESERVED_MAPPINGS = {
+    "auto": "isAuto",
+    "default": "isDefault",
+    "description": "theDescription",
+    "id": "theID",
+    "register": "theRegister",
+    "restrict": "shouldRestrict",
+    "super": "isSuper",
+    "volatile": "isVolatile"
+}
+
+def get_objc_data_type(field):
+    if field.array:
         return "NSArray*"
     else:
-        return OBJC_DATA_TYPES[field_type]
+        return OBJC_DATA_TYPES[field.field_type]
 
 
 # Changes a python variable name to an objective c version
@@ -35,10 +47,8 @@ def python_to_objc_variable(python_variable_name, capitalize_first=False):
 
 # Some field names are reserved in Objective C
 def sanitize_field_name(field_name):
-    if field_name == "id":
-        return "theID"
-    elif field_name == "description":
-        return "theDescription"
+    if field_name in RESERVED_MAPPINGS:
+        return RESERVED_MAPPINGS[field_name]
     else:
         return field_name
 

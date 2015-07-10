@@ -1,9 +1,10 @@
 from datetime import datetime
 import subprocess
+from urlparse import urlparse
 from jinja2 import Environment, PackageLoader
 import re
 import shutil
-from signals.logging import SignalsError
+from signals.logging import SignalsError, progress
 from signals.generators.ios.utils import python_to_objc_variable, sanitize_field_name, get_object_name, \
     get_objc_data_type
 from signals.parser.api import GetAPI, API
@@ -11,7 +12,6 @@ from signals.parser.fields import Relationship, Field
 from signals.parser.schema import URL
 from signals.generators.base.base_generator import BaseGenerator
 from signals.generators.ios.core_data import write_xml_to_file
-from signals.generators.ios.data_model import create_mappings
 
 class iOSGenerator(BaseGenerator):
     def __init__(self, schema, data_models_path, core_data_path, project_name, api_url):
@@ -34,13 +34,10 @@ class iOSGenerator(BaseGenerator):
         if self.core_data_path is not None:
             if self.is_xcode_running():
                 raise SignalsError("Must quit Xcode before writing to core data")
-            print("Creating core data file")
+            progress("Creating core data file")
             write_xml_to_file(self.core_data_path, self.schema.data_objects)
 
-        print("Creating data model file")
-        # TODO: Remove create_mappings and delete file
-        create_mappings(self.schema.urls, self.schema.data_objects, self.project_name)
-
+        progress("Creating data model file")
         self.create_header_file()
         self.create_implementation_file()
         self.copy_data_models()
@@ -79,7 +76,11 @@ class iOSGenerator(BaseGenerator):
             'method_name': self.method_name,
             'method_parameters': self.method_parameters,
             'get_proper_name': self.get_proper_name,
-            'has_media_fields': self.has_media_fields
+            'get_media_fields': self.get_media_fields,
+            'VIDEO_FIELD': Field.VIDEO,
+            'IMAGE_FIELD': Field.IMAGE,
+            'media_field_check': self.media_field_check,
+            'is_url': self.is_url
         }
         template_output = template.render(**context)
         with open(self.implementation_file, "w") as output_file:
@@ -117,6 +118,8 @@ class iOSGenerator(BaseGenerator):
         if request_object and len(request_object.properties()) > 0:
             first_field = request_object.properties()[0]
             first_parameter_name = self.get_proper_name(first_field.name, capitalize_first=True)
+        elif self.create_id_parameter(api.url_path, request_object) is not None:
+            first_parameter_name = "TheID"
 
         return "{}With{}".format(method_name, first_parameter_name)
 
@@ -195,8 +198,18 @@ class iOSGenerator(BaseGenerator):
             return "RKMIMETypeJSON"
 
     @staticmethod
-    def has_media_fields(fields):
-        return reduce(lambda bool, field: bool and field.field_type in [Field.IMAGE, Field.VIDEO], fields, False)
+    def get_media_fields(fields):
+        return filter(lambda field: field.field_type in [Field.IMAGE, Field.VIDEO], fields)
+
+    @staticmethod
+    def media_field_check(fields):
+        statements = ["{} != nil".format(iOSGenerator.get_proper_name(field.name)) for field in fields]
+        return " || ".join(statements)
+
+    @staticmethod
+    def is_url(url):
+        parse_result = urlparse(url)
+        return parse_result.scheme in ['http', 'https']
 
     # Utility methods for template functions #
 
@@ -221,7 +234,7 @@ class iOSGenerator(BaseGenerator):
     def generate_field_parameters(request_object):
         parameters = []
         for index, field in enumerate(request_object.fields):
-            variable_type = get_objc_data_type(field.field_type)
+            variable_type = get_objc_data_type(field)
             parameters.append(Parameter(name=field.name, objc_type=variable_type))
         return parameters
 
@@ -232,7 +245,7 @@ class iOSGenerator(BaseGenerator):
     @staticmethod
     def create_id_parameter(url_path, request_object):
         # Also add an ID parameter if we need an ID for the url and it's not already a field on our object
-        if "id" in url_path and not iOSGenerator.has_id_field(request_object):
+        if ":id" in url_path and not iOSGenerator.has_id_field(request_object):
             return Parameter(name="theID", objc_type="NSNumber*")
 
     @staticmethod

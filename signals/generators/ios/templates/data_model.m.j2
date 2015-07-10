@@ -26,13 +26,12 @@
 }
 
 - (void) setup {
-  RKLogConfigureByName("RestKit/Network", RKLogLevelTrace);
-  RKLogConfigureByName("RestKit/ObjectMapping", RKLogLevelTrace);
-  RKLogConfigureByName("RestKit/CoreData", RKLogLevelTrace);
-
   // Initialize RestKit
+  {% if is_url(api_url) %}
   NSURL *baseURL = [NSURL URLWithString:@"{{ api_url }}"];
-
+  {% else %}
+  NSURL *baseURL = {{ api_url }};
+  {% endif %}
   RKObjectManager *objectManager = [RKObjectManager managerWithBaseURL:baseURL];
 
   // Enable Activity Indicator Spinner

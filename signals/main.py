@@ -41,8 +41,9 @@ def run_main(schema, generator, data_models, core_data, project_name, api_url):
               help='The name of your iOS project and main target.',
               type=click.STRING)
 @click.option('api_url', '--apiurl',
-              prompt='the url of your api',
-              help='The fully qualified url of your API for making calls',
+              prompt='the string url of your api or a method call that returns it',
+              help='The fully qualified url of your API for making calls or a method that will return the API, '
+                   'ex. Constants.getAPIURL()',
               type=click.STRING)
 # TODO: These are iOS specific settings and we'll need to figure out a way to handle generator specific arguments
 # when we add more generators in the future.
