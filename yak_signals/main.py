@@ -1,8 +1,8 @@
 from __future__ import absolute_import
 import click
-from yak_communication.parser.schema import Schema
-from yak_communication.generators.ios.ios_generator import iOSGenerator
-from yak_communication.logging import SignalsError, progress
+from yak_signals.parser.schema import Schema
+from yak_signals.generators.ios.ios_generator import iOSGenerator
+from yak_signals.logging import SignalsError, progress
 
 generators = {
     'ios': iOSGenerator
@@ -20,6 +20,9 @@ def run_main(schema, generator, data_models, core_data, project_name):
     else:
         progress('Finished generating your files!')
 
+
+def fun(boo):
+    print(boo)
 
 @click.command()
 @click.option('--schema',

@@ -1,13 +1,13 @@
 import mock
 import unittest
 import subprocess
-from yak_communication.main import run_main
+from yak_signals.main import run_main
 from tests.utils import captured_stderr, captured_stdout
 
 
 class MainTestCase(unittest.TestCase):
     def test_run_command(self):
-        command = "python -m yak_communication --schema ./tests/files/test_schema.json --generator ios " \
+        command = "python -m yak_signals --schema ./tests/files/test_schema.json --generator ios " \
                   "--datamodels ./tests/files/ --projectname YetiProject"
         process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         output, error = process.communicate()
@@ -20,7 +20,7 @@ class MainTestCase(unittest.TestCase):
             self.assertEqual(error.getvalue(), "")
             self.assertIn("Finished generating your files!", out.getvalue())
 
-    @mock.patch("yak_communication.generators.ios.ios_generator.subprocess")
+    @mock.patch("yak_signals.generators.ios.ios_generator.subprocess")
     def test_run_main_error(self, mock_subprocess):
         mock_subprocess.check_output.return_value = "Xcode.app"
         with captured_stdout() as out:

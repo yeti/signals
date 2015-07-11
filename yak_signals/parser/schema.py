@@ -1,7 +1,7 @@
 import json
-from yak_communication.parser.api import GetAPI, PostAPI, PutAPI, PatchAPI, DeleteAPI
-from yak_communication.parser.fields import Relationship, Field
-from yak_communication.logging import warn, progress
+from yak_signals.parser.api import GetAPI, PostAPI, PutAPI, PatchAPI, DeleteAPI
+from yak_signals.parser.fields import Relationship, Field
+from yak_signals.logging import warn, progress
 
 __author__ = 'rudy'
 
