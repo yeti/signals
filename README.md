@@ -9,7 +9,9 @@ A tool for auto generating libraries for different platforms to communicate with
 ### Recommended Setup
 
 1. Create a new python virtual environment
-2. `pip install requirements.txt`
+2. Ensure you have the latest Xcode Commane Line Tools: 'xcode-select --install'
+3. `pip install -r requirements.txt`
+
 
 
 ### Instructions
@@ -21,6 +23,10 @@ To see a list of arguments run `python -m signals --help`.
 If you do not supply the required arguments when running, the script will prompt you for them one by one.
 
 An example for running the script is: `python -m signals --schema ~/projects/your-project/api-schema.json --generator ios`
+
+After a successful run, the settings will be saved in a .signalsconfig file in your destination project's root, as defined by containing an .xcodeproj or .xcworkspace file
+
+Subsequent generations can be run using the same settings by calling 'python -m yak_communication --settingspath <your_project_root>'
 
 #### iOS
 
