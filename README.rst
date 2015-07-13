@@ -38,6 +38,7 @@ iOS
 #. Copy in MachineDataModel.h to your project’s DataModel.h
 #. Copy in the appropriate sections of MachineDataModel.m to your
    project’s DataModel.m
+
 .. |Codeship Status for yeti/YAK-communication| image:: https://codeship.com/projects/d2fa74a0-01ab-0133-75b8-2226f6cba81b/status?branch=master
    :target: https://codeship.com/projects/88715
 .. |Coverage Status| image:: https://coveralls.io/repos/yeti/YAK-communication/badge.svg?branch=HEAD&t=YrPM9o

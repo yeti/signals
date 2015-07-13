@@ -8,7 +8,6 @@ def read(filename):
 
 long_description = "{}\n\n{}".format(read("README.rst"),
                                      read("CONTRIBUTORS.rst"))
-# TODO: figure out test requirements
 
 setup(
     name="yak-signals",
