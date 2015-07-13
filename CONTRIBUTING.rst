@@ -12,14 +12,14 @@ Recommended Development Setup
 Instructions
 ------------
 
-The script is ran from ``python -m yak_communication``.
+The script is ran from ``python -m yak_signals``.
 
 Development
 -----------
 
 1. To run the tests, just run ``nosetests``.
 2. You can also run the tests with coverage:
-   ``nosetests --with-coverage --cover-package=yak_communication --cover-inclusive --cover-branches``
+   ``nosetests --with-coverage --cover-package=yak_signals --cover-inclusive --cover-branches``
 
 TODOs
 -----

@@ -1,0 +1,24 @@
+<model userDefinedModelVersionIdentifier="" macOSVersion="Automatic" minimumToolsVersion="Xcode 4.3" documentVersion="1.0" lastSavedToolsVersion="7549" systemVersion="14D136" type="com.apple.IDECoreDataModeler.DataModel" iOSVersion="Automatic">
+  <entity name="LoginResponse" representedClassName="LoginResponse">
+    <attribute name="clientSecret" optional="NO" attributeType="String" syncable="YES"/>
+    <attribute name="clientId" optional="NO" attributeType="String" syncable="YES"/>
+  </entity>
+  <entity name="SignUpRequest" representedClassName="SignUpRequest">
+    <attribute name="username" optional="NO" attributeType="String" syncable="YES"/>
+    <attribute name="fullname" optional="NO" attributeType="String" syncable="YES"/>
+    <attribute name="password" optional="NO" attributeType="String" syncable="YES"/>
+    <attribute name="email" optional="YES" attributeType="String" syncable="YES"/>
+  </entity>
+  <entity name="SignUpResponse" representedClassName="SignUpResponse">
+    <attribute name="username" optional="NO" attributeType="String" syncable="YES"/>
+    <attribute name="clientSecret" optional="NO" attributeType="String" syncable="YES"/>
+    <attribute name="fullname" optional="NO" attributeType="String" syncable="YES"/>
+    <attribute name="email" optional="YES" attributeType="String" syncable="YES"/>
+    <attribute name="clientId" optional="NO" attributeType="String" syncable="YES"/>
+  </entity>
+  <elements>
+    <element name="LoginResponse" positionX="0" positionY="0" width="128" height="600"/>
+    <element name="SignUpResponse" positionX="0" positionY="0" width="128" height="600"/>
+    <element name="SignUpRequest" positionX="0" positionY="0" width="128" height="600"/>
+  </elements>
+</model>
