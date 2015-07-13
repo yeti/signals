@@ -54,3 +54,4 @@ An example for running the script is: `python -m signals --schema ~/projects/you
 10. Don't require the user to have the ap-schema file on their computer but point to a URL
 11. Preserve existing edits to core data or data model file.
 12. Use a decorator system to register template methods so we can better organize our code
+13. Setup pep8 and pyflakes testing for coding style guide enforcement

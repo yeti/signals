@@ -54,5 +54,5 @@ def sanitize_field_name(field_name):
 
 
 def get_proper_name(name, capitalize_first=False):
-    sanitized_field_name = sanitize_field_name(name)
-    return python_to_objc_variable(sanitized_field_name, capitalize_first=capitalize_first)
+    proper_name = sanitize_field_name(name)
+    return python_to_objc_variable(proper_name, capitalize_first=capitalize_first)
