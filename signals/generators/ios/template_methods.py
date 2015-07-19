@@ -1,3 +1,6 @@
+"""
+Methods to be used in the iOS generator's templates.
+"""
 import re
 from urlparse import urlparse
 from signals.generators.ios.parameters import create_id_parameter, generate_field_parameters, \
@@ -25,6 +28,7 @@ def method_name(api, data_objects):
         first_parameter_name = "TheID"
 
     return "{}With{}".format(method_name_string, first_parameter_name)
+
 
 def method_parameters(api, data_objects):
     parameters = []

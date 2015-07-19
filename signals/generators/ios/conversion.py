@@ -1,3 +1,6 @@
+"""
+Methods to translate the schema names and types to objective c variable names and types.
+"""
 from signals.parser.fields import Field
 
 OBJC_DATA_TYPES = {
@@ -24,6 +27,7 @@ RESERVED_MAPPINGS = {
     "super": "isSuper",
     "volatile": "isVolatile"
 }
+
 
 def get_objc_data_type(field):
     if field.array:
