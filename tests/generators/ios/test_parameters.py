@@ -32,6 +32,7 @@ class ParametersTestCase(unittest.TestCase):
 
     def test_generate_relationship_parameters(self):
         request_object = DataObject("$userRequest", {
+            "username": "string",
             "profile": "O2O,$profileRequest",
             "tags": "M2M,$tagRequest"
         })
@@ -44,7 +45,8 @@ class ParametersTestCase(unittest.TestCase):
     def test_generate_field_parameters(self):
         request_object = DataObject("$postUpdateRequest", {
             "id": "int,primarykey",
-            "title": "string"
+            "title": "string",
+            "tags": "M2M,$tagRequest"
         })
         parameters = generate_field_parameters(request_object)
         self.assertEqual(parameters[0].name, "id")
