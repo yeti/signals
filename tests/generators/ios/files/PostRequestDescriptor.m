@@ -1,0 +1,2 @@
+  RKRequestDescriptor *postPostRequestDescriptor = [RKRequestDescriptor requestDescriptorWithMapping:[postRequestMapping inverseMapping] objectClass:[PostRequest class] rootKeyPath:nil method:RKRequestMethodPOST];
+  [objectManager addRequestDescriptor:postPostRequestDescriptor];
