@@ -1,11 +1,11 @@
 from __future__ import absolute_import
 import click
 
-from yak_communication.parser.schema import Schema
-from yak_communication.generators.ios.ios_generator import iOSGenerator
-from yak_communication.settings import save_settings
-from yak_communication.settings import load_settings
-from yak_communication.logging import SignalsError, progress
+from yak_signals.parser.schema import Schema
+from yak_signals.generators.ios.ios_generator import iOSGenerator
+from yak_signals.settings import save_settings
+from yak_signals.settings import load_settings
+from yak_signals.logging import SignalsError, progress
 
 
 generators = {
@@ -13,8 +13,7 @@ generators = {
 }
 
 
-# Create a separate function so that we can unit test.
-# Issues unit testing `main` due to click decorators.
+# Create a separate function so thunit testing `main` due to click decorators.
 def run_main(schema, generator_name, data_models, core_data, project_name, save):
     schema = Schema(schema)
     generator = generators[generator_name](schema, data_models, core_data, project_name)

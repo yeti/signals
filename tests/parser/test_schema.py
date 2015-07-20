@@ -1,9 +1,9 @@
 import unittest
 from tests.utils import captured_stdout
-from yak_communication.parser.fields import Field
-from yak_communication.parser.fields import Relationship
-from yak_communication.parser.schema import DataObject, Schema, URL
-from yak_communication.logging import colorize_string
+from yak_signals.parser.fields import Field
+from yak_signals.parser.fields import Relationship
+from yak_signals.parser.schema import DataObject, Schema, URL
+from yak_signals.logging import colorize_string
 
 
 class SchemaTestCase(unittest.TestCase):

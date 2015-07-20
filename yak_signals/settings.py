@@ -1,4 +1,4 @@
-from yak_communication.logging import SignalsError, progress
+from yak_signals.logging import SignalsError, progress
 import os.path
 import glob
 

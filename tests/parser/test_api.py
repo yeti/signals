@@ -1,6 +1,6 @@
 import unittest
-from yak_communication.parser.api import API, GetAPI, RequestResponseAPI
-from yak_communication.logging import SignalsError
+from yak_signals.parser.api import API, GetAPI, RequestResponseAPI
+from yak_signals.logging import SignalsError
 
 
 class APITestCase(unittest.TestCase):

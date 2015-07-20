@@ -1,14 +1,14 @@
 import mock
 import unittest
 import subprocess
-from yak_communication.main import run_main
-from yak_communication.main import project_specified
+from yak_signals.main import run_main
+from yak_signals.main import project_specified
 from tests.utils import captured_stderr, captured_stdout
 
 
 class SettingsTestCase(unittest.TestCase):
 
-    @mock.patch("yak_communication.generators.ios.ios_generator.subprocess")
+    @mock.patch("yak_signals.generators.ios.ios_generator.subprocess")
     def test_run_command(self, mock_subprocess):
         mock_subprocess.check_output.return_value = ""
 

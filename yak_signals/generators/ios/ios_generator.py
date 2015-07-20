@@ -1,8 +1,8 @@
 import subprocess
-from yak_communication.generators.base.base_generator import BaseGenerator
-from yak_communication.generators.ios.core_data import write_xml_to_file
-from yak_communication.generators.ios.data_model import create_mappings
-from yak_communication.logging import SignalsError, progress
+from yak_signals.generators.base.base_generator import BaseGenerator
+from yak_signals.generators.ios.core_data import write_xml_to_file
+from yak_signals.generators.ios.data_model import create_mappings
+from yak_signals.logging import SignalsError, progress
 
 
 class iOSGenerator(BaseGenerator):

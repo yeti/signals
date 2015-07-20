@@ -1,8 +1,8 @@
 import unittest
-from yak_communication.parser.fields import Relationship, Field
-from yak_communication.logging import SignalsError
+from yak_signals.parser.fields import Relationship, Field
+from yak_signals.logging import SignalsError
 from tests.utils import captured_stdout
-from yak_communication.logging import colorize_string
+from yak_signals.logging import colorize_string
 
 
 class FieldsTestCase(unittest.TestCase):
