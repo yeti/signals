@@ -1,7 +1,7 @@
 //
 //  DataModel.m
 //
-//  Created by signals on 07/20/2015.
+//  Created by signals on %s.
 
 #import "DataModel.h"
 #import <CoreData/CoreData.h>
@@ -76,7 +76,7 @@
     persistentStore = [managedObjectStore addSQLitePersistentStoreAtPath:storePath fromSeedDatabaseAtPath:nil withConfiguration:nil options:nil error:&error];
   }
 
-  NSAssert(persistentStore, @"Failed to add persistent store with error: %@", error);
+  NSAssert(persistentStore, @"Failed to add persistent store with error: %%@", error);
 
   // Create the managed object contexts
   [managedObjectStore createManagedObjectContexts];

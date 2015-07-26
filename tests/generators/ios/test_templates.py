@@ -19,7 +19,7 @@ class TemplateTestCase(unittest.TestCase):
                                               trim_blocks=True,
                                               lstrip_blocks=True)
 
-    def assertTemplateEqual(self, template_name, expected_template, context):
+    def assertTemplateEqual(self, template_name, expected_template, context, expected_context=None):
         current_directory = os.path.dirname(__file__)
         expected_file_path = os.path.join(current_directory, "files", expected_template)
         with open(expected_file_path, "r") as expected_template_file:
@@ -28,6 +28,9 @@ class TemplateTestCase(unittest.TestCase):
             context.update({name: method for name, method in getmembers(template_methods, isfunction)})
             template_output = template.render(**context)
             expected_template_out = expected_template_file.read()
+            if expected_context:
+                # Using %s formatting syntax, since format uses {'s and the outputted code contains many
+                expected_template_out = expected_template_out % expected_context
             self.assertEqual(template_output, expected_template_out)
 
     def test_descriptors_request_template(self):
@@ -200,7 +203,9 @@ class TemplateTestCase(unittest.TestCase):
             'IMAGE_FIELD': Field.IMAGE,
             'today': datetime.today(),
             'endpoints': URL.URL_ENDPOINTS.keys(),
-        })
+        }, expected_context=(
+            datetime.today().strftime('%m/%d/%Y'),
+        ))
 
     def test_data_model_implementation_template(self):
         schema = Schema("./tests/files/test_schema.json")
@@ -214,4 +219,6 @@ class TemplateTestCase(unittest.TestCase):
             'endpoints': URL.URL_ENDPOINTS.keys(),
             'request_objects': iOSGenerator.get_request_objects(schema.data_objects),
             'sanitize_field_name': sanitize_field_name
-        })
+        }, expected_context=(
+            datetime.today().strftime('%m/%d/%Y'),
+        ))

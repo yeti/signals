@@ -12,7 +12,7 @@ long_description = "{}\n\n{}".format(read("README.rst"),
 setup(
     name="yak-signals",
     packages=find_packages(exclude=["tests*"]),
-    version="0.1",
+    version="0.2",
     description="A tool for auto generating libraries for different platforms to communicate with your API",
     long_description=long_description,
     url="https://github.com/yeti/signals/",

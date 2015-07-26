@@ -1,7 +1,7 @@
 //
 //  DataModel.h
 //
-//  Created by signals on 07/20/2015.
+//  Created by signals on %s.
 
 #import <Foundation/Foundation.h>
 
