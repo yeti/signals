@@ -1,7 +1,7 @@
 YAK-communication
 =================
 
-|Codeship Status for yeti/YAK-communication| |Coverage Status|
+|Codeship Status for yeti/signals| |Coverage Status|
 
 Recommended Development Setup
 -----------------------------
@@ -12,14 +12,12 @@ Recommended Development Setup
 Instructions
 ------------
 
-The script is ran from ``python -m yak_signals``.
+The script is ran from ``python -m signals``.
 
 Development
 -----------
 
 1. To run the tests, just run ``nosetests``.
-2. You can also run the tests with coverage:
-   ``nosetests --with-coverage --cover-package=signals --cover-inclusive --cover-branches``
 
 TODOs
 -----
@@ -47,7 +45,7 @@ TODOs
 14. Refactor use of '$names' and how API objects get a reference to the actual object
 
 
-.. |Codeship Status for yeti/YAK-communication| image:: https://codeship.com/projects/d2fa74a0-01ab-0133-75b8-2226f6cba81b/status?branch=master
+.. |Codeship Status for yeti/signals| image:: https://codeship.com/projects/d2fa74a0-01ab-0133-75b8-2226f6cba81b/status?branch=master
    :target: https://codeship.com/projects/88715
-.. |Coverage Status| image:: https://coveralls.io/repos/yeti/YAK-communication/badge.svg?branch=HEAD&t=YrPM9o
-   :target: https://coveralls.io/r/yeti/YAK-communication?branch=HEAD
+.. |Coverage Status| image:: https://coveralls.io/repos/yeti/signals/badge.svg?branch=HEAD&t=YrPM9o
+   :target: https://coveralls.io/r/yeti/signals?branch=HEAD
