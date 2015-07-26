@@ -61,3 +61,4 @@ Subsequent generations can be run using the same settings by calling 'python -m 
 11. Preserve existing edits to core data or data model file.
 12. Use a decorator system to register template methods so we can better organize our code
 13. Setup pep8 and pyflakes testing for coding style guide enforcement
+14. Refactor use of '$names' and how API objects get a reference to the actual object
