@@ -12,7 +12,7 @@ long_description = "{}\n\n{}".format(read("README.rst"),
 setup(
     name="yak-signals",
     packages=find_packages(exclude=["tests*"]),
-    version="0.2",
+    version="0.2.1",
     description="A tool for auto generating libraries for different platforms to communicate with your API",
     long_description=long_description,
     url="https://github.com/yeti/signals/",
@@ -21,7 +21,8 @@ setup(
     author_email="support@yeti.co",
     install_requires=[
         "click>=4.0",
-        "lxml>=3.4"
+        "lxml>=3.4",
+        "Jinja2>=2.7.3"
     ],
     entry_points={
         "console_scripts": [
