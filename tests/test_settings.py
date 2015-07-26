@@ -1,20 +1,20 @@
 import mock
 import unittest
 import subprocess
-from yak_signals.main import run_main
-from yak_signals.main import project_specified
+from signals.main import run_main, project_specified
 from tests.utils import captured_stderr, captured_stdout
 
 
 class SettingsTestCase(unittest.TestCase):
 
-    @mock.patch("yak_signals.generators.ios.ios_generator.subprocess")
+    @mock.patch("signals.generators.ios.ios_generator.subprocess")
     def test_run_command(self, mock_subprocess):
         mock_subprocess.check_output.return_value = ""
 
         # Run normally to generate settings file
         with captured_stderr() as error, captured_stdout() as out:
-            run_main("./tests/files/test_schema.json", "ios", "./tests/files/", "./tests/files/dummycontents", "YetiProject", True)
+            run_main("./tests/files/test_schema.json", "ios", "./tests/files/", "./tests/files/dummycontents",
+                     "YetiProject", "http://test.com", True)
             self.assertEqual(error.getvalue(), "")
             self.assertIn("Finished generating your files!", out.getvalue())
 

@@ -1,0 +1,14 @@
+[run]
+branch = True
+omit =
+    *.j2
+source =
+    signals
+
+[report]
+exclude_lines =
+    # Have to re-enable the standard pragma
+    pragma: no cover
+    # Don't complain if tests don't hit defensive assertion code:
+    raise NotImplementedError
+show_missing = 1

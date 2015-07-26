@@ -1,26 +1,24 @@
-from __future__ import absolute_import
 import click
-
-from yak_signals.parser.schema import Schema
-from yak_signals.generators.ios.ios_generator import iOSGenerator
-from yak_signals.settings import save_settings
-from yak_signals.settings import load_settings
-from yak_signals.logging import SignalsError, progress
-
+from signals.parser.schema import Schema
+from signals.generators.ios.ios_generator import iOSGenerator
+from signals.logging import SignalsError, progress
+from signals.settings import save_settings, load_settings
 
 generators = {
     'ios': iOSGenerator
 }
 
 
-# Create a separate function so thunit testing `main` due to click decorators.
-def run_main(schema, generator_name, data_models, core_data, project_name, save):
+# Create a separate function so that we can unit test.
+# Issues unit testing `main` due to click decorators.
+def run_main(schema, generator_name, data_models, core_data, project_name, api_url, save):
     schema = Schema(schema)
-    generator = generators[generator_name](schema, data_models, core_data, project_name)
+    generator = generators[generator_name](schema, data_models, core_data, project_name, api_url)
     try:
         generator.process()
         if save:
-            save_settings([data_models, core_data], schema, generator_name, data_models, core_data, project_name)
+            save_settings([data_models, core_data], schema, generator_name, data_models, core_data, project_name,
+                          api_url)
     except SignalsError as e:
         print(str(e))
     else:
@@ -28,7 +26,7 @@ def run_main(schema, generator_name, data_models, core_data, project_name, save)
 
 
 def project_specified(ctx, param, value):
-    if not value or (not ctx is None and ctx.resilient_parsing):
+    if not value or (ctx is not None and ctx.resilient_parsing):
         return
 
     try:
@@ -41,9 +39,10 @@ def project_specified(ctx, param, value):
                  setting_dict["data_models"],
                  setting_dict["core_data"],
                  setting_dict["project_name"],
+                 setting_dict["api_url"],
                  False)
 
-    if not ctx is None:
+    if ctx is not None:
         ctx.exit()
 
 @click.command()
@@ -72,8 +71,13 @@ def project_specified(ctx, param, value):
               prompt="name of your iOS project and main target",
               help='The name of your iOS project and main target.',
               type=click.STRING)
+@click.option('api_url', '--apiurl',
+              prompt='the string url of your api or a method call that returns it',
+              help='The fully qualified url of your API for making calls or a method that will return the API, '
+                   'ex. Constants.getAPIURL()',
+              type=click.STRING)
 @click.option('--save', is_flag=True)
 # TODO: These are iOS specific settings and we'll need to figure out a way to handle generator specific arguments
 # when we add more generators in the future.
-def main(settings_path, schema, generator, data_models, core_data, project_name, save):
-    run_main(schema, generator, data_models, core_data, project_name, save)
+def main(settings_path, schema, generator, data_models, core_data, project_name, api_url, save):
+    run_main(schema, generator, data_models, core_data, project_name, api_url, save)

@@ -1,6 +1,7 @@
-from yak_signals.logging import SignalsError, progress
+from signals.logging import SignalsError, progress
 import os.path
 import glob
+
 
 def load_settings(settings_path):
     if not os.path.isdir(settings_path):
@@ -20,7 +21,7 @@ def load_settings(settings_path):
     return setting_dict
 
 
-def save_settings(paths, schema, generator_name, data_models, core_data, project_name):
+def save_settings(paths, schema, generator_name, data_models, core_data, project_name, api_url):
     project_root = find_project_root(paths)
     if project_root is not None and len(project_root) > 0:
         output_settings(project_root,
@@ -28,34 +29,35 @@ def save_settings(paths, schema, generator_name, data_models, core_data, project
                         generator_name,
                         os.path.abspath(data_models),
                         os.path.abspath(core_data) if core_data else "",
-                        project_name)
+                        project_name,
+                        api_url)
     else:
         raise SignalsError("Failed to locate project root")
 
 
 def find_project_root(paths):
-    for curpath in paths:
-        if curpath is None or len(curpath) == 0:
+    for current_path in paths:
+        if current_path is None or len(current_path) == 0:
             continue
 
         # Convert to absolute path, in case we received relative path from user
-        curpath = os.path.abspath(curpath)
-        while curpath != os.sep:
+        current_path = os.path.abspath(current_path)
+        while current_path != os.sep:
             # Check if this path has the .xcodeproj or .xcworkspace files
-            if len(glob.glob(curpath + os.sep + "*.xcodeproj")) > 0:
-                return curpath
-            if len(glob.glob(curpath + os.sep + "*.xcworkspace")) > 0:
-                return curpath
+            if len(glob.glob(current_path + os.sep + "*.xcodeproj")) > 0:
+                return current_path
+            if len(glob.glob(current_path + os.sep + "*.xcworkspace")) > 0:
+                return current_path
 
-            curpath = os.path.normpath(os.path.join(curpath, ".."))
+            current_path = os.path.normpath(os.path.join(current_path, ".."))
     return
 
 
-def output_settings(project_root, schema, generator_name, data_models, core_data, project_name):
+def output_settings(project_root, schema, generator_name, data_models, core_data, project_name, api_url):
     settings_filename = project_root + os.sep + ".signalsconfig"
     progress("Writing settings to {}".format(settings_filename))
-    keys = ["schema", "generator", "data_models", "core_data", "project_name"]
-    values = [schema, generator_name, data_models, core_data, project_name]
+    keys = ["schema", "generator", "data_models", "core_data", "project_name", "api_url"]
+    values = [schema, generator_name, data_models, core_data, project_name, api_url]
 
     with open(settings_filename, "w") as settings_file:
         for (key, val) in zip(keys, values):

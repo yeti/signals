@@ -1,0 +1,7 @@
+{% set object = "obj" if api.request_object else "nil" %}
+{% if ':id' in api.url_path %}
+  NSString* formattedUrl = [NSString stringWithFormat:@"{{ api.url_path|replace(':id', '%@') }}", theID];
+  [sharedMgr {{ api.method }}Object:{{ object }} path:formattedUrl parameters:nil success:success failure:failure];
+{% else %}
+  [sharedMgr {{ api.method }}Object:{{ object }} path:@"{{ api.url_path }}" parameters:nil success:success failure:failure];
+{% endif %}

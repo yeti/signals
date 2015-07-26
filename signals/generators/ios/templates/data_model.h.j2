@@ -1,0 +1,40 @@
+//
+//  DataModel.h
+//
+//  Created by signals on {{ today.strftime('%m/%d/%Y') }}.
+
+#import <Foundation/Foundation.h>
+
+@class RKObjectRequestOperation;
+@class RKMappingResult;
+@class UIImage;
+
+@interface DataModel : NSObject
+
++ (DataModel *)sharedDataModel;
+
+{% for url in schema.urls %}
+/**
+
+  MARK: {{ url.url_path }}
+  {% if url.documentation %}
+  {{ url.documentation }}
+  {% endif %}
+
+*/
+
+{% for endpoint in endpoints %}
+  {% if url[endpoint] %}
+    {% with api = url[endpoint] %}
+- (void) {{ api.method }}{{ method_name(api, schema.data_objects) }}:{{ method_parameters(api, schema.data_objects) }};
+
+    {% endwith %}
+  {% endif %}
+{% endfor %}
+{% endfor %}
+
+- (void) getAllLoginWithUsername:(NSString*)username password:(NSString*)password success:(void (^)(RKObjectRequestOperation *operation, RKMappingResult *mappingResult))success failure:(void (^)(RKObjectRequestOperation *operation, NSError *error))failure;
+
+- (void) setup;
+
+@end

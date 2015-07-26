@@ -1,6 +1,9 @@
+"""
+Creates an Xcode Core Data file.
+"""
 from xml.dom import minidom
 from lxml import etree
-from yak_signals.parser.fields import Relationship, Field
+from signals.parser.fields import Relationship, Field
 
 DATA_TYPES = {
     Field.DATE: "Date",
@@ -15,11 +18,13 @@ DATA_TYPES = {
     Field.VIDEO: "String"
 }
 
+
 def get_data_type(field):
     if field.array:
         return "Transformable"
     else:
         return DATA_TYPES[field.field_type]
+
 
 # A little logic to to make plural words more readable this won't cover everything,
 # there's a few python libraries out there you could use: https://pypi.python.org/pypi/inflect

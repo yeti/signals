@@ -1,5 +1,5 @@
-from yak_signals.logging import SignalsError
-from yak_signals.parser.fields import Field
+from signals.parser.fields import Field
+from signals.logging import SignalsError
 
 
 class API(object):

@@ -1,4 +1,4 @@
-from yak_signals.logging import SignalsError, warn
+from signals.logging import SignalsError, warn
 
 
 class Field(object):

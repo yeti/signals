@@ -1,0 +1,14 @@
+- (void) {{ api.method }}{{ method_name(api, schema.data_objects) }}:{{ method_parameters(api, schema.data_objects) }} {
+  RKObjectManager* sharedMgr = [RKObjectManager sharedManager];
+  sharedMgr.requestSerializationMIMEType = {{ content_type(api) }};
+  {% if is_oauth(api) %}
+  [sharedMgr.HTTPClient setDefaultHeader:@"Authorization" value:[NSString stringWithFormat:@"Bearer %@", [AppModel sharedModel].accessToken]];
+  {% endif %}
+  {% if api.parameters_object %}
+  {% include 'methods/parameters.j2' %}
+  {% elif api.request_object %}
+  {% include 'methods/request.j2' %}
+  {% else %}
+  {% include 'methods/send_object.j2' %}
+  {% endif %}
+}
