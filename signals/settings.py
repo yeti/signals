@@ -2,6 +2,7 @@ from signals.logging import SignalsError, progress
 import os.path
 import glob
 
+
 def load_settings(settings_path):
     if not os.path.isdir(settings_path):
         raise SignalsError("Invalid path. Please specify project path.")
