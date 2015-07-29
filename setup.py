@@ -9,9 +9,17 @@ def read(filename):
 long_description = "{}\n\n{}".format(read("README.rst"),
                                      read("CONTRIBUTORS.rst"))
 
+import fnmatch
+package_data_files = []
+for root, dirnames, filenames in os.walk('signals'):
+    for filename in fnmatch.filter(filenames, '*.j2'):
+        # Remove leading 'signals/' from root, as 'signals/' gets prepended during setup
+        package_data_files.append(os.path.join(root.split('/', 1)[1], filename))
+
 setup(
     name="yak-signals",
     packages=find_packages(exclude=["tests*"]),
+    package_data={'signals': package_data_files},
     version="0.2.1",
     description="A tool for auto generating libraries for different platforms to communicate with your API",
     long_description=long_description,
