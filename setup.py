@@ -1,5 +1,6 @@
 import os
 from setuptools import setup, find_packages
+import fnmatch
 
 
 def read(filename):
@@ -9,7 +10,6 @@ def read(filename):
 long_description = "{}\n\n{}".format(read("README.rst"),
                                      read("CONTRIBUTORS.rst"))
 
-import fnmatch
 package_data_files = []
 for root, dirnames, filenames in os.walk('signals'):
     for filename in fnmatch.filter(filenames, '*.j2'):
