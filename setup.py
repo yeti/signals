@@ -1,5 +1,6 @@
 import os
 from setuptools import setup, find_packages
+import fnmatch
 
 
 def read(filename):
@@ -9,10 +10,17 @@ def read(filename):
 long_description = "{}\n\n{}".format(read("README.rst"),
                                      read("CONTRIBUTORS.rst"))
 
+package_data_files = []
+for root, dirnames, filenames in os.walk('signals'):
+    for filename in fnmatch.filter(filenames, '*.j2'):
+        # Remove leading 'signals/' from root, as 'signals/' gets prepended during setup
+        package_data_files.append(os.path.join(root.split('/', 1)[1], filename))
+
 setup(
     name="yak-signals",
     packages=find_packages(exclude=["tests*"]),
-    version="0.2.1",
+    package_data={'signals': package_data_files},
+    version="0.2.2",
     description="A tool for auto generating libraries for different platforms to communicate with your API",
     long_description=long_description,
     url="https://github.com/yeti/signals/",
