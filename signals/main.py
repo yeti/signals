@@ -45,6 +45,7 @@ def project_specified(ctx, param, value):
     if ctx is not None:
         ctx.exit()
 
+
 @click.command()
 @click.option('settings_path', '--settingspath',
               help='The project path where Signals should look for a .signalsconfig file.  If specified, the contents'

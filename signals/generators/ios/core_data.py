@@ -96,7 +96,7 @@ def add_M2M_relationships(entity_one, entity_two, entity_one_relationship_name, 
 
 
 # Adds O2M relationships between these two entities
-def add_O2M_relationships(many_entity, one_entity, many_entities_relationship_name, one_entities_relationship_name):  
+def add_O2M_relationships(many_entity, one_entity, many_entities_relationship_name, one_entities_relationship_name):
     add_many_relationship(many_entity, one_entity, many_entities_relationship_name, one_entities_relationship_name)
     add_one_relationship(one_entity, many_entity, one_entities_relationship_name, many_entities_relationship_name)
 
@@ -108,9 +108,10 @@ def get_proper_object_name(obj):
 # Checks to see if this key and related model are duplicated in this set of fields
 def conflicting_entity_name(relationships, current_relationship):
     for relationship in relationships:
-        return current_relationship.name != relationship.name and \
-               current_relationship.related_object == relationship.related_object and \
-               current_relationship.relationship_type == relationship.relationship_type
+        is_equivalent = current_relationship.name != relationship.name
+        is_equivalent = is_equivalent and current_relationship.related_object == relationship.related_object
+        is_equivalent = is_equivalent and current_relationship.relationship_type == relationship.relationship_type
+        return is_equivalent
 
 
 # Adds relationships and inverse relationships for each required entity
@@ -145,7 +146,7 @@ def add_relationships(model, objects):
                     entity_label = relationship.name if conflicting else first_entity_name
                     add_M2O_relationship(first_entity, second_entity, get_word_plural(entity_label), relationship.name)
 
-    
+
 # Adds attributes to the given entity for its name and type
 def add_entity_attribute(entity, name, core_data_type, optional):
     if name == "id":
@@ -179,7 +180,7 @@ def add_entities(model, objects):
                 add_entity_attribute(entity, field.name, get_data_type(field), field.optional)
 
 
-# Parses the given XML's model element and creates our initial root 
+# Parses the given XML's model element and creates our initial root
 def get_model(xml):
     xml_doc = minidom.parse(xml)
     item_list = xml_doc.getElementsByTagName('model')

@@ -30,7 +30,8 @@ class API(object):
         elif attribute in self.VALID_AUTH:
             self.authorization = attribute
         else:
-            raise SignalsError("Found invalid authorization attribute: {} for {}, exiting.".format(attribute, self.url_path))
+            error_message = "Found invalid authorization attribute: {} for {}, exiting."
+            raise SignalsError(error_message.format(attribute, self.url_path))
 
 
 class GetAPI(API):
