@@ -60,3 +60,5 @@ target/
 
 # Generators
 code/
+tests/files/DataModel.h
+tests/files/DataModel.m
