@@ -19,7 +19,7 @@ class APITestCase(unittest.TestCase):
         api = API("user/", {})
         self.assertIsNone(api.authorization)
 
-        api.set_authorization({"#meta": "basicauth,optional"})
+        api.set_authorization({"#meta": "basicauth, optional"})
 
         self.assertTrue(api.authorization_optional)
         self.assertEqual(api.authorization, API.BASIC_AUTH)

@@ -54,16 +54,20 @@ class SchemaTestCase(unittest.TestCase):
     def test_create_field(self):
         data_object = DataObject("$testRequest", {})
         self.assertEqual(data_object.fields, [])
-        data_object.create_field("username", "string")
+        data_object.create_field("username", "string, optional")
         self.assertEqual(len(data_object.fields), 1)
         self.assertEqual(data_object.fields[0].name, "username")
+        self.assertEqual(data_object.fields[0].field_type, "string")
+        self.assertEqual(data_object.fields[0].optional, True)
 
     def test_create_relationship(self):
         data_object = DataObject("$testRequest", {})
         self.assertEqual(data_object.relationships, [])
-        data_object.create_field("messages", "O2M,$messageResponse")
+        data_object.create_field("messages", "O2M, $messageResponse")
         self.assertEqual(len(data_object.relationships), 1)
         self.assertEqual(data_object.relationships[0].name, "messages")
+        self.assertEqual(data_object.relationships[0].relationship_type, "O2M")
+        self.assertEqual(data_object.relationships[0].related_object, "$messageResponse")
 
     def test_empty_data_object_properties(self):
         data_object = DataObject("$testRequest", {})

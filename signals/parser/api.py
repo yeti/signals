@@ -22,7 +22,7 @@ class API(object):
         meta = endpoint_json.get('#meta')
         if meta:
             for authorization_attribute in meta.split(","):
-                self.process_authorization_attribute(authorization_attribute)
+                self.process_authorization_attribute(authorization_attribute.strip())
 
     def process_authorization_attribute(self, attribute):
         if attribute == Field.OPTIONAL:

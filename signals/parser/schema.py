@@ -38,7 +38,7 @@ class DataObject(object):
             self.create_field(field_name, field_attributes)
 
     def create_field(self, field_name, field_attributes):
-        field_attributes = field_attributes.split(",")
+        field_attributes = [field_attribute.strip() for field_attribute in field_attributes.split(",")]
         if Relationship.is_relationship(field_attributes):
             self.relationships.append(Relationship(field_name, field_attributes))
         else:
