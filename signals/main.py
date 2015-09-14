@@ -2,7 +2,7 @@ import click
 from signals.parser.schema import Schema
 from signals.generators.ios.ios_generator import iOSGenerator
 from signals.logging import SignalsError, progress
-from signals.settings import save_settings, load_settings
+from signals.settings import save_settings, load_settings, os
 
 generators = {
     'ios': iOSGenerator
@@ -12,7 +12,13 @@ generators = {
 # Create a separate function so that we can unit test.
 # Issues unit testing `main` due to click decorators.
 def run_main(schema, generator_name, data_models, core_data, project_name, api_url, save):
+    homedir = os.path.expanduser('~')
+    print homedir
     schema = Schema(schema)
+
+    if not api_url.endswith('/'):
+        api_url += '/'
+
     generator = generators[generator_name](schema, data_models, core_data, project_name, api_url)
     try:
         generator.process()
