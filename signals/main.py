@@ -13,6 +13,10 @@ generators = {
 # Issues unit testing `main` due to click decorators.
 def run_main(schema, generator_name, data_models, core_data, project_name, api_url, save):
     schema = Schema(schema)
+
+    if not api_url.endswith('/'):
+        api_url += '/'
+
     generator = generators[generator_name](schema, data_models, core_data, project_name, api_url)
     try:
         generator.process()
