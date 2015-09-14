@@ -13,6 +13,7 @@ generators = {
 # Issues unit testing `main` due to click decorators.
 def run_main(schema, generator_name, data_models, core_data, project_name, api_url, save):
     schema = Schema(schema)
+
     generator = generators[generator_name](schema, data_models, core_data, project_name, api_url)
     try:
         generator.process()
@@ -46,6 +47,13 @@ def project_specified(ctx, param, value):
         ctx.exit()
 
 
+def add_trailing_slash_to_api(ctx, param, value):
+    if not value.endswith('/'):
+        value += '/'
+
+    return value
+
+
 @click.command()
 @click.option('settings_path', '--settingspath',
               help='The project path where Signals should look for a .signalsconfig file.  If specified, the contents'
@@ -76,7 +84,8 @@ def project_specified(ctx, param, value):
               prompt='the string url of your api or a method call that returns it',
               help='The fully qualified url of your API for making calls or a method that will return the API, '
                    'ex. Constants.getAPIURL()',
-              type=click.STRING)
+              type=click.STRING,
+              callback=add_trailing_slash_to_api)
 @click.option('--save', is_flag=True)
 # TODO: These are iOS specific settings and we'll need to figure out a way to handle generator specific arguments
 # when we add more generators in the future.
