@@ -1,7 +1,7 @@
 import mock
 import unittest
 import subprocess
-from signals.main import run_main
+from signals.main import run_main, add_trailing_slash_to_api
 from tests.utils import captured_stderr, captured_stdout
 
 
@@ -28,3 +28,13 @@ class MainTestCase(unittest.TestCase):
             run_main("./tests/files/test_schema.json", "ios", "./tests/files/", "./core/data/path", "YetiProject",
                      "http://test.com/api/v1/", False)
             self.assertIn("Must quit Xcode before writing to core data", out.getvalue())
+
+    def test_add_trailing_slash_to_api(self):
+        url_no_slash = 'http://test.com'
+        url_with_slash = add_trailing_slash_to_api(None, None, url_no_slash)
+        # '/' has been added to the url string if it did not end in a slash
+        self.assertEqual(url_with_slash, 'http://test.com/')
+
+        same_url = add_trailing_slash_to_api(None, None, url_with_slash)
+        # '/' has not been added to the url string if it already ended in a slash
+        self.assertEqual(same_url, 'http://test.com/')
