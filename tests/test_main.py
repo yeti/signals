@@ -1,7 +1,8 @@
+import click
 import mock
 import unittest
 import subprocess
-from signals.main import run_main, add_trailing_slash_to_api
+from signals.main import run_main, add_trailing_slash_to_api, validate_schema_path
 from tests.utils import captured_stderr, captured_stdout
 
 
@@ -28,6 +29,46 @@ class MainTestCase(unittest.TestCase):
             run_main("./tests/files/test_schema.json", "ios", "./tests/files/", "./core/data/path", "YetiProject",
                      "http://test.com/api/v1/", False)
             self.assertIn("Must quit Xcode before writing to core data", out.getvalue())
+
+    #
+    # Tests for command option callback functions:
+    #
+    @mock.patch('os.path')
+    def test_validate_schema_path_with_full_path(self, mock_path):
+        full_path = '/projects/test.json'
+        mock_path.isfile.return_value = True
+
+        validate_schema_path(None, None, full_path)
+
+        mock_path.isfile.assert_called_with(full_path)
+
+    @mock.patch('os.path')
+    def test_validate_schema_path_with_expanduser(self, mock_path):
+        no_home_dir_path = '~/test.json'
+        mock_path.expanduser.return_value = '/projects/test.json'
+
+        validate_schema_path(None, None, no_home_dir_path)
+
+        mock_path.expanduser.assert_called_with(no_home_dir_path)
+        mock_path.isfile.assert_called_with(mock_path.expanduser.return_value)
+
+    @mock.patch('os.path')
+    def test_validate_schema_path_with_abspath(self, mock_path):
+        no_home_dir_path = './test.json'
+        mock_path.abspath.return_value = '/projects/test.json'
+
+        validate_schema_path(None, None, no_home_dir_path)
+
+        mock_path.abspath.assert_called_with(no_home_dir_path)
+        mock_path.isfile.assert_called_with(mock_path.abspath.return_value)
+
+    @mock.patch('os.path')
+    def test_validate_schema_path_fails(self, mock_path):
+        bad_file_path = 'bad_path'
+        mock_path.isfile.return_value = False
+
+        args = {'ctx': None, 'param': None, 'value': bad_file_path}
+        self.assertRaises(click.BadParameter, validate_schema_path, **args)
 
     def test_add_trailing_slash_to_api(self):
         url_no_slash = 'http://test.com'
