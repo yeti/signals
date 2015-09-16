@@ -1,8 +1,10 @@
+import os
 import click
 import mock
 import unittest
 import subprocess
 from signals.main import run_main, add_trailing_slash_to_api, validate_schema_path
+from signals.generators.base.base_generator import BaseGenerator
 from tests.utils import captured_stderr, captured_stdout
 
 
@@ -29,6 +31,16 @@ class MainTestCase(unittest.TestCase):
             run_main("./tests/files/test_schema.json", "ios", "./tests/files/", "./core/data/path", "YetiProject",
                      "http://test.com/api/v1/", False)
             self.assertIn("Must quit Xcode before writing to core data", out.getvalue())
+
+    def test_clear_generated_code_files(self):
+        # Currently, a previous test is creating, but not deleting, this directory.
+        # Potentially could change in future, thus the check if BUILD_DIR exists.
+        if not os.path.exists(BaseGenerator.BUILD_DIR):
+            os.makedirs(BaseGenerator.BUILD_DIR)
+
+        self.assertTrue(os.path.isdir(BaseGenerator.BUILD_DIR))
+        BaseGenerator.clear_generated_code_files()
+        self.assertFalse(os.path.isdir(BaseGenerator.BUILD_DIR))
 
     #
     # Tests for command option callback functions:

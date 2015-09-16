@@ -25,8 +25,13 @@ def run_main(schema, generator_name, data_models, core_data, project_name, api_u
         print(str(e))
     else:
         progress('Finished generating your files!')
+    finally:
+        generator.clear_generated_code_files()
 
 
+#
+# Click command option callback functions:
+#
 def project_specified(ctx, param, value):
     if not value or (ctx is not None and ctx.resilient_parsing):
         return
