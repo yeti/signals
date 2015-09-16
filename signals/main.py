@@ -2,7 +2,7 @@ import click
 from signals.parser.schema import Schema
 from signals.generators.ios.ios_generator import iOSGenerator
 from signals.logging import SignalsError, progress
-from signals.settings import save_settings, load_settings
+from signals.settings import save_settings, load_settings, os
 
 generators = {
     'ios': iOSGenerator
@@ -54,6 +54,18 @@ def add_trailing_slash_to_api(ctx, param, value):
     return value
 
 
+def validate_schema_path(ctx, param, value):
+    if value.startswith('~'):
+        value = os.path.expanduser(value)
+    elif value.startswith('.'):
+        value = os.path.abspath(value)
+
+    if not os.path.isfile(value):
+        raise click.BadParameter("File doesn't exist.", ctx, param)
+    else:
+        return value
+
+
 @click.command()
 @click.option('settings_path', '--settingspath',
               help='The project path where Signals should look for a .signalsconfig file.  If specified, the contents'
@@ -64,7 +76,8 @@ def add_trailing_slash_to_api(ctx, param, value):
 @click.option('--schema',
               prompt='path to api schema file',
               help='The server\'s API schema file.',
-              type=click.Path(exists=True))
+              type=click.Path(file_okay=True),
+              callback=validate_schema_path)
 @click.option('--generator',
               prompt='name of generator to use',
               help='The name of the generator you\'d like to use.',
