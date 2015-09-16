@@ -79,3 +79,4 @@ class MainTestCase(unittest.TestCase):
         same_url = add_trailing_slash_to_api(None, None, url_with_slash)
         # '/' has not been added to the url string if it already ended in a slash
         self.assertEqual(same_url, 'http://test.com/')
+

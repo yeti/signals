@@ -12,7 +12,6 @@ generators = {
 # Create a separate function so that we can unit test.
 # Issues unit testing `main` due to click decorators.
 def run_main(schema, generator_name, data_models, core_data, project_name, api_url, save):
-
     schema = Schema(schema)
 
     generator = generators[generator_name](schema, data_models, core_data, project_name, api_url)
