@@ -1,10 +1,11 @@
 from datetime import datetime
 from inspect import getmembers, isfunction
 import os
+from signals.helpers import recursively_find_parent_containing_file
 import subprocess
 from jinja2 import Environment, PackageLoader
 import shutil
-from signals.logging import SignalsError, progress
+from signals.logging import SignalsError, progress, warn
 from signals.generators.ios.conversion import sanitize_field_name
 from signals.parser.fields import Field
 from signals.parser.schema import URL
@@ -43,6 +44,7 @@ class iOSGenerator(BaseGenerator):
         self.create_header_file()
         self.create_implementation_file()
         self.copy_data_models()
+        self.check_setup_called()
 
     def create_header_file(self):
         self.process_template('data_model.h.j2', self.header_file, {})
@@ -74,6 +76,34 @@ class iOSGenerator(BaseGenerator):
     def copy_data_models(self):
         shutil.copyfile(self.header_file, "{}/DataModel.h".format(self.data_models_path))
         shutil.copyfile(self.implementation_file, "{}/DataModel.m".format(self.data_models_path))
+
+    def check_setup_called(self):
+        # Find parent path that contains AppDelegate.swift
+        parent_path_containing_target, filename = recursively_find_parent_containing_file(self.data_models_path,
+                                                                                          ["AppDelegate.swift",
+                                                                                           "AppDelegate.m"])
+        if parent_path_containing_target is None:
+            warn("Warning: Unable to find AppDelegate.swift or AppDelegate.m to verify "
+                 "sharedDataModel().setup() is called")
+            return False
+
+        # Walk the file looking for setup call
+        with open(parent_path_containing_target + os.sep + filename) as f:
+            for line in f:
+                # Looking for either the objective-c version or the swift version of the setup call.
+                # Assuming roughly the following format:
+                # Objective-c: [[DataModel sharedDataModel] setup]
+                # Swift:       DataModel.sharedDataModel().setup()
+                data_model_index = line.find("DataModel")
+                shared_data_model_index = line.find("sharedDataModel")
+                setup_index = line.find("setup")
+                if 0 <= data_model_index and \
+                   data_model_index < shared_data_model_index and \
+                   shared_data_model_index < setup_index:
+                    return True
+
+        warn("Warning: Did not find sharedDataModel().setup() call inside AppDelegate.swift")
+        return False
 
     @staticmethod
     def is_xcode_running():

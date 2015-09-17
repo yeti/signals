@@ -1,6 +1,7 @@
 from signals.logging import SignalsError, progress
 import os.path
-import glob
+
+import helpers
 
 
 def load_settings(settings_path):
@@ -40,17 +41,13 @@ def find_project_root(paths):
         if current_path is None or len(current_path) == 0:
             continue
 
-        # Convert to absolute path, in case we received relative path from user
-        current_path = os.path.abspath(current_path)
-        while current_path != os.sep:
-            # Check if this path has the .xcodeproj or .xcworkspace files
-            if len(glob.glob(current_path + os.sep + "*.xcodeproj")) > 0:
-                return current_path
-            if len(glob.glob(current_path + os.sep + "*.xcworkspace")) > 0:
-                return current_path
+        parent_path_containing_target, filename = helpers.recursively_find_parent_containing_file(current_path,
+                                                                                                  ["*.xcodeproj",
+                                                                                                   "*.xcworkspace"])
+        if parent_path_containing_target is not None:
+            return parent_path_containing_target
 
-            current_path = os.path.normpath(os.path.join(current_path, ".."))
-    return
+    return None
 
 
 def output_settings(project_root, schema, generator_name, data_models, core_data, project_name, api_url):
