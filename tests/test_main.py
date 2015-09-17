@@ -3,7 +3,7 @@ import click
 import mock
 import unittest
 import subprocess
-from signals.main import run_main, add_trailing_slash_to_api, validate_schema_path
+from signals.main import run_main, add_trailing_slash_to_api, validate_path
 from signals.generators.base.base_generator import BaseGenerator
 from tests.utils import captured_stderr, captured_stdout
 
@@ -50,7 +50,7 @@ class MainTestCase(unittest.TestCase):
         full_path = '/projects/test.json'
         mock_path.isfile.return_value = True
 
-        validate_schema_path(None, None, full_path)
+        validate_path(None, None, full_path)
 
         mock_path.isfile.assert_called_with(full_path)
 
@@ -59,7 +59,7 @@ class MainTestCase(unittest.TestCase):
         no_home_dir_path = '~/test.json'
         mock_path.expanduser.return_value = '/projects/test.json'
 
-        validate_schema_path(None, None, no_home_dir_path)
+        validate_path(None, None, no_home_dir_path)
 
         mock_path.expanduser.assert_called_with(no_home_dir_path)
         mock_path.isfile.assert_called_with(mock_path.expanduser.return_value)
@@ -69,7 +69,7 @@ class MainTestCase(unittest.TestCase):
         no_home_dir_path = './test.json'
         mock_path.abspath.return_value = '/projects/test.json'
 
-        validate_schema_path(None, None, no_home_dir_path)
+        validate_path(None, None, no_home_dir_path)
 
         mock_path.abspath.assert_called_with(no_home_dir_path)
         mock_path.isfile.assert_called_with(mock_path.abspath.return_value)
@@ -80,7 +80,7 @@ class MainTestCase(unittest.TestCase):
         mock_path.isfile.return_value = False
 
         args = {'ctx': None, 'param': None, 'value': bad_file_path}
-        self.assertRaises(click.BadParameter, validate_schema_path, **args)
+        self.assertRaises(click.BadParameter, validate_path, **args)
 
     def test_add_trailing_slash_to_api(self):
         url_no_slash = 'http://test.com'

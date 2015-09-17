@@ -1,0 +1,21 @@
+{
+  "urls": [
+    {
+      "url": "invalid_post/",
+      "doc": "POST request with no response defined in schema",
+      "post": {
+        "#meta": "",
+        "doc": "Expects a base64 encoded password",
+        "request": "$invalidPostRequest",
+        "response": {
+          "200+": "$invalidPostResponse"
+        }
+      }
+    }
+  ],
+  "objects": [
+    {"$invalidPostRequest": {
+        "message": "Testing, testing..."
+    }}
+  ]
+}

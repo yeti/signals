@@ -60,14 +60,15 @@ def add_trailing_slash_to_api(ctx, param, value):
     return value
 
 
-def validate_schema_path(ctx, param, value):
+def validate_path(ctx, param, value):
     if value.startswith('~'):
         value = os.path.expanduser(value)
     elif value.startswith('.'):
         value = os.path.abspath(value)
 
-    if not os.path.isfile(value):
-        raise click.BadParameter("File doesn't exist.", ctx, param)
+    if not os.path.isfile(value) and not os.path.exists(value):
+        error_message = "{} does not exist.".format(value)
+        raise click.BadParameter(error_message, ctx, param)
     else:
         return value
 
@@ -83,7 +84,7 @@ def validate_schema_path(ctx, param, value):
               prompt='path to api schema file',
               help='The server\'s API schema file.',
               type=click.Path(file_okay=True),
-              callback=validate_schema_path)
+              callback=validate_path)
 @click.option('--generator',
               prompt='name of generator to use',
               help='The name of the generator you\'d like to use.',
@@ -91,7 +92,9 @@ def validate_schema_path(ctx, param, value):
 @click.option('data_models', '--datamodels',
               prompt='path to iOS data models',
               help='The location where you\'d like your iOS data model files stored.',
-              type=click.Path())
+              type=click.Path(dir_okay=True),
+              callback=validate_path)
+              # type=click.Path())
 @click.option('core_data', '--coredata',
               help='The location of your core data configuration xcdatamodel file.',
               type=click.Path(exists=True))
