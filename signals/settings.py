@@ -41,9 +41,9 @@ def find_project_root(paths):
         if current_path is None or len(current_path) == 0:
             continue
 
-        parent_path_containing_target = helpers.recursively_find_parent_containing_file(current_path, ["dummyfile",
-                                                                                                       "*.xcodeproj",
-                                                                                                       "*.xcworkspace"])
+        parent_path_containing_target, filename = helpers.recursively_find_parent_containing_file(current_path,
+                                                                                                  ["*.xcodeproj",
+                                                                                                   "*.xcworkspace"])
         if parent_path_containing_target is not None:
             return parent_path_containing_target
 

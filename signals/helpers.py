@@ -9,7 +9,7 @@ def recursively_find_parent_containing_file(current_path, search_files):
         for current_file in search_files:
             # Check if this path has any of the files we're looking for
             if len(glob.glob(current_path + os.sep + current_file)) > 0:
-                return current_path
+                return current_path, current_file
 
         current_path = os.path.normpath(os.path.join(current_path, ".."))
 
