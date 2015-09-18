@@ -29,24 +29,20 @@ class Schema(object):
             data_object = DataObject(object_name, data_object_json[object_name])
             self.data_objects[data_object.name] = data_object
 
-    # Note: Why do we call them "apis" in method names, but then call them "urls" in the schema/code
     def validate_apis_and_objects(self):
         for url in self.urls:
+            # Loop over endpoints for each url in the schema
             for endpoint in URL.URL_ENDPOINTS.keys():
+                schema_object_types = ['parameters_object', 'request_object', 'response_object']
                 api = getattr(url, endpoint, None)
+                # If there is a defined api endpoint, verify that all necessary objects are defined
                 if api:
-                    if getattr(api, 'parameters_object', None):
-                        if api.parameters_object not in self.data_objects:
-                            error = "{} doesn't exist in schema file".format(api.parameters_object)
-                            raise SignalsError(error)
-                    if getattr(api, 'request_object', None):
-                        if api.request_object not in self.data_objects:
-                            error = "{} doesn't exist in schema file".format(api.request_object)
-                            raise SignalsError(error)
-                    if getattr(api, 'response_object', None):
-                        if api.response_object not in self.data_objects:
-                            error = "{} doesn't exist in schema file".format(api.response_object)
-                            raise SignalsError(error)
+                    for schema_object_type in schema_object_types:
+                        api_schema_object = getattr(api, schema_object_type, None)
+                        if api_schema_object:
+                            if api_schema_object not in self.data_objects:
+                                error = "{} doesn't exist in schema file".format(api_schema_object)
+                                raise SignalsError(error)
 
 
 class DataObject(object):

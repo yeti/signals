@@ -33,15 +33,6 @@ class API(object):
             error_message = "Found invalid authorization attribute: {} for {}, exiting."
             raise SignalsError(error_message.format(attribute, self.url_path))
 
-    # def validate(self, endpoint_json):
-    #     print endpoint_json
-    #     print 'validate'
-
-    # OR
-        # each class has a method that returns an array of what to check
-        # get the array and loop through and check if they all exist, raise error if not
-        # base method should just have an empty array
-
 
 class GetAPI(API):
     RESOURCE_DETAIL = "detail"
@@ -54,19 +45,17 @@ class GetAPI(API):
         default_resource_type = self.RESOURCE_DETAIL if ":id" in url_path else self.RESOURCE_LIST
         self.resource_type = endpoint_json.get('resource_type', default_resource_type)
 
-        self.parameters_object = endpoint_json.get('parameters')  # exists?
+        self.parameters_object = endpoint_json.get('parameters')
         self.response_code = endpoint_json['response'].keys()[0]
-        self.response_object = endpoint_json['response'][self.response_code]  # exists?
-
-    # override API validate method
+        self.response_object = endpoint_json['response'][self.response_code]
 
 
 class RequestResponseAPI(API):
     def __init__(self, url_path, endpoint_json):
         super(RequestResponseAPI, self).__init__(url_path, endpoint_json)
-        self.request_object = endpoint_json['request']  # exists?
+        self.request_object = endpoint_json['request']
         self.response_code = endpoint_json['response'].keys()[0]
-        self.response_object = endpoint_json['response'][self.response_code]  # exists?
+        self.response_object = endpoint_json['response'][self.response_code]
 
 
 class PostAPI(RequestResponseAPI):
@@ -83,4 +72,3 @@ class PutAPI(RequestResponseAPI):
 
 class DeleteAPI(API):
     method = "delete"
-
