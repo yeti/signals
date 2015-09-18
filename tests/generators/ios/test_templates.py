@@ -211,7 +211,6 @@ class TemplateTestCase(unittest.TestCase):
         schema = Schema("./tests/files/test_schema.json")
         self.assertTemplateEqual('data_model.m.j2', 'DataModel.m', {
             'project_name': "TestProject",
-            'api_url': "http://test.com/api/v1/",
             'schema': schema,
             'VIDEO_FIELD': Field.VIDEO,
             'IMAGE_FIELD': Field.IMAGE,

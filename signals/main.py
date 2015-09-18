@@ -11,16 +11,15 @@ generators = {
 
 # Create a separate function so that we can unit test.
 # Issues unit testing `main` due to click decorators.
-def run_main(schema, generator_name, data_models, core_data, project_name, api_url, save):
+def run_main(schema, generator_name, data_models, core_data, project_name, save):
 
     schema = Schema(schema)
 
-    generator = generators[generator_name](schema, data_models, core_data, project_name, api_url)
+    generator = generators[generator_name](schema, data_models, core_data, project_name)
     try:
         generator.process()
         if save:
-            save_settings([data_models, core_data], schema, generator_name, data_models, core_data, project_name,
-                          api_url)
+            save_settings([data_models, core_data], schema, generator_name, data_models, core_data, project_name)
     except SignalsError as e:
         print(str(e))
     else:
@@ -46,7 +45,6 @@ def project_specified(ctx, param, value):
                  setting_dict["data_models"],
                  setting_dict["core_data"],
                  setting_dict["project_name"],
-                 setting_dict["api_url"],
                  False)
 
     if ctx is not None:
@@ -101,14 +99,8 @@ def validate_path(ctx, param, value):
               prompt="name of your iOS project and main target",
               help='The name of your iOS project and main target.',
               type=click.STRING)
-@click.option('api_url', '--apiurl',
-              prompt='the string url of your api or a method call that returns it',
-              help='The fully qualified url of your API for making calls or a method that will return the API, '
-                   'ex. Constants.getAPIURL()',
-              type=click.STRING,
-              callback=add_trailing_slash_to_api)
 @click.option('--save', is_flag=True)
 # TODO: These are iOS specific settings and we'll need to figure out a way to handle generator specific arguments
 # when we add more generators in the future.
-def main(settings_path, schema, generator, data_models, core_data, project_name, api_url, save):
-    run_main(schema, generator, data_models, core_data, project_name, api_url, save)
+def main(settings_path, schema, generator, data_models, core_data, project_name, save):
+    run_main(schema, generator, data_models, core_data, project_name, save)

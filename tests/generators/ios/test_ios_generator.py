@@ -25,7 +25,7 @@ class iOSGeneratorTestCase(unittest.TestCase):
     def test_process_error(self, mock_subprocess):
         mock_subprocess.check_output.return_value = "Xcode.app"
         generator = iOSGenerator(Schema("./tests/files/test_schema.json"), "./tests/files/", "./core/data/path",
-                                 "YetiProject", "http://test.com/api/v1/")
+                                 "YetiProject")
         with self.assertRaises(SignalsError) as e:
             generator.process()
         self.assertEqual(e.exception.msg, "Must quit Xcode before writing to core data")
@@ -33,13 +33,13 @@ class iOSGeneratorTestCase(unittest.TestCase):
     @mock.patch("signals.generators.ios.ios_generator.recursively_find_parent_containing_file", side_effect=good_app_delegate)
     def test_check_setup_called_success(self, mock_function):
         generator = iOSGenerator(Schema("./tests/files/test_schema.json"), "./tests/files/", "./core/data/path",
-                                 "YetiProject", "http://test.com/api/v1/")
+                                 "YetiProject")
         self.assertTrue(generator.check_setup_called())
 
     @mock.patch("signals.generators.ios.ios_generator.recursively_find_parent_containing_file", side_effect=bad_app_delegate)
     def test_check_setup_called_failure(self, mock_function):
         generator = iOSGenerator(Schema("./tests/files/test_schema.json"), "./tests/files/", "./core/data/path",
-                                 "YetiProject", "http://test.com/api/v1/")
+                                 "YetiProject")
         self.assertFalse(generator.check_setup_called())
 
 
