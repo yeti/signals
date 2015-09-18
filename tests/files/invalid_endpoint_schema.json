@@ -54,9 +54,6 @@
     {"$validGetResponse": {
         "test_get": "string"
     }},
-    {"$invalidGetParameters": {
-        "test_get": "string"
-    }},
     {"$validPostRequest": {
         "message": "string"
     }},

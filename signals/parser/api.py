@@ -63,13 +63,10 @@ class GetAPI(API):
 
 class RequestResponseAPI(API):
     def __init__(self, url_path, endpoint_json):
-        # self.validate(endpoint_json)
         super(RequestResponseAPI, self).__init__(url_path, endpoint_json)
         self.request_object = endpoint_json['request']  # exists?
         self.response_code = endpoint_json['response'].keys()[0]
         self.response_object = endpoint_json['response'][self.response_code]  # exists?
-        # print self.response_object
-        # print "done with request response api"
 
 
 class PostAPI(RequestResponseAPI):

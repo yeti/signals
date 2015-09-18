@@ -17,44 +17,7 @@ class Schema(object):
             schema_json = json.loads(schema_file.read())
             self.create_objects(schema_json["objects"])
             self.create_apis(schema_json["urls"])
-            # here loop over http methods for each url
-            keys = URL.URL_ENDPOINTS.keys()
-            for url in self.urls:
-                for key in keys:
-                    api = getattr(url, key, None)
-                    if api:  # and getattr(api, 'response', None):
-                        print "**** {} ****".format(url.url_path)
-                        print key
-                        if key == 'get':
-                            attrs = 'authorization', 'authorization_optional', 'content_type', \
-                                    'documentation', 'parameters_object', 'response_code', \
-                                    'response_object', 'url_path'
-                            if api.parameters_object:
-                                if api.parameters_object in self.data_objects:
-                                    print api.parameters_object
-                                else:
-                                    print "parameters_object doesn't exist"
-                            if api.response_code:
-                                print api.response_code
-                            if api.response_object:
-                                if api.response_object in self.data_objects:
-                                    print api.response_object
-                                else:
-                                    print "response_object doesn't exist"
-                        else:
-                            if api.request_object:
-                                if api.request_object in self.data_objects:
-                                    print api.request_object
-                                else:
-                                    print "request_object doesn't exist"
-                            if api.response_code:
-                                print api.response_code
-                            if api.response_object:
-                                if api.response_object in self.data_objects:
-                                    print api.response_object
-                                else:
-                                    print "response_object doesn't exist"
-                                    # raise SignalsError("Response Object does not exist")
+            self.validate_apis_and_objects()
 
     def create_apis(self, urls_json):
         for url_json in urls_json:
@@ -65,6 +28,25 @@ class Schema(object):
             object_name = data_object_json.keys()[0]
             data_object = DataObject(object_name, data_object_json[object_name])
             self.data_objects[data_object.name] = data_object
+
+    # Note: Why do we call them "apis" in method names, but then call them "urls" in the schema/code
+    def validate_apis_and_objects(self):
+        for url in self.urls:
+            for endpoint in URL.URL_ENDPOINTS.keys():
+                api = getattr(url, endpoint, None)
+                if api:
+                    if getattr(api, 'parameters_object', None):
+                        if api.parameters_object not in self.data_objects:
+                            error = "{} doesn't exist in schema file".format(api.parameters_object)
+                            raise SignalsError(error)
+                    if getattr(api, 'request_object', None):
+                        if api.request_object not in self.data_objects:
+                            error = "{} doesn't exist in schema file".format(api.request_object)
+                            raise SignalsError(error)
+                    if getattr(api, 'response_object', None):
+                        if api.response_object not in self.data_objects:
+                            error = "{} doesn't exist in schema file".format(api.response_object)
+                            raise SignalsError(error)
 
 
 class DataObject(object):
