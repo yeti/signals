@@ -78,6 +78,7 @@ class MainTestCase(unittest.TestCase):
     def test_validate_schema_path_fails(self, mock_path):
         bad_file_path = 'bad_path'
         mock_path.isfile.return_value = False
+        mock_path.exists.return_value = False
 
         args = {'ctx': None, 'param': None, 'value': bad_file_path}
         self.assertRaises(click.BadParameter, validate_path, **args)

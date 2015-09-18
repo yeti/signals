@@ -33,8 +33,9 @@ class API(object):
             error_message = "Found invalid authorization attribute: {} for {}, exiting."
             raise SignalsError(error_message.format(attribute, self.url_path))
 
-    # def validate
-        # given an object, see if it exists in the obj array, raise signals error
+    # def validate(self, endpoint_json):
+    #     print endpoint_json
+    #     print 'validate'
 
     # OR
         # each class has a method that returns an array of what to check
@@ -62,10 +63,13 @@ class GetAPI(API):
 
 class RequestResponseAPI(API):
     def __init__(self, url_path, endpoint_json):
+        # self.validate(endpoint_json)
         super(RequestResponseAPI, self).__init__(url_path, endpoint_json)
         self.request_object = endpoint_json['request']  # exists?
         self.response_code = endpoint_json['response'].keys()[0]
         self.response_object = endpoint_json['response'][self.response_code]  # exists?
+        # print self.response_object
+        # print "done with request response api"
 
 
 class PostAPI(RequestResponseAPI):
@@ -83,6 +87,3 @@ class PutAPI(RequestResponseAPI):
 class DeleteAPI(API):
     method = "delete"
 
-
-# to run, main.py, use test_schema.json, don't pass coredata flag, use a fake proj name,
-# put files somewhere easy to check

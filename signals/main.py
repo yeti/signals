@@ -94,7 +94,6 @@ def validate_path(ctx, param, value):
               help='The location where you\'d like your iOS data model files stored.',
               type=click.Path(dir_okay=True),
               callback=validate_path)
-              # type=click.Path())
 @click.option('core_data', '--coredata',
               help='The location of your core data configuration xcdatamodel file.',
               type=click.Path(exists=True))

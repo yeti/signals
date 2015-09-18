@@ -1,7 +1,7 @@
 import json
 from signals.parser.api import GetAPI, PostAPI, PutAPI, PatchAPI, DeleteAPI
 from signals.parser.fields import Relationship, Field
-from signals.logging import warn, progress
+from signals.logging import warn, progress, SignalsError
 
 __author__ = 'rudy'
 
@@ -17,6 +17,44 @@ class Schema(object):
             schema_json = json.loads(schema_file.read())
             self.create_objects(schema_json["objects"])
             self.create_apis(schema_json["urls"])
+            # here loop over http methods for each url
+            keys = URL.URL_ENDPOINTS.keys()
+            for url in self.urls:
+                for key in keys:
+                    api = getattr(url, key, None)
+                    if api:  # and getattr(api, 'response', None):
+                        print "**** {} ****".format(url.url_path)
+                        print key
+                        if key == 'get':
+                            attrs = 'authorization', 'authorization_optional', 'content_type', \
+                                    'documentation', 'parameters_object', 'response_code', \
+                                    'response_object', 'url_path'
+                            if api.parameters_object:
+                                if api.parameters_object in self.data_objects:
+                                    print api.parameters_object
+                                else:
+                                    print "parameters_object doesn't exist"
+                            if api.response_code:
+                                print api.response_code
+                            if api.response_object:
+                                if api.response_object in self.data_objects:
+                                    print api.response_object
+                                else:
+                                    print "response_object doesn't exist"
+                        else:
+                            if api.request_object:
+                                if api.request_object in self.data_objects:
+                                    print api.request_object
+                                else:
+                                    print "request_object doesn't exist"
+                            if api.response_code:
+                                print api.response_code
+                            if api.response_object:
+                                if api.response_object in self.data_objects:
+                                    print api.response_object
+                                else:
+                                    print "response_object doesn't exist"
+                                    # raise SignalsError("Response Object does not exist")
 
     def create_apis(self, urls_json):
         for url_json in urls_json:
