@@ -27,11 +27,8 @@
 
 - (void) setup {
   // Initialize RestKit
-  {% if is_url(api_url) %}
-  NSURL *baseURL = [NSURL URLWithString:@"{{ api_url }}"];
-  {% else %}
-  NSURL *baseURL = {{ api_url }};
-  {% endif %}
+  NSAssert(_delegate != NULL, @"Set DataModel.sharedDataModel().delegate before calling DataModel.sharedDataModel().setup()");
+  NSURL *baseURL = [NSURL URLWithString:[_delegate getBaseURLString]];
   RKObjectManager *objectManager = [RKObjectManager managerWithBaseURL:baseURL];
 
   // Enable Activity Indicator Spinner
