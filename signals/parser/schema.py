@@ -1,7 +1,7 @@
 import json
 from signals.parser.api import GetAPI, PostAPI, PutAPI, PatchAPI, DeleteAPI
 from signals.parser.fields import Relationship, Field
-from signals.logging import warn, progress
+from signals.logging import warn, progress, SignalsError
 
 __author__ = 'rudy'
 
@@ -17,6 +17,7 @@ class Schema(object):
             schema_json = json.loads(schema_file.read())
             self.create_objects(schema_json["objects"])
             self.create_apis(schema_json["urls"])
+            self.validate_apis_and_objects()
 
     def create_apis(self, urls_json):
         for url_json in urls_json:
@@ -27,6 +28,21 @@ class Schema(object):
             object_name = data_object_json.keys()[0]
             data_object = DataObject(object_name, data_object_json[object_name])
             self.data_objects[data_object.name] = data_object
+
+    def validate_apis_and_objects(self):
+        for url in self.urls:
+            # Loop over endpoints for each url in the schema
+            for endpoint in URL.URL_ENDPOINTS.keys():
+                schema_object_types = ['parameters_object', 'request_object', 'response_object']
+                api = getattr(url, endpoint, None)
+                # If there is a defined api endpoint, verify that all necessary objects are defined
+                if api:
+                    for schema_object_type in schema_object_types:
+                        api_schema_object = getattr(api, schema_object_type, None)
+                        if api_schema_object:
+                            if api_schema_object not in self.data_objects:
+                                error = "{} doesn't exist in schema file".format(api_schema_object)
+                                raise SignalsError(error)
 
 
 class DataObject(object):

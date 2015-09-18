@@ -1,0 +1,68 @@
+{
+  "urls": [
+    {
+      "url": "valid_get/",
+      "doc": "GET request that is valid",
+      "get": {
+        "#meta": "",
+        "content_type": "form",
+        "parameters": "$validGetParameters",
+        "response": {
+          "200+": "$validGetResponse"
+        }
+      }
+    },
+    {
+      "url": "invalid_get/",
+      "doc": "GET request that is invalid",
+      "get": {
+        "#meta": "",
+        "content_type": "form",
+        "parameters": "$invalidGetParameters",
+        "response": {
+          "200+": "$invalidGetResponse"
+        }
+      }
+    },
+    {
+      "url": "valid_post/",
+      "doc": "POST request that is valid",
+      "post": {
+        "#meta": "",
+        "request": "$validPostRequest",
+        "response": {
+          "200+": "$validPostResponse"
+        }
+      }
+    },
+    {
+      "url": "invalid_post/",
+      "doc": "POST request with no response defined in schema",
+      "post": {
+        "#meta": "",
+        "request": "$invalidPostRequest",
+        "response": {
+          "200+": "$invalidPostResponse"
+        }
+      }
+    }
+  ],
+  "objects": [
+    {"$validGetParameters": {
+        "test_get": "string"
+    }},
+    {"$validGetResponse": {
+        "test_get": "string"
+    }},
+    {"$validPostRequest": {
+        "message": "string"
+    }},
+    {"$validPostResponse": {
+        "message": "string",
+        "success": "boolean"
+    }},
+    {"$invalidPostRequest": {
+        "message": "string"
+    }}
+  ]
+}
