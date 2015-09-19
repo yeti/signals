@@ -4,6 +4,7 @@ Creates an Xcode Core Data file.
 from xml.dom import minidom
 from lxml import etree
 from signals.parser.fields import Relationship, Field
+from signals.generators.ios.conversion import get_proper_name
 
 DATA_TYPES = {
     Field.DATE: "Date",
@@ -101,6 +102,11 @@ def add_O2M_relationships(many_entity, one_entity, many_entities_relationship_na
     add_one_relationship(one_entity, many_entity, one_entities_relationship_name, many_entities_relationship_name)
 
 
+def add_O2O_relationships(entity_one, entity_two, entity_one_relationship_name, entity_two_relationship_name):
+    add_one_relationship(entity_one, entity_two, entity_two_relationship_name, entity_one_relationship_name)
+    add_one_relationship(entity_two, entity_one, entity_one_relationship_name, entity_two_relationship_name)
+
+
 def get_proper_object_name(obj):
     return obj[1].upper() + obj[2:]
 
@@ -119,32 +125,34 @@ def conflicting_entity_name(relationships, current_relationship):
 def add_relationships(model, objects):
     for object_name, data_object in objects.iteritems():
         for relationship in data_object.relationships:
-            # TODO: We don't support ONE_TO_ONE relationships in core data currently
-            if relationship.relationship_type != Relationship.ONE_TO_ONE:
-                first_entity = second_entity = None
-                for entity in model.iter("entity"):
-                    if entity.get('name') == get_proper_object_name(object_name):
-                        first_entity = entity
-                    elif entity.get('name') == get_proper_object_name(relationship.related_object):
-                        second_entity = entity
+            first_entity = second_entity = None
+            for entity in model.iter("entity"):
+                if entity.get('name') == get_proper_object_name(object_name):
+                    first_entity = entity
+                elif entity.get('name') == get_proper_object_name(relationship.related_object):
+                    second_entity = entity
 
-                first_entity_name = first_entity.get('name').lower().replace("response", "")
-                if relationship.relationship_type == Relationship.ONE_TO_MANY:
-                    add_O2M_relationships(first_entity, second_entity, first_entity_name, relationship.name)
-                elif relationship.relationship_type == Relationship.MANY_TO_MANY:
-                    add_M2M_relationships(first_entity, second_entity, relationship.name,
-                                          get_word_plural(first_entity_name))
-                elif relationship.relationship_type == Relationship.MANY_TO_ONE:
-                    """
-                    If we have a entity which maps to another entity more than once, we can't use that entity's name
-                    instead, let's use the key of the field.
+            first_entity_name = first_entity.get('name').lower().replace("response", "")
+            if relationship.relationship_type == Relationship.ONE_TO_MANY:
+                add_O2M_relationships(first_entity, second_entity, first_entity_name, relationship.name)
+            elif relationship.relationship_type == Relationship.MANY_TO_MANY:
+                add_M2M_relationships(first_entity, second_entity, relationship.name,
+                                      get_word_plural(first_entity_name))
+            elif relationship.relationship_type == Relationship.ONE_TO_ONE:
+                add_O2O_relationships(first_entity, second_entity, get_proper_name(relationship.name),
+                                      first_entity_name)
+            elif relationship.relationship_type == Relationship.MANY_TO_ONE:
+                """
+                If we have a entity which maps to another entity more than once, we can't use that entity's name
+                instead, let's use the key of the field.
 
-                    For example, if we had a user who has followers and is also following other users, our user entity
-                    would have two fields called "follow". This instead calls them followers and following.
-                    """
-                    conflicting = conflicting_entity_name(data_object.relationships, relationship)
-                    entity_label = relationship.name if conflicting else first_entity_name
-                    add_M2O_relationship(first_entity, second_entity, get_word_plural(entity_label), relationship.name)
+                For example, if we had a user who has followers and is also following other users, our user entity
+                would have two fields called "follow". This instead calls them followers and following.
+                """
+                conflicting = conflicting_entity_name(data_object.relationships, relationship)
+                entity_label = relationship.name if conflicting else first_entity_name
+                add_M2O_relationship(first_entity, second_entity, get_word_plural(entity_label),
+                                     get_proper_name(relationship.name))
 
 
 # Adds attributes to the given entity for its name and type
