@@ -25,9 +25,10 @@
   return __sharedDataModel;
 }
 
-- (void) setup {
+- (void) setup:(id<DataModelDelegate>)delegate {
   // Initialize RestKit
-  NSAssert(_delegate != NULL, @"Set DataModel.sharedDataModel().delegate before calling DataModel.sharedDataModel().setup()");
+  _delegate = delegate;
+  NSAssert(_delegate != NULL, @"delegate parameter cannot be NULL");
   NSURL *baseURL = [NSURL URLWithString:[_delegate getBaseURLString]];
   RKObjectManager *objectManager = [RKObjectManager managerWithBaseURL:baseURL];
 
