@@ -10,7 +10,7 @@ from signals.parser.api import API, GetAPI
 from signals.parser.fields import Field
 
 
-def method_name(api, data_objects):
+def method_name(api):
     # First create camel cased name from snake case
     method_name_string = ""
     for part in re.split(r'[/_]+', api.url_path):
@@ -20,7 +20,7 @@ def method_name(api, data_objects):
             method_name_string += part.capitalize()
 
     first_parameter_name = "Success"
-    request_object = get_api_request_object(api, data_objects)
+    request_object = get_api_request_object(api)
     if request_object and len(request_object.properties()) > 0:
         first_field = request_object.properties()[0]
         first_parameter_name = get_proper_name(first_field.name, capitalize_first=True)
@@ -30,11 +30,11 @@ def method_name(api, data_objects):
     return "{}With{}".format(method_name_string, first_parameter_name)
 
 
-def method_parameters(api, data_objects):
+def method_parameters(api):
     parameters = []
 
     # Create request object parameters
-    request_object = get_api_request_object(api, data_objects)
+    request_object = get_api_request_object(api)
     if request_object:
         parameters.extend(generate_field_parameters(request_object))
         parameters.extend(generate_relationship_parameters(request_object))
@@ -66,10 +66,10 @@ def key_path(api):
 
 
 def get_object_name(request_object, upper_camel_case=False):
-    first_letter = request_object[1]
+    first_letter = request_object.name[1]
     if upper_camel_case:
         first_letter = first_letter.upper()
-    return first_letter + request_object[2:]
+    return first_letter + request_object.name[2:]
 
 
 def get_url_name(url_path):
@@ -135,8 +135,6 @@ def create_parameter_signature(parameters):
     return " ".join(method_parts)
 
 
-def get_api_request_object(api, data_objects):
+def get_api_request_object(api):
     # We treat both request and parameter objects equally in method signatures
-    request_object_name = getattr(api, 'request_object', getattr(api, 'parameters_object', None))
-    if request_object_name:
-        return data_objects[request_object_name]
+    return getattr(api, 'request_object', getattr(api, 'parameters_object', None))

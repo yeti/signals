@@ -1,4 +1,4 @@
-  {% set parameters_object = schema.data_objects[api.parameters_object] %}
+  {% set parameters_object = api.parameters_object %}
   NSMutableDictionary* queryParams = [NSMutableDictionary dictionaryWithCapacity:{{ parameters_object.fields|length }}];
   {% for field in parameters_object.fields %}
   if ({{ get_proper_name(field.name) }}) {

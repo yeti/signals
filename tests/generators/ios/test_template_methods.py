@@ -6,6 +6,7 @@ from signals.parser.api import GetAPI, API, PatchAPI
 from signals.generators.ios.template_methods import is_url, is_oauth, content_type, get_object_name, get_url_name, \
     get_media_fields, media_field_check, key_path, attribute_mappings, get_api_request_object, \
     create_parameter_signature, method_name, method_parameters
+from tests.utils import create_dynamic_schema
 
 
 class TemplateMethodsTestCase(unittest.TestCase):
@@ -15,33 +16,51 @@ class TemplateMethodsTestCase(unittest.TestCase):
                 "200+": "$postResponse"
             }
         })
-        self.assertEqual(method_name(api, []), "PostWithSuccess")
+        self.assertEqual(method_name(api), "PostWithSuccess")
 
         api = GetAPI("post/:id/", {
             "response": {
                 "200+": "$postResponse"
             }
         })
-        self.assertEqual(method_name(api, []), "PostWithTheID")
+        self.assertEqual(method_name(api), "PostWithTheID")
 
-        api = PatchAPI("post/:id/", {
-            "request": "$postRequest",
-            "response": {
-                "200+": "$postResponse"
+        objects_json = {
+            '$postRequest': {"body": "string", "title": "string"},
+            '$postResponse': {"body": "string", "title": "string"}
+        }
+        urls_json = [
+            {
+                "url": "post/:id/",
+                "patch": {
+                    "request": "$postRequest",
+                    "response": {
+                        "200+": "$postResponse"
+                    }
+                }
             }
-        })
-        data_objects = {'$postRequest': DataObject("$postRequest", {"body": "string", "title": "string"})}
-        self.assertEqual(method_name(api, data_objects), "PostWithBody")
+        ]
+        schema = create_dynamic_schema(objects_json, urls_json)
+        self.assertEqual(method_name(schema.urls[0].patch), "PostWithBody")
 
     def test_method_parameters(self):
-        api = PatchAPI("post/:id/", {
-            "request": "$postRequest",
-            "response": {
-                "200+": "$postResponse"
+        objects_json = {
+            '$postRequest': {"body": "string", "title": "string"},
+            '$postResponse': {"body": "string", "title": "string"}
+        }
+        urls_json = [
+            {
+                "url": "post/:id/",
+                "patch": {
+                    "request": "$postRequest",
+                    "response": {
+                        "200+": "$postResponse"
+                    }
+                }
             }
-        })
-        data_objects = {'$postRequest': DataObject("$postRequest", {"body": "string", "title": "string"})}
-        parameter_signature = method_parameters(api, data_objects)
+        ]
+        schema = create_dynamic_schema(objects_json, urls_json)
+        parameter_signature = method_parameters(schema.urls[0].patch)
         expected = "(NSString*)body title:(NSString*)title theID:(NSNumber*)theID " \
                    "success:(void (^)(RKObjectRequestOperation *operation, RKMappingResult *mappingResult))success " \
                    "failure:(void (^)(RKObjectRequestOperation *operation, NSError *error))failure"
@@ -66,8 +85,9 @@ class TemplateMethodsTestCase(unittest.TestCase):
         self.assertEqual(key_path(api), 'nil')
 
     def test_get_object_name(self):
-        self.assertEqual(get_object_name("$postRequest"), "postRequest")
-        self.assertEqual(get_object_name("$postRequest", upper_camel_case=True), "PostRequest")
+        data_object = DataObject("$postRequest", {})
+        self.assertEqual(get_object_name(data_object), "postRequest")
+        self.assertEqual(get_object_name(data_object, upper_camel_case=True), "PostRequest")
 
     def test_get_url_name(self):
         self.assertEqual(get_url_name("/post/:id/favorite/"), "PostWithIdFavorite")
@@ -132,19 +152,36 @@ class TemplateMethodsTestCase(unittest.TestCase):
         self.assertEqual(parameter_signature, "(NSString*)title userId:(NSNumber*)userId")
 
     def test_get_api_request_object(self):
-        api = PatchAPI("post/:id/favorites/", {
-            "request": "$postRequest",
-            "response": {
-                "200+": "$postResponse"
+        objects_json = {
+            '$postRequest': {"body": "string", "title": "string"},
+            '$postResponse': {"body": "string", "title": "string"}
+        }
+        urls_json = [
+            {
+                "url": "post/:id/favorites/",
+                "patch": {
+                    "request": "$postRequest",
+                    "response": {
+                        "200+": "$postResponse"
+                    }
+                }
             }
-        })
-        post_request_object = DataObject("$postRequest", {})
-        data_objects = {'$postRequest': post_request_object}
-        self.assertEqual(get_api_request_object(api, data_objects), post_request_object)
+        ]
+        schema = create_dynamic_schema(objects_json, urls_json)
+        self.assertEqual(get_api_request_object(schema.urls[0].patch), schema.urls[0].patch.request_object)
 
-        api = GetAPI("follow/", {
-            "response": {
-                "200+": "$followResponse"
+        objects_json = {
+            '$followResponse': {"body": "string", "title": "string"}
+        }
+        urls_json = [
+            {
+                "url": "follow/",
+                "get": {
+                    "response": {
+                        "200+": "$followResponse"
+                    }
+                }
             }
-        })
-        self.assertIsNone(get_api_request_object(api, data_objects))
+        ]
+        schema = create_dynamic_schema(objects_json, urls_json)
+        self.assertIsNone(get_api_request_object(schema.urls[0].get))
