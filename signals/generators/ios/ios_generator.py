@@ -15,13 +15,12 @@ from signals.generators.ios import template_methods
 
 
 class iOSGenerator(BaseGenerator):
-    def __init__(self, schema, data_models_path, core_data_path, project_name, api_url):
+    def __init__(self, schema, data_models_path, core_data_path, project_name):
         super(iOSGenerator, self).__init__(schema)
         # Command flags
         self.data_models_path = data_models_path
         self.core_data_path = core_data_path
         self.project_name = project_name
-        self.api_url = api_url
 
         # Setup
         if not os.path.exists(BaseGenerator.BUILD_DIR):
@@ -52,7 +51,6 @@ class iOSGenerator(BaseGenerator):
     def create_implementation_file(self):
         self.process_template('data_model.m.j2', self.implementation_file, {
             'project_name': self.project_name,
-            'api_url': self.api_url,
             'VIDEO_FIELD': Field.VIDEO,
             'IMAGE_FIELD': Field.IMAGE,
             'request_objects': self.get_request_objects(self.schema.data_objects),

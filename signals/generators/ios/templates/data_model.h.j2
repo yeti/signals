@@ -9,9 +9,18 @@
 @class RKMappingResult;
 @class UIImage;
 
+@protocol DataModelDelegate <NSObject>
+
+- (NSString*)getBaseURLString;
+- (NSString*)getAccessToken;
+
+@end
+
+
 @interface DataModel : NSObject
 
 + (DataModel *)sharedDataModel;
+@property (weak) id <DataModelDelegate> delegate;
 
 {% for url in schema.urls %}
 /**

@@ -14,7 +14,7 @@ class SettingsTestCase(unittest.TestCase):
         # Run normally to generate settings file
         with captured_stderr() as error, captured_stdout() as out:
             run_main("./tests/files/test_schema.json", "ios", "./tests/files/", "./tests/files/dummycontents",
-                     "YetiProject", "http://test.com", True)
+                     "YetiProject", True)
             self.assertEqual(error.getvalue(), "")
             self.assertIn("Finished generating your files!", out.getvalue())
 

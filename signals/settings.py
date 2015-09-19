@@ -22,7 +22,7 @@ def load_settings(settings_path):
     return setting_dict
 
 
-def save_settings(paths, schema, generator_name, data_models, core_data, project_name, api_url):
+def save_settings(paths, schema, generator_name, data_models, core_data, project_name):
     project_root = find_project_root(paths)
     if project_root is not None and len(project_root) > 0:
         output_settings(project_root,
@@ -30,8 +30,7 @@ def save_settings(paths, schema, generator_name, data_models, core_data, project
                         generator_name,
                         os.path.abspath(data_models),
                         os.path.abspath(core_data) if core_data else "",
-                        project_name,
-                        api_url)
+                        project_name)
     else:
         raise SignalsError("Failed to locate project root")
 
@@ -50,11 +49,11 @@ def find_project_root(paths):
     return None
 
 
-def output_settings(project_root, schema, generator_name, data_models, core_data, project_name, api_url):
+def output_settings(project_root, schema, generator_name, data_models, core_data, project_name):
     settings_filename = project_root + os.sep + ".signalsconfig"
     progress("Writing settings to {}".format(settings_filename))
-    keys = ["schema", "generator", "data_models", "core_data", "project_name", "api_url"]
-    values = [schema, generator_name, data_models, core_data, project_name, api_url]
+    keys = ["schema", "generator", "data_models", "core_data", "project_name"]
+    values = [schema, generator_name, data_models, core_data, project_name]
 
     with open(settings_filename, "w") as settings_file:
         for (key, val) in zip(keys, values):
