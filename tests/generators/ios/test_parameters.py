@@ -2,6 +2,7 @@ import unittest
 from signals.generators.ios.parameters import has_id_field, create_id_parameter, generate_relationship_parameters, \
     generate_field_parameters
 from signals.parser.schema import DataObject
+from tests.utils import create_dynamic_schema
 
 
 class ParametersTestCase(unittest.TestCase):
@@ -31,11 +32,16 @@ class ParametersTestCase(unittest.TestCase):
         self.assertIsNone(create_id_parameter("/post/:id/", request_object))
 
     def test_generate_relationship_parameters(self):
-        request_object = DataObject("$userRequest", {
-            "username": "string",
-            "profile": "O2O,$profileRequest",
-            "tags": "M2M,$tagRequest"
-        })
+        schema = create_dynamic_schema({
+            "$userRequest": {
+                "username": "string",
+                "profile": "O2O,$profileRequest",
+                "tags": "M2M,$tagRequest"
+            },
+            "$profileRequest": {},
+            "$tagRequest": {}
+        }, [])
+        request_object = schema.data_objects['$userRequest']
         parameters = generate_relationship_parameters(request_object)
         self.assertEqual(parameters[0].name, "profile")
         self.assertEqual(parameters[0].objc_type, "ProfileRequest")

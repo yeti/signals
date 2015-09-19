@@ -10,6 +10,7 @@ from signals.parser.fields import Relationship, Field
 from signals.parser.schema import DataObject, Schema, URL
 from signals.generators.ios import template_methods
 from signals.parser.api import GetAPI, PatchAPI, PostAPI
+from tests.utils import create_dynamic_schema
 
 
 class TemplateTestCase(unittest.TestCase):
@@ -34,100 +35,132 @@ class TemplateTestCase(unittest.TestCase):
             self.assertEqual(template_output, expected_template_out)
 
     def test_descriptors_request_template(self):
-        api = PatchAPI("post/:id/", {
-            "request": "$postRequest",
-            "response": {
-                "200+": "$postResponse"
+        objects_json = {
+            '$postRequest': {"body": "string", "title": "string"},
+            '$postResponse': {"body": "string", "title": "string"}
+        }
+        urls_json = [
+            {
+                "url": "post/:id/",
+                "patch": {
+                    "request": "$postRequest",
+                    "response": {
+                        "200+": "$postResponse"
+                    }
+                }
             }
-        })
+        ]
+        schema = create_dynamic_schema(objects_json, urls_json)
         self.assertTemplateEqual('descriptors/request.j2', 'PatchRequestDescriptor.m', {
-            'api': api
+            'api': schema.urls[0].patch
         })
 
-        api = PostAPI("post/", {
-            "request": "$postRequest",
-            "response": {
-                "200+": "$postResponse"
+        urls_json = [
+            {
+                "url": "post/",
+                "post": {
+                    "request": "$postRequest",
+                    "response": {
+                        "200+": "$postResponse"
+                    }
+                }
             }
-        })
+        ]
+        schema = create_dynamic_schema(objects_json, urls_json)
         self.assertTemplateEqual('descriptors/request.j2', 'PostRequestDescriptor.m', {
-            'api': api
+            'api': schema.urls[0].post
         })
 
     def test_descriptors_response_template(self):
-        api = GetAPI("post/", {
-            "response": {
-                "200+": "$postResponse"
+        objects_json = {
+            '$postResponse': {"body": "string", "title": "string"}
+        }
+        urls_json = [
+            {
+                "url": "post/",
+                "get": {
+                    "response": {
+                        "200+": "$postResponse"
+                    }
+                }
             }
-        })
+        ]
+        schema = create_dynamic_schema(objects_json, urls_json)
+
         self.assertTemplateEqual('descriptors/response.j2', 'GetResponseDescriptor.m', {
-            'api': api
+            'api': schema.urls[0].get
         })
 
     def test_methods_parameters_template(self):
-        api = GetAPI("post/", {
-            "parameters": "$postParameters",
-            "response": {
-                "200+": "$postResponse"
-            }
-        })
-        # Mock schema object
-        schema = {
-            'data_objects': {
-                '$postParameters': DataObject("$postParameters", {
-                    'user_id': 'int',
-                    'title': 'string'
-                })
-            }
+        objects_json = {
+            '$postResponse': {"body": "string", "title": "string"},
+            "$postParameters": {'user_id': 'int', 'title': 'string'}
         }
+        urls_json = [
+            {
+                "url": "post/",
+                "get": {
+                    "parameters": "$postParameters",
+                    "response": {
+                        "200+": "$postResponse"
+                    }
+                }
+            }
+        ]
+        schema = create_dynamic_schema(objects_json, urls_json)
         self.assertTemplateEqual('methods/parameters.j2', 'MethodParameters.m', {
-            'api': api,
+            'api': schema.urls[0].get,
             'schema': schema
         })
 
     def test_methods_request_template(self):
-        api = PostAPI("post/", {
-            "request": "$postRequest",
-            "response": {
-                "200+": "$postResponse"
-            }
-        })
-        # Mock schema object
-        schema = {
-            'data_objects': {
-                '$postRequest': DataObject("$postParameters", {
-                    'body': 'string',
-                    'title': 'string'
-                })
-            }
+        objects_json = {
+            '$postRequest': {"body": "string", "title": "string"},
+            '$postResponse': {"body": "string", "title": "string"}
         }
+        urls_json = [
+            {
+                "url": "post/",
+                "post": {
+                    "request": "$postRequest",
+                    "response": {
+                        "200+": "$postResponse"
+                    }
+                }
+            }
+        ]
+        schema = create_dynamic_schema(objects_json, urls_json)
         self.assertTemplateEqual('methods/request.j2', 'MethodRequest.m', {
-            'api': api,
+            'api': schema.urls[0].post,
             'schema': schema,
             'VIDEO_FIELD': Field.VIDEO,
             'IMAGE_FIELD': Field.IMAGE,
         })
 
     def test_methods_request_template_with_media_fields(self):
-        api = PostAPI("post/", {
-            "request": "$postRequest",
-            "response": {
-                "200+": "$postResponse"
-            }
-        })
-        # Mock schema object
-        schema = {
-            'data_objects': {
-                '$postRequest': DataObject("$postRequest", {
-                    'body': 'string',
-                    'title': 'string',
-                    'video': 'video',
-                    'thumbnail': 'image'
-                })
-            }
+        objects_json = {
+            '$postRequest': {
+                'body': 'string',
+                'title': 'string',
+                'video': 'video',
+                'thumbnail': 'image'
+            },
+            '$postResponse': {"body": "string", "title": "string"}
         }
+        urls_json = [
+            {
+                "url": "post/",
+                "post": {
+                    "request": "$postRequest",
+                    "response": {
+                        "200+": "$postResponse"
+                    }
+                }
+            }
+        ]
+        schema = create_dynamic_schema(objects_json, urls_json)
         self.assertTemplateEqual('methods/request.j2', 'MethodRequestWithMediaFields.m', {
-            'api': api,
+            'api': schema.urls[0].post,
             'schema': schema,
             'VIDEO_FIELD': Field.VIDEO,
             'IMAGE_FIELD': Field.IMAGE,
@@ -190,9 +223,19 @@ class TemplateTestCase(unittest.TestCase):
         })
 
     def test_relationship_mapping_template(self):
+        post_object = DataObject('$postResponse', {
+            'id': 'int,primarykey',
+            'title': 'string',
+            'body': 'string'
+        })
+        user_object = DataObject('$userResponse', {
+            'id': 'int,primarykey'
+        })
+        relationship = Relationship('user', ["M2O", "$userResponse"])
+        relationship.related_object = user_object
         self.assertTemplateEqual('relationship_mapping.j2', 'RelationshipMapping.m', {
-            'name': '$postResponse',
-            'relationship': Relationship('user', ["M2O", "$userResponse"])
+            'data_object': post_object,
+            'relationship': relationship
         })
 
     def test_data_model_header_template(self):

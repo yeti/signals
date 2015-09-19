@@ -40,14 +40,14 @@ class SchemaTestCase(unittest.TestCase):
     def test_create_objects(self):
         schema = Schema("./tests/files/empty_schema.json")
         self.assertEqual(schema.data_objects, {})
-        schema.create_objects([
-            {"$resetPasswordRequest": {
+        schema.create_objects({
+            "$resetPasswordRequest": {
                 "email": "string"
-            }},
-            {"$resetPasswordResponse": {
+            },
+            "$resetPasswordResponse": {
                 "status": "string"
-            }}
-        ])
+            }
+        })
         self.assertEqual(len(schema.data_objects), 2)
         self.assertEqual(schema.data_objects['$resetPasswordRequest'].name, '$resetPasswordRequest')
 

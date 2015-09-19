@@ -18,15 +18,15 @@ class Schema(object):
             self.create_objects(schema_json["objects"])
             self.create_apis(schema_json["urls"])
             self.validate_apis_and_objects()
+            self.add_relationship_objects()
 
     def create_apis(self, urls_json):
         for url_json in urls_json:
             self.urls.append(URL(url_json))
 
     def create_objects(self, object_json):
-        for data_object_json in object_json:
-            object_name = data_object_json.keys()[0]
-            data_object = DataObject(object_name, data_object_json[object_name])
+        for object_name, data_object_json in object_json.iteritems():
+            data_object = DataObject(object_name, data_object_json)
             self.data_objects[data_object.name] = data_object
 
     def validate_apis_and_objects(self):
@@ -43,6 +43,14 @@ class Schema(object):
                             if api_schema_object not in self.data_objects:
                                 error = "{} doesn't exist in schema file".format(api_schema_object)
                                 raise SignalsError(error)
+                            else:  # replace the schema object name string with a reference to the actual object
+                                setattr(api, schema_object_type, self.data_objects[api_schema_object])
+
+    def add_relationship_objects(self):
+        # Change all the relationship objects from names to objects
+        for object in self.data_objects.itervalues():
+            for relationship in object.relationships:
+                relationship.related_object = self.data_objects[relationship.related_object]
 
 
 class DataObject(object):

@@ -1,6 +1,7 @@
 import sys
 import contextlib
 from StringIO import StringIO
+from signals.parser.schema import Schema
 
 
 @contextlib.contextmanager
@@ -30,3 +31,11 @@ def captured_stderr():
 
 def captured_stdin():
     return captured_output("stdin")
+
+def create_dynamic_schema(objects_json, urls_json):
+    schema = Schema("./tests/files/empty_schema.json")
+    schema.create_objects(objects_json)
+    schema.create_apis(urls_json)
+    schema.validate_apis_and_objects()
+    schema.add_relationship_objects()
+    return schema
