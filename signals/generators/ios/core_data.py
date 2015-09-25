@@ -170,6 +170,8 @@ def add_entity_attribute(entity, name, core_data_type, optional):
         name = "theID"
     elif name == "description":
         name = "theDescription"
+    elif name == "default":
+        name = "isDefault"
     elif '_' in name:
         words = name.split('_')
         name = words[0]
