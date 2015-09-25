@@ -68,7 +68,7 @@ def add_one_relationship(entity_one, entity_two, entity_one_name, entity_two_nam
                                           entity_two_name,
                                           entity_two.get('name'),
                                           entity_one_name,
-                                          entity_two.get('name'))
+                                          entity_one.get('name'))
     relationship.set("minCount", "1")
     relationship.set("maxCount", "1")
 
@@ -79,7 +79,7 @@ def add_many_relationship(entity_one, entity_two, entity_one_name, entity_two_na
                                           entity_two_name,
                                           entity_two.get('name'),
                                           entity_one_name,
-                                          entity_two.get('name'))
+                                          entity_one.get('name'))
     relationship.set("ordered", "YES")
     relationship.set("toMany", "YES")
 
@@ -117,7 +117,10 @@ def conflicting_entity_name(relationships, current_relationship):
         is_equivalent = current_relationship.name != relationship.name
         is_equivalent = is_equivalent and current_relationship.related_object == relationship.related_object
         is_equivalent = is_equivalent and current_relationship.relationship_type == relationship.relationship_type
-        return is_equivalent
+        if is_equivalent:
+            return True
+
+    return False
 
 
 # Adds relationships and inverse relationships for each required entity
@@ -129,30 +132,36 @@ def add_relationships(model, objects):
             for entity in model.iter("entity"):
                 if entity.get('name') == get_proper_object_name(object_name):
                     first_entity = entity
-                elif entity.get('name') == get_proper_object_name(relationship.related_object):
+                elif entity.get('name') == get_proper_object_name(relationship.related_object.name):
                     second_entity = entity
 
             first_entity_name = first_entity.get('name').lower().replace("response", "")
-            if relationship.relationship_type == Relationship.ONE_TO_MANY:
-                add_O2M_relationships(first_entity, second_entity, first_entity_name, relationship.name)
-            elif relationship.relationship_type == Relationship.MANY_TO_MANY:
-                add_M2M_relationships(first_entity, second_entity, relationship.name,
-                                      get_word_plural(first_entity_name))
-            elif relationship.relationship_type == Relationship.ONE_TO_ONE:
-                add_O2O_relationships(first_entity, second_entity, get_proper_name(relationship.name),
-                                      first_entity_name)
-            elif relationship.relationship_type == Relationship.MANY_TO_ONE:
-                """
-                If we have a entity which maps to another entity more than once, we can't use that entity's name
-                instead, let's use the key of the field.
+            second_entity_name = second_entity.get('name').lower().replace("response", "")
+            """
+            If we have a entity which maps to another entity more than once, we can't use that entity's name
+            instead, let's use the key of the field.
 
-                For example, if we had a user who has followers and is also following other users, our user entity
-                would have two fields called "follow". This instead calls them followers and following.
-                """
-                conflicting = conflicting_entity_name(data_object.relationships, relationship)
-                entity_label = relationship.name if conflicting else first_entity_name
-                add_M2O_relationship(first_entity, second_entity, get_word_plural(entity_label),
-                                     get_proper_name(relationship.name))
+            For example, if we had a user who has followers and is also following other users, our user entity
+            would have two fields called "follow". This instead calls them followers and following.
+            """
+            conflicting = conflicting_entity_name(data_object.relationships, relationship)
+            entity_label = relationship.name if conflicting else first_entity_name
+
+            if relationship.relationship_type == Relationship.ONE_TO_MANY:
+                add_one_relationship(second_entity, first_entity, relationship.name, entity_label)
+                add_many_relationship(first_entity, second_entity, entity_label, relationship.name)
+
+            elif relationship.relationship_type == Relationship.MANY_TO_MANY:
+                add_many_relationship(first_entity, second_entity, get_word_plural(first_entity_name), relationship.name)
+                add_many_relationship(second_entity, first_entity, entity_label, relationship.name)
+
+            elif relationship.relationship_type == Relationship.ONE_TO_ONE:
+                add_one_relationship(first_entity, second_entity, get_proper_name(entity_label), second_entity_name)
+                add_one_relationship(second_entity, first_entity, second_entity_name, get_proper_name(entity_label))
+
+            elif relationship.relationship_type == Relationship.MANY_TO_ONE:
+                add_many_relationship(second_entity, first_entity, get_proper_name(relationship.name), get_word_plural(entity_label))
+                add_one_relationship(first_entity, second_entity, get_word_plural(entity_label), get_proper_name(relationship.name))
 
 
 # Adds attributes to the given entity for its name and type
