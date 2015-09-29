@@ -148,19 +148,19 @@ def add_relationships(model, objects):
             entity_label = relationship.name if conflicting else first_entity_name
 
             if relationship.relationship_type == Relationship.ONE_TO_MANY:
-                add_one_relationship(second_entity, first_entity, relationship.name, entity_label)
+                # add_one_relationship(second_entity, first_entity, relationship.name, entity_label)
                 add_many_relationship(first_entity, second_entity, entity_label, relationship.name)
 
             elif relationship.relationship_type == Relationship.MANY_TO_MANY:
                 add_many_relationship(first_entity, second_entity, get_word_plural(first_entity_name), relationship.name)
-                add_many_relationship(second_entity, first_entity, entity_label, relationship.name)
+                # add_many_relationship(second_entity, first_entity, entity_label, relationship.name)
 
             elif relationship.relationship_type == Relationship.ONE_TO_ONE:
-                add_one_relationship(first_entity, second_entity, get_proper_name(entity_label), second_entity_name)
-                add_one_relationship(second_entity, first_entity, second_entity_name, get_proper_name(entity_label))
+                add_one_relationship(first_entity, second_entity, get_proper_name(entity_label), relationship.name)
+                # add_one_relationship(second_entity, first_entity, second_entity_name, get_proper_name(entity_label))
 
             elif relationship.relationship_type == Relationship.MANY_TO_ONE:
-                add_many_relationship(second_entity, first_entity, get_proper_name(relationship.name), get_word_plural(entity_label))
+                # add_many_relationship(second_entity, first_entity, get_proper_name(relationship.name), get_word_plural(entity_label))
                 add_one_relationship(first_entity, second_entity, get_word_plural(entity_label), get_proper_name(relationship.name))
 
 
