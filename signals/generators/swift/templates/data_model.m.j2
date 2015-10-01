@@ -1,0 +1,123 @@
+//
+//  DataModel.m
+//
+//  Created by signals on {{ today.strftime('%m/%d/%Y') }}.
+
+#import "DataModel.h"
+#import <CoreData/CoreData.h>
+#import <RestKit/RestKit.h>
+#import "{{ project_name }}-Swift.h"
+
+// Request object imports
+{% for request_object in request_objects %}
+#import "{{ get_object_name(request_object, upper_camel_case=True) }}.h"
+{% endfor %}
+
+@implementation DataModel
+
++ (DataModel *) sharedDataModel {
+  static DataModel *__sharedDataModel = nil;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    __sharedDataModel = [[DataModel alloc] init];
+  });
+
+  return __sharedDataModel;
+}
+
+- (void) setup:(id<DataModelDelegate>)delegate {
+  // Initialize RestKit
+  _delegate = delegate;
+  NSAssert(_delegate != NULL, @"delegate parameter cannot be NULL");
+  NSURL *baseURL = [NSURL URLWithString:[_delegate getBaseURLString]];
+  RKObjectManager *objectManager = [RKObjectManager managerWithBaseURL:baseURL];
+
+  // Enable Activity Indicator Spinner
+  [AFNetworkActivityIndicatorManager sharedManager].enabled = YES;
+
+  // Initialize managed object store
+  NSManagedObjectModel *managedObjectModel = [NSManagedObjectModel mergedModelFromBundles:nil];
+  RKManagedObjectStore *managedObjectStore = [[RKManagedObjectStore alloc] initWithManagedObjectModel:managedObjectModel];
+
+  objectManager.managedObjectStore = managedObjectStore;
+
+  // MARK: RestKit Entity Mappings
+  {% for name, data_object in schema.data_objects.iteritems() %}
+    {% if 'Parameters' not in name %}
+      {% include 'entity_mapping.j2' %}
+
+    {% endif %}
+  {% endfor %}
+
+  // MARK: RestKit Entity Relationship Mappings
+  // We place the relationship mappings after the entities so that we don't need to worry about ordering
+  {% for data_object in schema.data_objects.itervalues() %}
+    {% for relationship in data_object.relationships %}
+      {% include 'relationship_mapping.j2' %}
+
+    {% endfor %}
+  {% endfor %}
+
+  // MARK: RestKit URL Descriptors
+  {% for url in schema.urls %}
+  {% for endpoint in endpoints %}
+    {% if url[endpoint] %}
+      {% with api = url[endpoint] %}
+        {% if endpoint in ['patch', 'post'] %}
+          {% include 'descriptors/request.j2' %}
+
+
+        {% endif %}
+        {% if endpoint in ['get', 'patch', 'post'] %}
+          {% include 'descriptors/response.j2' %}
+
+
+        {% endif %}
+      {% endwith %}
+    {% endif %}
+  {% endfor %}
+  {% endfor %}
+
+  /**
+   Complete Core Data stack initialization
+   */
+  [managedObjectStore createPersistentStoreCoordinator];
+  NSString *storePath = [RKApplicationDataDirectory() stringByAppendingPathComponent:@"{{ project_name }}.sqlite"];
+  NSError *error;
+  NSPersistentStore *persistentStore = [managedObjectStore addSQLitePersistentStoreAtPath:storePath fromSeedDatabaseAtPath:nil withConfiguration:nil options:nil error:&error];
+
+  // Problem creating persistent store, wipe it since there was probably a core data change
+  if (persistentStore == nil) {
+    [[NSFileManager defaultManager] removeItemAtPath:storePath error:nil];
+    persistentStore = [managedObjectStore addSQLitePersistentStoreAtPath:storePath fromSeedDatabaseAtPath:nil withConfiguration:nil options:nil error:&error];
+  }
+
+  NSAssert(persistentStore, @"Failed to add persistent store with error: %@", error);
+
+  // Create the managed object contexts
+  [managedObjectStore createManagedObjectContexts];
+
+  // Configure a managed object cache to ensure we do not create duplicate objects
+  managedObjectStore.managedObjectCache = [[RKInMemoryManagedObjectCache alloc] initWithManagedObjectContext:managedObjectStore.persistentStoreManagedObjectContext];
+}
+
+// MARK: API Calls
+{% for url in schema.urls -%}
+{% for endpoint in endpoints %}
+  {% if url[endpoint] %}
+    {% with api = url[endpoint] %}
+      {% include 'api_method.j2' %}
+
+
+    {% endwith %}
+  {% endif %}
+{% endfor %}
+{% endfor %}
+- (void) getAllLoginWithUsername:(NSString*)username password:(NSString*)password success:(void (^)(RKObjectRequestOperation *operation, RKMappingResult *mappingResult))success failure:(void (^)(RKObjectRequestOperation *operation, NSError *error))failure {
+  RKObjectManager* sharedMgr = [RKObjectManager sharedManager];
+  [sharedMgr.HTTPClient setAuthorizationHeaderWithUsername:username password:password];
+  sharedMgr.requestSerializationMIMEType = RKMIMETypeFormURLEncoded;
+  [sharedMgr getObjectsAtPath:@"login/" parameters:nil success:success failure:failure];
+}
+
+@end

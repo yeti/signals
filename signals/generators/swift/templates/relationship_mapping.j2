@@ -1,0 +1,4 @@
+  {% set from_mapping_name = get_object_name(data_object) %}
+  {% set to_mapping_name = get_object_name(relationship.related_object) %}
+
+ {{ from_mapping_name }}Mapping.addPropertyMapping(RKRelationshipMapping.relationshipMappingFromKeyPath: {{ relationship.name }}, toKeyPath: {{ get_proper_name(relationship.name) }}, withMapping: {{ to_mapping_name }}Mapping )

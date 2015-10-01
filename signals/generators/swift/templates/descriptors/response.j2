@@ -1,0 +1,4 @@
+{% set url_name = get_url_name(api.url_path) %}
+{% set descriptor_name = url_name + api.method|capitalize %}
+  RKResponseDescriptor *{{ descriptor_name }}ResponseDescriptor = [RKResponseDescriptor responseDescriptorWithMapping:{{ get_object_name(api.response_object) }}Mapping method:RKRequestMethod{{ api.method|upper }} pathPattern:@"{{ api.url_path }}" keyPath:{{ key_path(api) }} statusCodes:RKStatusCodeIndexSetForClass(RKStatusCodeClassSuccessful)];
+  [objectManager addResponseDescriptor:{{ descriptor_name }}ResponseDescriptor];
