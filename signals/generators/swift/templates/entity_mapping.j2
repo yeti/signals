@@ -1,5 +1,5 @@
   {% set mapping_name = get_object_name(data_object) %}
-  RKEntityMapping *{{ mapping_name }}Mapping = RKEntityMapping.mappingForEntityForName({{ get_object_name(data_object, upper_camel_case=True) }}, inManagedObjectStore: managedObjectStore)
+  var {{ mapping_name }}Mapping = RKEntityMapping.mappingForEntityForName({{ get_object_name(data_object, upper_camel_case=True) }}, inManagedObjectStore: managedObjectStore)
   {% if data_object.fields|length > 0 %}
   {% for field in data_object.fields %}
     {% if field.primary_key %}

@@ -1,5 +1,5 @@
-func {{ api.method }}{{ method_name(api) }}({{ method_parameters(api) }}) {
-  RKObjectManager* sharedMgr = RKObjectManager.sharedManager
+func {{ api.method }}{{ method_name(api) }}(methodParameters: {{ method_parameters(api) }}) {
+  var sharedMgr = RKObjectManager.sharedManager
   sharedMgr.requestSerializationMIMEType = {{ content_type(api) }}
   {% if is_oauth(api) %}
   sharedMgr.HTTPClient.setDefaultHeader("Authorization", value: NSString.stringWithFormat("Bearer \(_delegate.getAccessToken())"))
