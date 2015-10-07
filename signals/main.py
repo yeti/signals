@@ -1,4 +1,5 @@
 import click
+from signals.generators.base.base_generator import BaseGenerator
 from signals.parser.schema import Schema
 from signals.generators.ios.ios_generator import iOSGenerator
 from signals.logging import SignalsError, progress
@@ -8,18 +9,24 @@ generators = {
     'ios': iOSGenerator
 }
 
+# template_options = {
+#     'objc': 'Objective-C',
+#     'swift': 'Swift'
+# }
+
 
 # Create a separate function so that we can unit test.
 # Issues unit testing `main` due to click decorators.
-def run_main(schema, generator_name, data_models, core_data, project_name, save):
+def run_main(schema, generator_name, templates, data_models, core_data, project_name, save):
 
     schema = Schema(schema)
 
-    generator = generators[generator_name](schema, data_models, core_data, project_name)
+    generator = generators[generator_name](templates, schema, data_models, core_data, project_name)
     try:
         generator.process()
         if save:
-            save_settings([data_models, core_data], schema, generator_name, data_models, core_data, project_name)
+            save_settings([data_models, core_data], templates, schema, generator_name, data_models,
+                          core_data, project_name)
     except SignalsError as e:
         print(str(e))
     else:
@@ -43,6 +50,7 @@ def project_specified(ctx, param, value):
     else:
         run_main(setting_dict["schema"],
                  setting_dict["generator"],
+                 setting_dict["templates"],
                  setting_dict["data_models"],
                  setting_dict["core_data"],
                  setting_dict["project_name"],
@@ -88,6 +96,11 @@ def validate_path(ctx, param, value):
               prompt='name of generator to use',
               help='The name of the generator you\'d like to use.',
               type=click.Choice(generators.keys()))
+@click.option('templates', '--templates',
+              prompt='The templates you want to generate code in',
+              help='Objective C (objc) or Swift (swift)',
+              type=click.Choice(BaseGenerator.template_options.keys())
+              )
 @click.option('data_models', '--datamodels',
               prompt='path to iOS data models',
               help='The location where you\'d like your iOS data model files stored.',
@@ -103,5 +116,5 @@ def validate_path(ctx, param, value):
 @click.option('--save', is_flag=True)
 # TODO: These are iOS specific settings and we'll need to figure out a way to handle generator specific arguments
 # when we add more generators in the future.
-def main(settings_path, schema, generator, data_models, core_data, project_name, save):
-    run_main(schema, generator, data_models, core_data, project_name, save)
+def main(settings_path, schema, generator, templates, data_models, core_data, project_name, save):
+    run_main(schema, generator, templates, data_models, core_data, project_name, save)

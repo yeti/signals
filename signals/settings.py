@@ -22,7 +22,7 @@ def load_settings(settings_path):
     return setting_dict
 
 
-def save_settings(paths, schema, generator_name, data_models, core_data, project_name):
+def save_settings(paths, templates, schema, generator_name, data_models, core_data, project_name):
     project_root = find_project_root(paths)
     if project_root is not None and len(project_root) > 0:
         output_settings(project_root,
@@ -49,7 +49,7 @@ def find_project_root(paths):
     return None
 
 
-def output_settings(project_root, schema, generator_name, data_models, core_data, project_name):
+def output_settings(project_root, templates, schema, generator_name, data_models, core_data, project_name):
     settings_filename = project_root + os.sep + ".signalsconfig"
     progress("Writing settings to {}".format(settings_filename))
     keys = ["schema", "generator", "data_models", "core_data", "project_name"]

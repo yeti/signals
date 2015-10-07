@@ -4,6 +4,10 @@ import shutil
 
 class BaseGenerator(object):
     BUILD_DIR = "signals_code"
+    template_options = {
+        'objc': 'Objective-C',
+        'swift': 'Swift'
+    }
 
     def __init__(self, schema):
         self.schema = schema
