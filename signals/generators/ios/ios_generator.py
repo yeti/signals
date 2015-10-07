@@ -40,7 +40,8 @@ class iOSGenerator(BaseGenerator):
             progress("Creating core data file")
             write_xml_to_file(self.core_data_path, self.schema.data_objects)
 
-        if self.templates == BaseGenerator.template_options.objc:
+        if BaseGenerator.template_options[self.templates] == BaseGenerator.template_options['objc']:
+            print 'Preparing to generate Objective-C templates...'
             template_to_generate = ObjectiveCTemplate(BaseGenerator.BUILD_DIR,
                                                       self.project_name,
                                                       self.jinja2_environment,
@@ -48,10 +49,13 @@ class iOSGenerator(BaseGenerator):
                                                       self.data_models_path)
         else:
             # Swift code goes here
+            print 'Preparing to generate Swift templates...'
             template_to_generate = None
 
         progress("Creating data model file")
+
         template_to_generate.process()
+
         self.check_setup_called()
 
     def check_setup_called(self):
