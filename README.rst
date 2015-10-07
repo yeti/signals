@@ -38,5 +38,5 @@ iOS
 
 .. |Codeship Status for yeti/signals| image:: https://codeship.com/projects/d2fa74a0-01ab-0133-75b8-2226f6cba81b/status?branch=master
    :target: https://codeship.com/projects/88715
-.. |Coverage Status| image:: https://coveralls.io/repos/yeti/signals/badge.svg?branch=HEAD&t=YrPM9o
-   :target: https://coveralls.io/r/yeti/signals?branch=HEAD
+.. |Coverage Status| image:: https://coveralls.io/repos/yeti/signals/badge.svg?branch=master&service=github
+   :target: https://coveralls.io/github/yeti/signals?branch=master
