@@ -74,9 +74,10 @@ def swift_method_parameters(api):
     # Add required RestKit parameters
     parameters.extend([
         SwiftParameter(name="success",
-                       swift_type="void (^)(RKObjectRequestOperation *operation, RKMappingResult *mappingResult)"),
+                       swift_type="{ (operation: RKObjectRequestOperation!, result: RKMappingResult!) -> () in \n\n }"),
+
         SwiftParameter(name="failure",
-                       swift_type="void (^)(RKObjectRequestOperation *operation, NSError *error)")
+                       swift_type="{ (operation: RKObjectRequestOperation!, error: NSError!) -> () in \n\n }")
     ])
 
     return create_swift_parameter_signature(parameters)
@@ -176,14 +177,11 @@ def create_swift_parameter_signature(parameters):
     method_parts = []
     for index, method_field in enumerate(parameters):
         swift_variable_name = get_proper_name(method_field.name)
-        parameter_signature = "({}){}".format(method_field.swift_type, swift_variable_name)
-        # If this isn't the first parameter, also include the variable name before the type
-        if index > 0:
-            parameter_signature = "{}:{}".format(swift_variable_name, parameter_signature)
+        parameter_signature = "{}: {}".format(swift_variable_name, method_field.swift_type)
 
         method_parts.append(parameter_signature)
 
-    return " ".join(method_parts)
+    return ", ".join(method_parts)
 
 
 def get_api_request_object(api):
