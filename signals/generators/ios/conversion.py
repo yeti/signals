@@ -16,6 +16,20 @@ OBJC_DATA_TYPES = {
     Field.VIDEO: "NSURL*"
 }
 
+SWIFT_DATA_TYPES = {
+    Field.DATE: "NSDate",
+    Field.DATETIME: "NSDate",
+    Field.INTEGER: "Int",
+    Field.DECIMAL: "Double",
+    Field.FLOAT: "Float",
+    Field.STRING: "String",
+    Field.TEXT: "String",
+    Field.BOOLEAN: "Bool",
+    Field.IMAGE: "UIImage",
+    Field.VIDEO: "NSURL"
+}
+
+
 # More listed here: http://www.binpress.com/tutorial/objective-c-reserved-keywords/43
 RESERVED_MAPPINGS = {
     "auto": "isAuto",
@@ -34,6 +48,13 @@ def get_objc_data_type(field):
         return "NSArray*"
     else:
         return OBJC_DATA_TYPES[field.field_type]
+
+
+def get_swift_data_type(field):
+    if field.array:
+        return "Array"
+    else:
+        return SWIFT_DATA_TYPES[field.field_type]
 
 
 # Changes a python variable name to an objective c version

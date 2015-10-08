@@ -1,7 +1,7 @@
 """
 Creates list of Objective C specific method parameter names and types.
 """
-from signals.generators.ios.conversion import get_objc_data_type
+from signals.generators.ios.conversion import get_objc_data_type, get_swift_data_type
 from signals.parser.fields import Relationship
 
 
@@ -38,4 +38,31 @@ def generate_field_parameters(request_object):
     for index, field in enumerate(request_object.fields):
         variable_type = get_objc_data_type(field)
         parameters.append(Parameter(name=field.name, objc_type=variable_type))
+    return parameters
+
+
+###
+class SwiftParameter(object):
+    def __init__(self, name, swift_type):
+        self.name = name
+        self.swift_type = swift_type
+
+
+def generate_swift_field_parameters(request_object):
+    parameters = []
+    for index, field in enumerate(request_object.fields):
+        variable_type = get_swift_data_type(field)
+        parameters.append(SwiftParameter(name=field.name, swift_type=variable_type))
+    return parameters
+
+
+def generate_swift_relationship_parameters(request_object):
+    parameters = []
+    for relationship in request_object.relationships:
+        if relationship.relationship_type in [Relationship.MANY_TO_MANY, Relationship.ONE_TO_MANY]:
+            variable_type = 'NSOrderedSet*'
+        else:
+            from signals.generators.ios.template_methods import get_object_name
+            variable_type = get_object_name(relationship.related_object, upper_camel_case=True)
+        parameters.append(SwiftParameter(name=relationship.name, swift_type=variable_type))
     return parameters

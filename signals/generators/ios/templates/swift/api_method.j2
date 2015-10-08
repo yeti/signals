@@ -1,4 +1,4 @@
-func {{ api.method }}{{ method_name(api) }}(methodParameters: {{ method_parameters(api) }}) {
+func {{ api.method }}{{ method_name(api) }}({{ swift_method_parameters(api) }}) {
   var sharedMgr = RKObjectManager.sharedManager
   sharedMgr.requestSerializationMIMEType = {{ content_type(api) }}
   {% if is_oauth(api) %}
