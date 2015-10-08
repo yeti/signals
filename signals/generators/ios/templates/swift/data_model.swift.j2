@@ -1,16 +1,15 @@
 //
-//  DataModel.m
+//  DataModel.swift
 //
 //  Created by signals on {{ today.strftime('%m/%d/%Y') }}.
 
 #import "DataModel.h"
 #import <CoreData/CoreData.h>
 #import <RestKit/RestKit.h>
-#import "{{ project_name }}-Swift.h"
 
 // Request object imports
 {% for request_object in request_objects %}
-#import "{{ get_object_name(request_object, upper_camel_case=True) }}.h"
+#import "{{ get_object_name(request_object, upper_camel_case=True) }}.swift"
 {% endfor %}
 
 @implementation DataModel

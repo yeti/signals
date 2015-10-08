@@ -9,11 +9,6 @@ generators = {
     'ios': iOSGenerator
 }
 
-# template_options = {
-#     'objc': 'Objective-C',
-#     'swift': 'Swift'
-# }
-
 
 # Create a separate function so that we can unit test.
 # Issues unit testing `main` due to click decorators.

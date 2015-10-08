@@ -1,18 +1,12 @@
-from datetime import datetime
-from inspect import getmembers, isfunction
 import os
 from signals.generators.ios.objectivec_template import ObjectiveCTemplate
+from signals.generators.ios.swift_template import SwiftTemplate
 from signals.helpers import recursively_find_parent_containing_file
 import subprocess
 from jinja2 import Environment, PackageLoader
-import shutil
 from signals.logging import SignalsError, progress, warn
-from signals.generators.ios.conversion import sanitize_field_name
-from signals.parser.fields import Field
-from signals.parser.schema import URL
 from signals.generators.base.base_generator import BaseGenerator
 from signals.generators.ios.core_data import write_xml_to_file
-from signals.generators.ios import template_methods
 
 
 class iOSGenerator(BaseGenerator):
@@ -28,7 +22,7 @@ class iOSGenerator(BaseGenerator):
         if not os.path.exists(BaseGenerator.BUILD_DIR):
             os.makedirs(BaseGenerator.BUILD_DIR)
 
-        self.jinja2_environment = Environment(loader=PackageLoader(__name__),
+        self.jinja2_environment = Environment(loader=PackageLoader(__name__, "templates/{}/".format(self.templates)),
                                               extensions=['jinja2.ext.with_'],
                                               trim_blocks=True,
                                               lstrip_blocks=True)
@@ -50,7 +44,11 @@ class iOSGenerator(BaseGenerator):
         else:
             # Swift code goes here
             print 'Preparing to generate Swift templates...'
-            template_to_generate = None
+            template_to_generate = SwiftTemplate(BaseGenerator.BUILD_DIR,
+                                                 self.project_name,
+                                                 self.jinja2_environment,
+                                                 self.schema,
+                                                 self.data_models_path)
 
         progress("Creating data model file")
 
