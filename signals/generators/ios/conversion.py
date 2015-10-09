@@ -1,5 +1,5 @@
 """
-Methods to translate the schema names and types to objective c variable names and types.
+Methods to translate the schema names and types to Objective-C or Swift variable names and types.
 """
 from signals.parser.fields import Field
 
@@ -57,7 +57,7 @@ def get_swift_data_type(field):
         return SWIFT_DATA_TYPES[field.field_type]
 
 
-# Changes a python variable name to an objective c version
+# Changes a Python variable name to an Objective-C/Swift version
 def python_to_objc_variable(python_variable_name, capitalize_first=False):
     words = python_variable_name.split('_')
 

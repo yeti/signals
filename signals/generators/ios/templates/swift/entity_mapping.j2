@@ -6,6 +6,6 @@
   {{ mapping_name }}Mapping.identificationAttributes = ["\({{ sanitize_field_name(field.name) }})"]
     {% endif %}
   {% endfor %}
-  {{ mapping_name }}Mapping.addAttributeMappingsFromDictionary({ {{ swift_attribute_mappings(data_object.fields) }} }")
+  {{ mapping_name }}Mapping.addAttributeMappingsFromDictionary([ {{ swift_attribute_mappings(data_object.fields) }} ])
   {% endif %}
 

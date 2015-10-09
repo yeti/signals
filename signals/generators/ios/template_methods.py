@@ -4,8 +4,8 @@ Methods to be used in the iOS generator's templates.
 import re
 from urlparse import urlparse
 from signals.generators.ios.parameters import create_id_parameter, generate_field_parameters, \
-    generate_relationship_parameters, Parameter, SwiftParameter, generate_swift_field_parameters, \
-    generate_swift_relationship_parameters
+    generate_relationship_parameters, ObjCParameter, SwiftParameter, generate_swift_field_parameters, \
+    generate_swift_relationship_parameters, create_swift_id_parameter
 from signals.generators.ios.conversion import get_proper_name
 from signals.parser.api import API, GetAPI
 from signals.parser.fields import Field
@@ -47,9 +47,9 @@ def method_parameters(api):
 
     # Add required RestKit parameters
     parameters.extend([
-        Parameter(name="success",
+        ObjCParameter(name="success",
                   objc_type="void (^)(RKObjectRequestOperation *operation, RKMappingResult *mappingResult)"),
-        Parameter(name="failure",
+        ObjCParameter(name="failure",
                   objc_type="void (^)(RKObjectRequestOperation *operation, NSError *error)")
     ])
 
@@ -67,17 +67,17 @@ def swift_method_parameters(api):
         parameters.extend(generate_swift_relationship_parameters(request_object))
 
     # Add id parameter if we need it
-    id_parameter = create_id_parameter(api.url_path, request_object)
+    id_parameter = create_swift_id_parameter(api.url_path, request_object)
     if id_parameter:
         parameters.append(id_parameter)
 
     # Add required RestKit parameters
     parameters.extend([
         SwiftParameter(name="success",
-                       swift_type="{ (operation: RKObjectRequestOperation!, result: RKMappingResult!) -> () in \n\n }"),
+                       swift_type="RestKitSuccess"),
 
         SwiftParameter(name="failure",
-                       swift_type="{ (operation: RKObjectRequestOperation!, error: NSError!) -> () in \n\n }")
+                       swift_type="RestKitError")
     ])
 
     return create_swift_parameter_signature(parameters)
@@ -91,6 +91,16 @@ def key_path(api):
     elif isinstance(api, GetAPI) and ':id' not in api.url_path:
         # Get requests with an ID only return 1 object, not a list of results
         key_path_string = '@"results"'
+    return key_path_string
+
+
+def swift_key_path(api):
+    key_path_string = 'nil'
+    if hasattr(api, 'resource_type'):
+        key_path_string = 'nil' if api.resource_type == GetAPI.RESOURCE_DETAIL else '"results"'
+    elif isinstance(api, GetAPI) and ':id' not in api.url_path:
+        # Get requests with an ID only return 1 object, not a list of results
+        key_path_string = '"results"'
     return key_path_string
 
 

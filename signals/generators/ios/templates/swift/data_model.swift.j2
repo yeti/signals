@@ -3,14 +3,12 @@
 //
 //  Created by signals on {{ today.strftime('%m/%d/%Y') }}.
 
+import Foundation
 import CoreData
 import RestKit
 
-// Request object imports
-{% for request_object in request_objects %}
-import "{{ get_object_name(request_object, upper_camel_case=True) }}.swift"
-{% endfor %}
-
+typealias RestKitSuccess = (operation: RKObjectRequestOperation!, result: RKMappingResult!) -> Void
+typealias RestKitError = (operation: RKObjectRequestOperation!, error: NSError!) -> Void
 
 @objc public class DataModel: NSObject {
   var getBaseURLString: String?
@@ -30,10 +28,10 @@ import "{{ get_object_name(request_object, upper_camel_case=True) }}.swift"
   }
 }
 
-func setup(delegate: id<DataModelDelegate>) {
+func setup(delegate: DataModelDelegate) {
   // Initialize RestKit
   _delegate = delegate;
-  assert(_delegate != nil, "delegate parameter cannot be nil";
+  assert(_delegate != nil, "delegate parameter cannot be nil")
   var baseURL = NSURL.URLWithString(_delegate.getBaseURLString())
   var objectManager = RKObjectManager.managerWithBaseURL(baseURL)
 
@@ -89,7 +87,7 @@ func setup(delegate: id<DataModelDelegate>) {
   managedObjectStore.createPersistentStoreCoordinator()
   var storePath = RKApplicationDataDirectory().stringByAppendingPathComponent("{{ project_name }}.sqlite")
   var error: NSError
-  var persistentStore = managedObjectStore.addSQLitePersistentStoreAtPath(storePath, fromSeedDatabaseAtPath: nil, withConfiguration: nil, options: nil error: &error)
+  var persistentStore = managedObjectStore.addSQLitePersistentStoreAtPath(storePath, fromSeedDatabaseAtPath: nil, withConfiguration: nil, options: nil, error: &error)
 
   // Problem creating persistent store, wipe it since there was probably a core data change
   if (persistentStore == nil) {
@@ -118,11 +116,7 @@ func setup(delegate: id<DataModelDelegate>) {
   {% endif %}
 {% endfor %}
 {% endfor %}
-func getAllLoginWithUsername(username: String, password: String, success: { (operation: RKObjectRequestOperation!, result: RKMappingResult!) -> () in
-
- }, failure: { (operation: RKObjectRequestOperation!, error: NSError!) -> () in
-
- }) {
+func getAllLoginWithUsername(username: String, password: String, success: RestKitSuccess, failure: RestKitFailure) {
   var sharedMgr = RKObjectManager.sharedManager()
   sharedMgr.HTTPClient.setAuthorizationHeaderWithUsername(username, password: password)
   sharedMgr.requestSerializationMIMEType = RKMIMETypeFormURLEncoded
