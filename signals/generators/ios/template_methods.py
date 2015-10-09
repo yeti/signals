@@ -48,9 +48,9 @@ def method_parameters(api):
     # Add required RestKit parameters
     parameters.extend([
         ObjCParameter(name="success",
-                  objc_type="void (^)(RKObjectRequestOperation *operation, RKMappingResult *mappingResult)"),
+                      objc_type="void (^)(RKObjectRequestOperation *operation, RKMappingResult *mappingResult)"),
         ObjCParameter(name="failure",
-                  objc_type="void (^)(RKObjectRequestOperation *operation, NSError *error)")
+                      objc_type="void (^)(RKObjectRequestOperation *operation, NSError *error)")
     ])
 
     return create_parameter_signature(parameters)

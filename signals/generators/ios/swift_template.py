@@ -7,6 +7,7 @@ from signals.parser.fields import Field
 class SwiftTemplate(BaseTemplate):
     def __init__(self, project_name, schema, data_models_path, jinja2_environment, build_dir):
         super(SwiftTemplate, self).__init__(project_name, schema, data_models_path, jinja2_environment)
+        # File Paths
         self.data_model_file = "{}/{}DataModel.swift".format(build_dir, project_name)
 
     def process(self):
