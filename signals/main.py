@@ -27,8 +27,8 @@ def run_main(schema, generator_name, templates, data_models, core_data, project_
     else:
         progress('Finished generating your files!')
     finally:
-        # pass
-        generator.clear_generated_code_files()
+        pass
+        # generator.clear_generated_code_files()
 
 
 #
