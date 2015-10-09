@@ -69,7 +69,7 @@ def generate_swift_relationship_parameters(request_object):
     parameters = []
     for relationship in request_object.relationships:
         if relationship.relationship_type in [Relationship.MANY_TO_MANY, Relationship.ONE_TO_MANY]:
-            variable_type = 'NSOrderedSet*'
+            variable_type = 'NSOrderedSet'
         else:
             from signals.generators.ios.template_methods import get_object_name
             variable_type = get_object_name(relationship.related_object, upper_camel_case=True)
