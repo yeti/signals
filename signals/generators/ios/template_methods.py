@@ -3,9 +3,7 @@ Methods to be used in the iOS generator's templates.
 """
 import re
 from urlparse import urlparse
-from signals.generators.ios.parameters import create_id_parameter, generate_field_parameters, \
-    generate_relationship_parameters, ObjCParameter, SwiftParameter, generate_swift_field_parameters, \
-    generate_swift_relationship_parameters, create_swift_id_parameter
+from signals.generators.ios.parameters import ObjCParameter, SwiftParameter
 from signals.generators.ios.conversion import get_proper_name
 from signals.parser.api import API, GetAPI
 from signals.parser.fields import Field
@@ -25,7 +23,7 @@ def method_name(api):
     if request_object and len(request_object.properties()) > 0:
         first_field = request_object.properties()[0]
         first_parameter_name = get_proper_name(first_field.name, capitalize_first=True)
-    elif create_id_parameter(api.url_path, request_object) is not None:
+    elif ObjCParameter.create_id_parameter(api.url_path, request_object) is not None:
         first_parameter_name = "TheID"
 
     return "{}With{}".format(method_name_string, first_parameter_name)
@@ -37,11 +35,11 @@ def method_parameters(api):
     # Create request object parameters
     request_object = get_api_request_object(api)
     if request_object:
-        parameters.extend(generate_field_parameters(request_object))
-        parameters.extend(generate_relationship_parameters(request_object))
+        parameters.extend(ObjCParameter.generate_field_parameters(request_object))
+        parameters.extend(ObjCParameter.generate_relationship_parameters(request_object))
 
     # Add id parameter if we need it
-    id_parameter = create_id_parameter(api.url_path, request_object)
+    id_parameter = ObjCParameter.create_id_parameter(api.url_path, request_object)
     if id_parameter:
         parameters.append(id_parameter)
 
@@ -56,18 +54,17 @@ def method_parameters(api):
     return create_parameter_signature(parameters)
 
 
-#####
 def swift_method_parameters(api):
     parameters = []
 
     # Create request object parameters
     request_object = get_api_request_object(api)
     if request_object:
-        parameters.extend(generate_swift_field_parameters(request_object))
-        parameters.extend(generate_swift_relationship_parameters(request_object))
+        parameters.extend(SwiftParameter.generate_field_parameters(request_object))
+        parameters.extend(SwiftParameter.generate_relationship_parameters(request_object))
 
     # Add id parameter if we need it
-    id_parameter = create_swift_id_parameter(api.url_path, request_object)
+    id_parameter = SwiftParameter.create_id_parameter(api.url_path, request_object)
     if id_parameter:
         parameters.append(id_parameter)
 
@@ -83,7 +80,6 @@ def swift_method_parameters(api):
     return create_swift_parameter_signature(parameters)
 
 
-####
 def key_path(api):
     key_path_string = 'nil'
     if hasattr(api, 'resource_type'):
