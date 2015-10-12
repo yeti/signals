@@ -1,6 +1,5 @@
 from datetime import datetime
 from inspect import getmembers, isfunction
-from signals.generators.ios import template_methods
 from signals.parser.schema import URL
 
 
@@ -13,7 +12,7 @@ class BaseTemplate(object):
         # Setup
         self.jinja2_environment = jinja2_environment
 
-    def process_template(self, template_name, template_file_path, extra_context):
+    def process_template(self, template_name, template_file_path, template_methods, extra_context):
         template = self.jinja2_environment.get_template(template_name)
         context = {
             'today': datetime.today(),
