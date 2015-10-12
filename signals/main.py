@@ -1,5 +1,4 @@
 import click
-from signals.generators.base.base_generator import BaseGenerator
 from signals.parser.schema import Schema
 from signals.generators.ios.ios_generator import iOSGenerator
 from signals.logging import SignalsError, progress
@@ -93,7 +92,7 @@ def validate_path(ctx, param, value):
 @click.option('templates', '--templates',
               prompt='The templates you want to generate code in',
               help='Objective C (objc) or Swift (swift)',
-              type=click.Choice(BaseGenerator.template_options.keys())
+              type=click.Choice(iOSGenerator.template_options.keys())
               )
 @click.option('data_models', '--datamodels',
               prompt='path to iOS data models',
