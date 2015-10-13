@@ -1,34 +1,6 @@
 """
 Methods to translate the schema names and types to Objective-C or Swift variable names and types.
 """
-from signals.parser.fields import Field
-
-OBJC_DATA_TYPES = {
-    Field.DATE: "NSDate*",
-    Field.DATETIME: "NSDate*",
-    Field.INTEGER: "NSNumber*",
-    Field.DECIMAL: "NSNumber*",
-    Field.FLOAT: "NSNumber*",
-    Field.STRING: "NSString*",
-    Field.TEXT: "NSString*",
-    Field.BOOLEAN: "NSNumber*",
-    Field.IMAGE: "UIImage*",
-    Field.VIDEO: "NSURL*"
-}
-
-SWIFT_DATA_TYPES = {
-    Field.DATE: "NSDate",
-    Field.DATETIME: "NSDate",
-    Field.INTEGER: "Int",
-    Field.DECIMAL: "Double",
-    Field.FLOAT: "Float",
-    Field.STRING: "String",
-    Field.TEXT: "String",
-    Field.BOOLEAN: "Bool",
-    Field.IMAGE: "UIImage",
-    Field.VIDEO: "NSURL"
-}
-
 
 # More listed here: http://www.binpress.com/tutorial/objective-c-reserved-keywords/43
 RESERVED_MAPPINGS = {
@@ -41,20 +13,6 @@ RESERVED_MAPPINGS = {
     "super": "isSuper",
     "volatile": "isVolatile"
 }
-
-
-def get_objc_data_type(field):
-    if field.array:
-        return "NSArray*"
-    else:
-        return OBJC_DATA_TYPES[field.field_type]
-
-
-def get_swift_data_type(field):
-    if field.array:
-        return "Array"
-    else:
-        return SWIFT_DATA_TYPES[field.field_type]
 
 
 # Changes a Python variable name to an Objective-C/Swift version

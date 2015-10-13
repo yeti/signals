@@ -1,7 +1,7 @@
 """
 Creates list of Objective-C or Swift specific method parameter names and types.
 """
-from signals.generators.ios.conversion import get_objc_data_type, get_swift_data_type
+# from signals.generators.ios.conversion import get_objc_data_type, get_swift_data_type
 from signals.parser.fields import Relationship, Field
 
 
@@ -50,31 +50,52 @@ class ObjCParameter(Parameter):
             parameters.append(ObjCParameter(name=relationship.name, objc_type=variable_type))
         return parameters
 
-    def get_objc_data_type(self, field):
+    @staticmethod
+    def get_objc_data_type(field):
         if field.array:
             return "NSArray*"
         else:
-            return self.OBJC_DATA_TYPES[field.field_type]
+            return ObjCParameter.OBJC_DATA_TYPES[field.field_type]
 
     @staticmethod
     def generate_field_parameters(request_object):
         parameters = []
         for index, field in enumerate(request_object.fields):
-            variable_type = get_objc_data_type(field)
+            variable_type = ObjCParameter.get_objc_data_type(field)
             parameters.append(ObjCParameter(name=field.name, objc_type=variable_type))
         return parameters
 
 
 class SwiftParameter(Parameter):
+    SWIFT_DATA_TYPES = {
+        Field.DATE: "NSDate",
+        Field.DATETIME: "NSDate",
+        Field.INTEGER: "Int",
+        Field.DECIMAL: "Double",
+        Field.FLOAT: "Float",
+        Field.STRING: "String",
+        Field.TEXT: "String",
+        Field.BOOLEAN: "Bool",
+        Field.IMAGE: "UIImage",
+        Field.VIDEO: "NSURL"
+    }
+
     def __init__(self, name, swift_type):
         super(SwiftParameter, self).__init__(name)
         self.swift_type = swift_type
 
     @staticmethod
+    def get_data_type(field):
+        if field.array:
+            return "Array"
+        else:
+            return SwiftParameter.SWIFT_DATA_TYPES[field.field_type]
+
+    @staticmethod
     def generate_field_parameters(request_object):
         parameters = []
         for index, field in enumerate(request_object.fields):
-            variable_type = get_swift_data_type(field)
+            variable_type = SwiftParameter.get_data_type(field)
             parameters.append(SwiftParameter(name=field.name, swift_type=variable_type))
         return parameters
 
