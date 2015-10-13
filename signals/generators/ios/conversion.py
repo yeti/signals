@@ -1,5 +1,5 @@
 """
-Methods to translate the schema names and types to Objective-C or Swift variable names and types.
+Methods to translate the schema variable names and types to desired language's names and types.
 """
 
 # More listed here: http://www.binpress.com/tutorial/objective-c-reserved-keywords/43
