@@ -19,8 +19,8 @@ RESERVED_MAPPINGS = {
 def python_to_objc_variable(python_variable_name, capitalize_first=False):
     words = python_variable_name.split('_')
 
-    def upper_camel_case(words):
-        return "".join(word.capitalize() for word in words)
+    def upper_camel_case(words_to_capitalize):
+        return "".join(word.capitalize() for word in words_to_capitalize)
 
     if capitalize_first:
         return upper_camel_case(words)

@@ -53,13 +53,6 @@ def project_specified(ctx, param, value):
         ctx.exit()
 
 
-def add_trailing_slash_to_api(ctx, param, value):
-    if not value.endswith('/'):
-        value += '/'
-
-    return value
-
-
 def validate_path(ctx, param, value):
     if value.startswith('~'):
         value = os.path.expanduser(value)
