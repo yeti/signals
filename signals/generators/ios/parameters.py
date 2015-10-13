@@ -1,7 +1,6 @@
 """
 Creates list of Objective-C or Swift specific method parameter names and types.
 """
-# from signals.generators.ios.conversion import get_objc_data_type, get_swift_data_type
 from signals.parser.fields import Relationship, Field
 
 
