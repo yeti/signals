@@ -40,7 +40,7 @@ class iOSGenerator(BaseGenerator):
             write_xml_to_file(self.core_data_path, self.schema.data_objects)
 
         if self.template_options[self.templates] == self.template_options['objc']:
-            print 'Preparing to generate Objective-C templates...'
+            progress('Preparing to generate Objective-C templates...')
             template_to_generate = ObjectiveCTemplate(self.project_name,
                                                       self.schema,
                                                       self.data_models_path,
@@ -48,7 +48,7 @@ class iOSGenerator(BaseGenerator):
                                                       BaseGenerator.BUILD_DIR)
         else:
             # Swift code goes here
-            print 'Preparing to generate Swift templates...'
+            progress('Preparing to generate Swift templates...')
             template_to_generate = SwiftTemplate(self.project_name,
                                                  self.schema,
                                                  self.data_models_path,

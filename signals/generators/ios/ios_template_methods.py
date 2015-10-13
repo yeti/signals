@@ -5,7 +5,7 @@ import re
 from urlparse import urlparse
 from signals.generators.ios.parameters import ObjCParameter, SwiftParameter
 from signals.generators.ios.conversion import get_proper_name
-from signals.parser.api import API, GetAPI
+from signals.parser.api import API
 from signals.parser.fields import Field
 
 
@@ -32,6 +32,7 @@ class iOSTemplateMethods(object):
         else:
             return field_name
 
+    # Changes a Python variable name to an Objective-C/Swift version
     @staticmethod
     def python_to_objc_variable(python_variable_name, capitalize_first=False):
         words = python_variable_name.split('_')
@@ -50,7 +51,7 @@ class iOSTemplateMethods(object):
         return iOSTemplateMethods.python_to_objc_variable(proper_name, capitalize_first=capitalize_first)
 
     """
-    Template Methods
+    Methods used in the iOS template generator
     """
 
     @staticmethod
@@ -124,62 +125,3 @@ class iOSTemplateMethods(object):
     def is_url(url):
         parse_result = urlparse(url)
         return parse_result.scheme in ['http', 'https']
-
-
-def method_parameters(api):
-    parameters = []
-
-    # Create request object parameters
-    request_object = get_api_request_object(api)
-    if request_object:
-        parameters.extend(ObjCParameter.generate_field_parameters(request_object))
-        parameters.extend(ObjCParameter.generate_relationship_parameters(request_object))
-
-    # Add id parameter if we need it
-    id_parameter = ObjCParameter.create_id_parameter(api.url_path, request_object)
-    if id_parameter:
-        parameters.append(id_parameter)
-
-    # Add required RestKit parameters
-    parameters.extend([
-        ObjCParameter(name="success",
-                      objc_type="void (^)(RKObjectRequestOperation *operation, RKMappingResult *mappingResult)"),
-        ObjCParameter(name="failure",
-                      objc_type="void (^)(RKObjectRequestOperation *operation, NSError *error)")
-    ])
-
-    return create_parameter_signature(parameters)
-
-
-def key_path(api):
-    key_path_string = 'nil'
-    if hasattr(api, 'resource_type'):
-        key_path_string = 'nil' if api.resource_type == GetAPI.RESOURCE_DETAIL else '@"results"'
-    elif isinstance(api, GetAPI) and ':id' not in api.url_path:
-        # Get requests with an ID only return 1 object, not a list of results
-        key_path_string = '@"results"'
-    return key_path_string
-
-
-def attribute_mappings(fields):
-    attribute_mapping_string = ""
-    for index, field in enumerate(fields):
-        leading_comma = '' if index == 0 else ', '
-        objc_variable_name = get_proper_name(field.name)
-        attribute_mapping_string += '{}@"{}": @"{}"'.format(leading_comma, field.name, objc_variable_name)
-    return attribute_mapping_string
-
-# Helper methods for template tags
-
-def create_parameter_signature(parameters):
-    method_parts = []
-    for index, method_field in enumerate(parameters):
-        objc_variable_name = get_proper_name(method_field.name)
-        parameter_signature = "({}){}".format(method_field.objc_type, objc_variable_name)
-        # If this isn't the first parameter, also include the variable name before the type
-        if index > 0:
-            parameter_signature = "{}:{}".format(objc_variable_name, parameter_signature)
-
-        method_parts.append(parameter_signature)
-
-    return " ".join(method_parts)

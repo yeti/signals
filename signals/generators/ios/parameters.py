@@ -2,7 +2,7 @@
 Creates list of Objective-C or Swift specific method parameter names and types.
 """
 from signals.generators.ios.conversion import get_objc_data_type, get_swift_data_type
-from signals.parser.fields import Relationship
+from signals.parser.fields import Relationship, Field
 
 
 class Parameter(object):
@@ -15,6 +15,19 @@ class Parameter(object):
 
 
 class ObjCParameter(Parameter):
+    OBJC_DATA_TYPES = {
+        Field.DATE: "NSDate*",
+        Field.DATETIME: "NSDate*",
+        Field.INTEGER: "NSNumber*",
+        Field.DECIMAL: "NSNumber*",
+        Field.FLOAT: "NSNumber*",
+        Field.STRING: "NSString*",
+        Field.TEXT: "NSString*",
+        Field.BOOLEAN: "NSNumber*",
+        Field.IMAGE: "UIImage*",
+        Field.VIDEO: "NSURL*"
+    }
+
     def __init__(self, name, objc_type):
         super(ObjCParameter, self).__init__(name)
         self.objc_type = objc_type
@@ -32,10 +45,16 @@ class ObjCParameter(Parameter):
             if relationship.relationship_type in [Relationship.MANY_TO_MANY, Relationship.ONE_TO_MANY]:
                 variable_type = 'NSOrderedSet*'
             else:
-                from signals.generators.ios.template_methods import get_object_name
-                variable_type = get_object_name(relationship.related_object, upper_camel_case=True)
+                from signals.generators.ios.ios_template_methods import iOSTemplateMethods
+                variable_type = iOSTemplateMethods.get_object_name(relationship.related_object, upper_camel_case=True)
             parameters.append(ObjCParameter(name=relationship.name, objc_type=variable_type))
         return parameters
+
+    def get_objc_data_type(self, field):
+        if field.array:
+            return "NSArray*"
+        else:
+            return self.OBJC_DATA_TYPES[field.field_type]
 
     @staticmethod
     def generate_field_parameters(request_object):
@@ -66,8 +85,8 @@ class SwiftParameter(Parameter):
             if relationship.relationship_type in [Relationship.MANY_TO_MANY, Relationship.ONE_TO_MANY]:
                 variable_type = 'NSOrderedSet'
             else:
-                from signals.generators.ios.template_methods import get_object_name
-                variable_type = get_object_name(relationship.related_object, upper_camel_case=True)
+                from signals.generators.ios.ios_template_methods import iOSTemplateMethods
+                variable_type = iOSTemplateMethods.get_object_name(relationship.related_object, upper_camel_case=True)
             parameters.append(SwiftParameter(name=relationship.name, swift_type=variable_type))
         return parameters
 
