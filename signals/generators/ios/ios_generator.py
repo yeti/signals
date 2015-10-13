@@ -10,24 +10,18 @@ from signals.generators.ios.core_data import write_xml_to_file
 
 
 class iOSGenerator(BaseGenerator):
-    template_options = {
-        'objc': 'Objective-C',
-        'swift': 'Swift'
-    }
-
-    def __init__(self, templates, schema, data_models_path, core_data_path, project_name):
+    def __init__(self, generator_name, schema, data_models_path, core_data_path, project_name):
         super(iOSGenerator, self).__init__(schema)
         # Command flags
         self.data_models_path = data_models_path
         self.core_data_path = core_data_path
         self.project_name = project_name
-        self.templates = templates
 
         # Setup
         if not os.path.exists(BaseGenerator.BUILD_DIR):
             os.makedirs(BaseGenerator.BUILD_DIR)
 
-        self.jinja2_environment = Environment(loader=PackageLoader(__name__, "templates/{}/".format(self.templates)),
+        self.jinja2_environment = Environment(loader=PackageLoader(__name__, "templates/{}/".format(generator_name)),
                                               extensions=['jinja2.ext.with_'],
                                               trim_blocks=True,
                                               lstrip_blocks=True)
@@ -39,8 +33,9 @@ class iOSGenerator(BaseGenerator):
             progress("Creating core data file")
             write_xml_to_file(self.core_data_path, self.schema.data_objects)
 
-        if self.template_options[self.templates] == self.template_options['objc']:
+        if self.__class__ == ObjectiveCGenerator:
             progress('Preparing to generate Objective-C templates...')
+
             template_to_generate = ObjectiveCTemplate(self.project_name,
                                                       self.schema,
                                                       self.data_models_path,
@@ -92,3 +87,11 @@ class iOSGenerator(BaseGenerator):
     @staticmethod
     def is_xcode_running():
         return "Xcode.app" in subprocess.check_output(["ps", "-Ax"])
+
+
+class ObjectiveCGenerator(iOSGenerator):
+    pass
+
+
+class SwiftGenerator(iOSGenerator):
+    pass
