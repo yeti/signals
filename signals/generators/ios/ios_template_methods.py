@@ -11,47 +11,7 @@ from signals.parser.fields import Field
 
 class iOSTemplateMethods(object):
     """
-    Methods to translate the schema names and types to Objective-C or Swift variable names and types.
-    """
-    RESERVED_MAPPINGS = {
-        "auto": "isAuto",
-        "default": "isDefault",
-        "description": "theDescription",
-        "id": "theID",
-        "register": "theRegister",
-        "restrict": "shouldRestrict",
-        "super": "isSuper",
-        "volatile": "isVolatile"
-    }
-
-    # Some field names are reserved in Objective C
-    @staticmethod
-    def sanitize_field_name(field_name):
-        if field_name in iOSTemplateMethods.RESERVED_MAPPINGS:
-            return iOSTemplateMethods.RESERVED_MAPPINGS[field_name]
-        else:
-            return field_name
-
-    # Changes a Python variable name to an Objective-C/Swift version
-    @staticmethod
-    def python_to_objc_variable(python_variable_name, capitalize_first=False):
-        words = python_variable_name.split('_')
-
-        def upper_camel_case(words_to_capitalize):
-            return "".join(word.capitalize() for word in words_to_capitalize)
-
-        if capitalize_first:
-            return upper_camel_case(words)
-        else:
-            return words[0] + upper_camel_case(words[1:])
-
-    @staticmethod
-    def get_proper_name(name, capitalize_first=False):
-        proper_name = iOSTemplateMethods.sanitize_field_name(name)
-        return iOSTemplateMethods.python_to_objc_variable(proper_name, capitalize_first=capitalize_first)
-
-    """
-    Methods used in the iOS template generator
+    Methods used while generating iOS templates
     """
 
     @staticmethod

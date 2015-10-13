@@ -27,6 +27,7 @@ class ObjectiveCTemplate(BaseTemplate):
             'project_name': self.project_name,
             'VIDEO_FIELD': Field.VIDEO,
             'IMAGE_FIELD': Field.IMAGE,
+            'get_proper_name': get_proper_name,
             'request_objects': self.get_request_objects(self.schema.data_objects),
             'sanitize_field_name': sanitize_field_name
         })
