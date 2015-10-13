@@ -26,6 +26,7 @@ def save_settings(paths, templates, schema, generator_name, data_models, core_da
     project_root = find_project_root(paths)
     if project_root is not None and len(project_root) > 0:
         output_settings(project_root,
+                        templates,
                         os.path.abspath(schema.schema_path),
                         generator_name,
                         os.path.abspath(data_models),
@@ -52,8 +53,8 @@ def find_project_root(paths):
 def output_settings(project_root, templates, schema, generator_name, data_models, core_data, project_name):
     settings_filename = project_root + os.sep + ".signalsconfig"
     progress("Writing settings to {}".format(settings_filename))
-    keys = ["schema", "generator", "data_models", "core_data", "project_name"]
-    values = [schema, generator_name, data_models, core_data, project_name]
+    keys = ["templates", "schema", "generator", "data_models", "core_data", "project_name"]
+    values = [templates, schema, generator_name, data_models, core_data, project_name]
 
     with open(settings_filename, "w") as settings_file:
         for (key, val) in zip(keys, values):
