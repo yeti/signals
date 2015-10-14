@@ -1,13 +1,11 @@
 import unittest
 from signals.generators.ios.ios_template_methods import iOSTemplateMethods
 from signals.generators.ios.objectivec_template import ObjectiveCTemplateMethods
-from signals.generators.ios.parameters import ObjCParameter
+from signals.generators.ios.parameters import ObjCParameter, SwiftParameter
+from signals.generators.ios.swift_template import SwiftTemplateMethods
 from signals.parser.schema import DataObject
 from signals.parser.fields import Field
 from signals.parser.api import GetAPI, API, PatchAPI
-# from signals.generators.ios.template_methods import is_url, is_oauth, content_type, get_object_name, get_url_name, \
-#     get_media_fields, media_field_check, key_path, attribute_mappings, get_api_request_object, \
-#     create_parameter_signature, method_name, method_parameters
 from tests.utils import create_dynamic_schema
 
 
@@ -45,7 +43,7 @@ class TemplateMethodsTestCase(unittest.TestCase):
         schema = create_dynamic_schema(objects_json, urls_json)
         self.assertEqual(iOSTemplateMethods.method_name(schema.urls[0].patch), "PostWithBody")
 
-    def test_method_parameters(self):
+    def test_objective_c_method_parameters(self):
         objects_json = {
             '$postRequest': {"body": "string", "title": "string"},
             '$postResponse': {"body": "string", "title": "string"}
@@ -68,7 +66,30 @@ class TemplateMethodsTestCase(unittest.TestCase):
                    "failure:(void (^)(RKObjectRequestOperation *operation, NSError *error))failure"
         self.assertEqual(parameter_signature, expected)
 
-    def test_key_path(self):
+    def test_swift_method_parameters(self):
+        objects_json = {
+            '$postRequest': {"body": "string", "title": "string"},
+            '$postResponse': {"body": "string", "title": "string"}
+        }
+        urls_json = [
+            {
+                "url": "post/:id/",
+                "patch": {
+                    "request": "$postRequest",
+                    "response": {
+                        "200+": "$postResponse"
+                    }
+                }
+            }
+        ]
+        schema = create_dynamic_schema(objects_json, urls_json)
+        parameter_signature = SwiftTemplateMethods.method_parameters(schema.urls[0].patch)
+        expected = "body: String, title: String, theID: Int, " \
+                   "success: RestKitSuccess, " \
+                   "failure: RestKitError"
+        self.assertEqual(parameter_signature, expected)
+
+    def test_objective_c_key_path(self):
         api = GetAPI("post/", {
             "response": {
                 "200+": "$postResponse"
@@ -86,6 +107,24 @@ class TemplateMethodsTestCase(unittest.TestCase):
         })
         self.assertEqual(ObjectiveCTemplateMethods.key_path(api), 'nil')
 
+    def test_swift_key_path(self):
+        api = GetAPI("post/", {
+            "response": {
+                "200+": "$postResponse"
+            }
+        })
+        self.assertEqual(SwiftTemplateMethods.key_path(api), '"results"')
+
+        api.resource_type = GetAPI.RESOURCE_DETAIL
+        self.assertEqual(SwiftTemplateMethods.key_path(api), 'nil')
+
+        api = GetAPI("post/:id/favorite/", {
+            "response": {
+                "200+": "$postResponse"
+            }
+        })
+        self.assertEqual(SwiftTemplateMethods.key_path(api), 'nil')
+
     def test_get_object_name(self):
         data_object = DataObject("$postRequest", {})
         self.assertEqual(iOSTemplateMethods.get_object_name(data_object), "postRequest")
@@ -94,13 +133,21 @@ class TemplateMethodsTestCase(unittest.TestCase):
     def test_get_url_name(self):
         self.assertEqual(iOSTemplateMethods.get_url_name("/post/:id/favorite/"), "PostWithIdFavorite")
 
-    def test_attribute_mappings(self):
+    def test_objective_c_attribute_mappings(self):
         fields = [
             Field("first_title", ["string"]),
             Field("user_id", ["int"])
         ]
         attribute_mapping_string = ObjectiveCTemplateMethods.attribute_mappings(fields)
         self.assertEqual(attribute_mapping_string, '@"first_title": @"firstTitle", @"user_id": @"userId"')
+
+    def test_swift_attribute_mappings(self):
+        fields = [
+            Field("first_title", ["string"]),
+            Field("user_id", ["int"])
+        ]
+        attribute_mapping_string = SwiftTemplateMethods.attribute_mappings(fields)
+        self.assertEqual(attribute_mapping_string, '"first_title": "firstTitle", "user_id": "userId"')
 
     def test_is_oauth(self):
         api = GetAPI("post/", {
@@ -145,13 +192,21 @@ class TemplateMethodsTestCase(unittest.TestCase):
         self.assertTrue(iOSTemplateMethods.is_url("http://test.com"))
         self.assertFalse(iOSTemplateMethods.is_url("Constants.getBaseURL()"))
 
-    def test_create_parameter_signature(self):
+    def test_create_objc_parameter_signature(self):
         parameters = [
             ObjCParameter("title", "NSString*"),
             ObjCParameter("userId", "NSNumber*")
         ]
         parameter_signature = ObjectiveCTemplateMethods.create_parameter_signature(parameters)
         self.assertEqual(parameter_signature, "(NSString*)title userId:(NSNumber*)userId")
+
+    def test_create_swift_parameter_signature(self):
+        parameters = [
+            SwiftParameter("title", "String"),
+            SwiftParameter("userId", "Int")
+        ]
+        parameter_signature = SwiftTemplateMethods.create_parameter_signature(parameters)
+        self.assertEqual(parameter_signature, "title: String, userId: Int")
 
     def test_get_api_request_object(self):
         objects_json = {

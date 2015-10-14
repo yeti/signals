@@ -7,7 +7,7 @@ class BaseTemplate(object):
     def __init__(self, project_name, schema, data_models_path, jinja2_environment):
         # Command Flags
         self.project_name = project_name
-        self.schema = schema  # Is this right?
+        self.schema = schema
         self.data_models_path = data_models_path
         # Setup
         self.jinja2_environment = jinja2_environment
