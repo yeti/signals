@@ -7,6 +7,7 @@ from tests.utils import create_dynamic_schema
 
 
 class ParametersTestCase(unittest.TestCase):
+    #TODO: Write tests for ObjC and Swift-specific parameters
     # def test_get_objc_data_type(self):
     #     array_field = Field("message", ["string", "array"])
     #     self.assertEqual(get_objc_data_type(array_field), "NSArray*")
