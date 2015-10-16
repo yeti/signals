@@ -1,6 +1,7 @@
 """
 Creates an Xcode Core Data file.
 """
+import os
 from xml.dom import minidom
 from lxml import etree
 from signals.parser.fields import Relationship, Field
@@ -189,9 +190,9 @@ def add_entities(model, objects):
 
 
 # Parses the given XML's model element and creates our initial root
-def get_model(xml):
-    xml_doc = minidom.parse(xml)
-    item_list = xml_doc.getElementsByTagName('model')
+def get_model(core_data_path):
+    xml_dom = minidom.parse(core_data_path)
+    item_list = xml_dom.getElementsByTagName('model')
     new_model = etree.Element("model")
     current_xml_model = item_list[0]
     for att in current_xml_model.attributes.keys():
@@ -199,12 +200,33 @@ def get_model(xml):
     return new_model
 
 
-def write_xml_to_file(xml, objects):
-    model = get_model(xml)
+# parses the hidden .xccurrentversion for the name of the current version
+# this information is stored inside its first and only <string> xml tag
+def get_current_version(xcdatamodeld_path):
+    xccurrentversion_path = xcdatamodeld_path + '/.xccurrentversion'
+
+    # .xccurrentversion might not exist if there is only one version
+    if os.path.exists(xccurrentversion_path):
+        xml_dom = minidom.parse(xccurrentversion_path)
+        return xml_dom.getElementsByTagName('string')[0].childNodes[0].data
+    else:
+        return [f for f in os.listdir(xcdatamodeld_path) if f.endswith('.xcdatamodel')][0]
+
+
+def get_core_data_from_folder(xcdatamodeld_path):
+    current_version_name = get_current_version(xcdatamodeld_path)
+    core_data_path = xcdatamodeld_path + '/' + current_version_name + '/contents'
+    return core_data_path
+
+
+def write_xml_to_file(xcdatamodeld_path, objects):
+    core_data_path = get_core_data_from_folder(xcdatamodeld_path)
+
+    model = get_model(core_data_path)
     add_entities(model, objects)
     add_relationships(model, objects)
     add_elements(model, objects)
 
     # write tree
     tree = etree.ElementTree(model)
-    tree.write(xml, pretty_print=True)
+    tree.write(core_data_path, pretty_print=True)

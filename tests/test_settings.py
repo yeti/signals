@@ -1,7 +1,7 @@
 import mock
 import unittest
 import subprocess
-from signals.main import run_main, project_specified
+from signals.main import run_signals, project_specified
 from tests.utils import captured_stderr, captured_stdout
 
 
@@ -13,8 +13,8 @@ class SettingsTestCase(unittest.TestCase):
 
         # Run normally to generate settings file
         with captured_stderr() as error, captured_stdout() as out:
-            run_main("./tests/files/test_schema.json", "ios", "./tests/files/", "./tests/files/dummycontents",
-                     "YetiProject", True)
+            run_signals("./tests/files/test_schema.json", "ios", "./tests/files/",
+                        "./tests/files/doubledummy.xcdatamodeld", True, "YetiProject", True)
             self.assertEqual(error.getvalue(), "")
             self.assertIn("Finished generating your files!", out.getvalue())
 

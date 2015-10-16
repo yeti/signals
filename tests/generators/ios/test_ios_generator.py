@@ -24,7 +24,7 @@ class iOSGeneratorTestCase(unittest.TestCase):
     @mock.patch("signals.generators.ios.ios_generator.subprocess")
     def test_process_error(self, mock_subprocess):
         mock_subprocess.check_output.return_value = "Xcode.app"
-        generator = iOSGenerator(Schema("./tests/files/test_schema.json"), "./tests/files/", "./core/data/path",
+        generator = iOSGenerator(Schema("./tests/files/test_schema.json"), "./tests/files/", "./core/data/path", True,
                                  "YetiProject")
         with self.assertRaises(SignalsError) as e:
             generator.process()
@@ -32,13 +32,13 @@ class iOSGeneratorTestCase(unittest.TestCase):
 
     @mock.patch("signals.generators.ios.ios_generator.recursively_find_parent_containing_file", side_effect=good_app_delegate)
     def test_check_setup_called_success(self, mock_function):
-        generator = iOSGenerator(Schema("./tests/files/test_schema.json"), "./tests/files/", "./core/data/path",
+        generator = iOSGenerator(Schema("./tests/files/test_schema.json"), "./tests/files/", "./core/data/path", True,
                                  "YetiProject")
         self.assertTrue(generator.check_setup_called())
 
     @mock.patch("signals.generators.ios.ios_generator.recursively_find_parent_containing_file", side_effect=bad_app_delegate)
     def test_check_setup_called_failure(self, mock_function):
-        generator = iOSGenerator(Schema("./tests/files/test_schema.json"), "./tests/files/", "./core/data/path",
+        generator = iOSGenerator(Schema("./tests/files/test_schema.json"), "./tests/files/", "./core/data/path", False,
                                  "YetiProject")
         self.assertFalse(generator.check_setup_called())
 
