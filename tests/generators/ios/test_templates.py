@@ -294,17 +294,17 @@ class SwiftTemplateTestCase(unittest.TestCase):
                 expected_template_out = expected_template_out % expected_context
             self.assertEqual(template_output, expected_template_out)
 
-    # def test_swift_data_model_implementation_template(self):
-    #     schema = Schema("./tests/files/test_schema.json")
-    #     self.assertTemplateEqual('data_model.swift.j2', 'DataModel.swift', {
-    #         'project_name': "TestProject",
-    #         'schema': schema,
-    #         'VIDEO_FIELD': Field.VIDEO,
-    #         'IMAGE_FIELD': Field.IMAGE,
-    #         'today': datetime.today(),
-    #         'endpoints': URL.URL_ENDPOINTS.keys(),
-    #         'request_objects': SwiftTemplate.get_request_objects(schema.data_objects),
-    #         'sanitize_field_name': sanitize_field_name
-    #     }, expected_context=(
-    #         datetime.today().strftime('%m/%d/%Y'),
-    #     ))
+    def test_swift_data_model_implementation_template(self):
+        schema = Schema("./tests/files/test_schema.json")
+        self.assertTemplateEqual('data_model.swift.j2', 'DataModel.swift', {
+            'project_name': "TestProject",
+            'schema': schema,
+            'VIDEO_FIELD': Field.VIDEO,
+            'IMAGE_FIELD': Field.IMAGE,
+            'today': datetime.today(),
+            'endpoints': URL.URL_ENDPOINTS.keys(),
+            'request_objects': SwiftTemplate.get_request_objects(schema.data_objects),
+            'sanitize_field_name': sanitize_field_name
+        }, expected_context=(
+            datetime.today().strftime('%m/%d/%Y'),
+        ))
