@@ -84,7 +84,7 @@ class SwiftParameter(Parameter):
         self.swift_type = swift_type
 
     @staticmethod
-    def get_data_type(field):
+    def get_swift_data_type(field):
         if field.array:
             return "Array"
         else:
@@ -94,7 +94,7 @@ class SwiftParameter(Parameter):
     def generate_field_parameters(request_object):
         parameters = []
         for index, field in enumerate(request_object.fields):
-            variable_type = SwiftParameter.get_data_type(field)
+            variable_type = SwiftParameter.get_swift_data_type(field)
             parameters.append(SwiftParameter(name=field.name, swift_type=variable_type))
         return parameters
 
