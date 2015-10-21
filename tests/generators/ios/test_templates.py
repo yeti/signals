@@ -5,8 +5,10 @@ from datetime import datetime
 from jinja2 import PackageLoader
 from jinja2 import Environment
 from signals.generators.ios.conversion import sanitize_field_name, get_proper_name
-from signals.generators.ios.objectivec_template import ObjectiveCTemplateMethods, ObjectiveCTemplate
-from signals.generators.ios.swift_template import SwiftTemplate, SwiftTemplateMethods
+from signals.generators.ios.objc_generator.objc_template import ObjectiveCTemplate
+from signals.generators.ios.objc_generator.objc_template_methods import ObjectiveCTemplateMethods
+from signals.generators.ios.swift_generator.swift_template import SwiftTemplate
+from signals.generators.ios.swift_generator.swift_template_methods import SwiftTemplateMethods
 from signals.parser.fields import Relationship, Field
 from signals.parser.schema import DataObject, Schema, URL
 from signals.parser.api import GetAPI, PatchAPI, PostAPI

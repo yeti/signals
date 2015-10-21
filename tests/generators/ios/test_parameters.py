@@ -1,7 +1,7 @@
 import unittest
-# from signals.generators.ios.parameters import has_id_field, create_id_parameter, generate_relationship_parameters, \
-#     generate_field_parameters
-from signals.generators.ios.parameters import Parameter, ObjCParameter, SwiftParameter
+from signals.generators.base.base_parameters import Parameter
+from signals.generators.ios.objc_generator.objc_parameters import ObjCParameter
+from signals.generators.ios.swift_generator.swift_parameters import SwiftParameter
 from signals.parser.fields import Field
 from signals.parser.schema import DataObject
 from tests.utils import create_dynamic_schema

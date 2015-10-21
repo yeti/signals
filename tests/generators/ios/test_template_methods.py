@@ -1,8 +1,9 @@
 import unittest
 from signals.generators.ios.ios_template_methods import iOSTemplateMethods
-from signals.generators.ios.objectivec_template import ObjectiveCTemplateMethods
-from signals.generators.ios.parameters import ObjCParameter, SwiftParameter
-from signals.generators.ios.swift_template import SwiftTemplateMethods
+from signals.generators.ios.objc_generator.objc_parameters import ObjCParameter
+from signals.generators.ios.objc_generator.objc_template_methods import ObjectiveCTemplateMethods
+from signals.generators.ios.swift_generator.swift_parameters import SwiftParameter
+from signals.generators.ios.swift_generator.swift_template_methods import SwiftTemplateMethods
 from signals.parser.schema import DataObject
 from signals.parser.fields import Field
 from signals.parser.api import GetAPI, API, PatchAPI

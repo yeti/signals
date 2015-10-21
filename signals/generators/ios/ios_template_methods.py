@@ -2,30 +2,17 @@
 Methods to be used in the iOS generator's templates.
 """
 import re
-from urlparse import urlparse
-from signals.generators.ios.parameters import ObjCParameter, SwiftParameter
+from signals.generators.base.base_template_methods import BaseTemplateMethods
 from signals.generators.ios.conversion import get_proper_name
+from signals.generators.ios.objc_generator.objc_parameters import ObjCParameter
+from signals.generators.ios.swift_generator.swift_parameters import SwiftParameter
 from signals.parser.api import API
-from signals.parser.fields import Field
 
 
-class iOSTemplateMethods(object):
+class iOSTemplateMethods(BaseTemplateMethods):
     """
     Methods used while generating iOS templates
     """
-
-    @staticmethod
-    def get_api_request_object(api):
-        # We treat both request and parameter objects equally in method signatures
-        return getattr(api, 'request_object', getattr(api, 'parameters_object', None))
-
-    @staticmethod
-    def get_object_name(request_object, upper_camel_case=False):
-        first_letter = request_object.name[1]
-        if upper_camel_case:
-            first_letter = first_letter.upper()
-        return first_letter + request_object.name[2:]
-
     @staticmethod
     def get_url_name(url_path):
         name = ""
@@ -69,19 +56,6 @@ class iOSTemplateMethods(object):
             return "RKMIMETypeJSON"
 
     @staticmethod
-    def is_oauth(api):
-        return api.authorization == API.OAUTH2 and not api.authorization_optional
-
-    @staticmethod
-    def get_media_fields(fields):
-        return filter(lambda field: field.field_type in [Field.IMAGE, Field.VIDEO], fields)
-
-    @staticmethod
     def media_field_check(fields):
         statements = ["{} != nil".format(get_proper_name(field.name)) for field in fields]
         return " || ".join(statements)
-
-    @staticmethod
-    def is_url(url):
-        parse_result = urlparse(url)
-        return parse_result.scheme in ['http', 'https']

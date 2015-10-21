@@ -1,6 +1,6 @@
 import os
-from signals.generators.ios.objectivec_template import ObjectiveCTemplate
-from signals.generators.ios.swift_template import SwiftTemplate
+from signals.generators.ios.objc_generator.objc_template import ObjectiveCTemplate
+from signals.generators.ios.swift_generator.swift_template import SwiftTemplate
 from signals.helpers import recursively_find_parent_containing_file
 import subprocess
 from jinja2 import Environment, PackageLoader
