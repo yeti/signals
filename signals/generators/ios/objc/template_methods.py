@@ -1,6 +1,6 @@
 from signals.generators.ios.conversion import get_proper_name
 from signals.generators.ios.ios_template_methods import iOSTemplateMethods
-from signals.generators.ios.objc_generator.objc_parameters import ObjCParameter
+from signals.generators.ios.objc.parameters import ObjCParameter
 from signals.parser.api import GetAPI
 
 

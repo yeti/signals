@@ -1,7 +1,7 @@
 import shutil
 from signals.generators.base.base_template import BaseTemplate
 from signals.generators.ios.conversion import sanitize_field_name, get_proper_name
-from signals.generators.ios.swift_generator.swift_template_methods import SwiftTemplateMethods
+from signals.generators.ios.swift.template_methods import SwiftTemplateMethods
 from signals.parser.fields import Field
 
 

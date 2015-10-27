@@ -4,8 +4,8 @@ Methods to be used in the iOS generator's templates.
 import re
 from signals.generators.base.base_template_methods import BaseTemplateMethods
 from signals.generators.ios.conversion import get_proper_name
-from signals.generators.ios.objc_generator.objc_parameters import ObjCParameter
-from signals.generators.ios.swift_generator.swift_parameters import SwiftParameter
+from signals.generators.ios.objc.parameters import ObjCParameter
+from signals.generators.ios.swift.parameters import SwiftParameter
 from signals.parser.api import API
 
 

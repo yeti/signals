@@ -1,6 +1,6 @@
 import os
-from signals.generators.ios.objc_generator.objc_template import ObjectiveCTemplate
-from signals.generators.ios.swift_generator.swift_template import SwiftTemplate
+from signals.generators.ios.objc.template import ObjectiveCTemplate
+from signals.generators.ios.swift.template import SwiftTemplate
 from signals.helpers import recursively_find_parent_containing_file
 import subprocess
 from jinja2 import Environment, PackageLoader
@@ -34,10 +34,10 @@ class iOSGenerator(BaseGenerator):
             write_xml_to_file(self.core_data_path, self.schema.data_objects)
 
         if self.__class__ == ObjectiveCGenerator:
-            progress('Preparing to generate Objective-C templates...')
+            progress('Preparing to generate Objective-C templates')
             template_to_generate = ObjectiveCTemplate
         else:
-            progress('Preparing to generate Swift templates...')
+            progress('Preparing to generate Swift templates')
             template_to_generate = SwiftTemplate
 
         progress("Creating data model file")
