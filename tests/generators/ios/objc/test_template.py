@@ -1,21 +1,19 @@
 from inspect import getmembers, isfunction
 import os
 import unittest
-from datetime import datetime
 from jinja2 import PackageLoader
 from jinja2 import Environment
-from signals.generators.ios.ios_generator import iOSGenerator
-from signals.generators.ios.conversion import sanitize_field_name
+from signals.generators.ios.conversion import sanitize_field_name, get_proper_name
+from signals.generators.ios.objc.template_methods import ObjectiveCTemplateMethods
 from signals.parser.fields import Relationship, Field
 from signals.parser.schema import DataObject, Schema, URL
-from signals.generators.ios import template_methods
 from signals.parser.api import GetAPI, PatchAPI, PostAPI
 from tests.utils import create_dynamic_schema
 
 
 class TemplateTestCase(unittest.TestCase):
     def setUp(self):
-        self.jinja2_environment = Environment(loader=PackageLoader('signals.generators.ios'),
+        self.jinja2_environment = Environment(loader=PackageLoader('signals.generators.ios', 'templates/objc/'),
                                               extensions=['jinja2.ext.with_'],
                                               trim_blocks=True,
                                               lstrip_blocks=True)
@@ -26,7 +24,10 @@ class TemplateTestCase(unittest.TestCase):
         with open(expected_file_path, "r") as expected_template_file:
             template = self.jinja2_environment.get_template(template_name)
             # Registers all methods in template_methods.py with jinja2 for use
-            context.update({name: method for name, method in getmembers(template_methods, isfunction)})
+            context.update({name: method for name, method in getmembers(ObjectiveCTemplateMethods, isfunction)})
+            context.update({'get_proper_name': get_proper_name,
+                            'sanitize_field_name': sanitize_field_name
+                            })
             template_output = template.render(**context)
             expected_template_out = expected_template_file.read()
             if expected_context:
@@ -237,30 +238,3 @@ class TemplateTestCase(unittest.TestCase):
             'data_object': post_object,
             'relationship': relationship
         })
-
-    def test_data_model_header_template(self):
-        schema = Schema("./tests/files/test_schema.json")
-        self.assertTemplateEqual('data_model.h.j2', 'DataModel.h', {
-            'schema': schema,
-            'VIDEO_FIELD': Field.VIDEO,
-            'IMAGE_FIELD': Field.IMAGE,
-            'today': datetime.today(),
-            'endpoints': URL.URL_ENDPOINTS.keys(),
-        }, expected_context=(
-            datetime.today().strftime('%m/%d/%Y'),
-        ))
-
-    def test_data_model_implementation_template(self):
-        schema = Schema("./tests/files/test_schema.json")
-        self.assertTemplateEqual('data_model.m.j2', 'DataModel.m', {
-            'project_name': "TestProject",
-            'schema': schema,
-            'VIDEO_FIELD': Field.VIDEO,
-            'IMAGE_FIELD': Field.IMAGE,
-            'today': datetime.today(),
-            'endpoints': URL.URL_ENDPOINTS.keys(),
-            'request_objects': iOSGenerator.get_request_objects(schema.data_objects),
-            'sanitize_field_name': sanitize_field_name
-        }, expected_context=(
-            datetime.today().strftime('%m/%d/%Y'),
-        ))

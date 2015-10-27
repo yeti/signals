@@ -3,14 +3,14 @@ import click
 import mock
 import unittest
 import subprocess
-from signals.main import run_main, add_trailing_slash_to_api, validate_path
+from signals.main import run_main, validate_path
 from signals.generators.base.base_generator import BaseGenerator
 from tests.utils import captured_stderr, captured_stdout
 
 
 class MainTestCase(unittest.TestCase):
     def test_run_command(self):
-        command = "python -m signals --schema ./tests/files/test_schema.json --generator ios " \
+        command = "python -m signals --schema ./tests/files/test_schema.json --generator objc " \
                   "--datamodels ./tests/files/ --projectname YetiProject"
         process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         output, error = process.communicate()
@@ -19,7 +19,7 @@ class MainTestCase(unittest.TestCase):
 
     def test_run_main(self):
         with captured_stderr() as error, captured_stdout() as out:
-            run_main("./tests/files/test_schema.json", "ios", "./tests/files/", None, "YetiProject", False)
+            run_main("./tests/files/test_schema.json", "objc", "./tests/files/", None, "YetiProject", False)
             self.assertEqual(error.getvalue(), "")
             self.assertIn("Finished generating your files!", out.getvalue())
 
@@ -27,8 +27,8 @@ class MainTestCase(unittest.TestCase):
     def test_run_main_error(self, mock_subprocess):
         mock_subprocess.check_output.return_value = "Xcode.app"
         with captured_stdout() as out:
-            run_main("./tests/files/test_schema.json", "ios", "./tests/files/", "./core/data/path", "YetiProject",
-                     False)
+            run_main("./tests/files/test_schema.json", "objc", "./tests/files/", "./core/data/path",
+                     "YetiProject", False)
             self.assertIn("Must quit Xcode before writing to core data", out.getvalue())
 
     def test_clear_generated_code_files(self):
@@ -81,13 +81,3 @@ class MainTestCase(unittest.TestCase):
 
         args = {'ctx': None, 'param': None, 'value': bad_file_path}
         self.assertRaises(click.BadParameter, validate_path, **args)
-
-    def test_add_trailing_slash_to_api(self):
-        url_no_slash = 'http://test.com'
-        url_with_slash = add_trailing_slash_to_api(None, None, url_no_slash)
-        # '/' has been added to the url string if it did not end in a slash
-        self.assertEqual(url_with_slash, 'http://test.com/')
-
-        same_url = add_trailing_slash_to_api(None, None, url_with_slash)
-        # '/' has not been added to the url string if it already ended in a slash
-        self.assertEqual(same_url, 'http://test.com/')

@@ -62,6 +62,7 @@ target/
 code/
 tests/files/DataModel.h
 tests/files/DataModel.m
+tests/files/temp/
 
 # DS Store
 .DS_Store

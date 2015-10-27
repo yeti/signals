@@ -1,20 +1,6 @@
 """
-Methods to translate the schema names and types to objective c variable names and types.
+Methods to translate the schema variable names and types to desired language's names and types.
 """
-from signals.parser.fields import Field
-
-OBJC_DATA_TYPES = {
-    Field.DATE: "NSDate*",
-    Field.DATETIME: "NSDate*",
-    Field.INTEGER: "NSNumber*",
-    Field.DECIMAL: "NSNumber*",
-    Field.FLOAT: "NSNumber*",
-    Field.STRING: "NSString*",
-    Field.TEXT: "NSString*",
-    Field.BOOLEAN: "NSNumber*",
-    Field.IMAGE: "UIImage*",
-    Field.VIDEO: "NSURL*"
-}
 
 # More listed here: http://www.binpress.com/tutorial/objective-c-reserved-keywords/43
 RESERVED_MAPPINGS = {
@@ -29,19 +15,12 @@ RESERVED_MAPPINGS = {
 }
 
 
-def get_objc_data_type(field):
-    if field.array:
-        return "NSArray*"
-    else:
-        return OBJC_DATA_TYPES[field.field_type]
-
-
-# Changes a python variable name to an objective c version
+# Changes a Python variable name to an Objective-C/Swift version
 def python_to_objc_variable(python_variable_name, capitalize_first=False):
     words = python_variable_name.split('_')
 
-    def upper_camel_case(words):
-        return "".join(word.capitalize() for word in words)
+    def upper_camel_case(words_to_capitalize):
+        return "".join(word.capitalize() for word in words_to_capitalize)
 
     if capitalize_first:
         return upper_camel_case(words)
