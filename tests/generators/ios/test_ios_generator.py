@@ -28,6 +28,7 @@ class iOSGeneratorTestCase(unittest.TestCase):
                                         Schema("./tests/files/test_schema.json"),
                                         "./tests/files/",
                                         "./core/data/path",
+                                        True,
                                         "YetiProject")
         with self.assertRaises(SignalsError) as e:
             generator.process()
@@ -39,6 +40,7 @@ class iOSGeneratorTestCase(unittest.TestCase):
                                         Schema("./tests/files/test_schema.json"),
                                         "./tests/files/",
                                         "./core/data/path",
+                                        True,
                                         "YetiProject")
         self.assertTrue(generator.check_setup_called())
 
@@ -48,6 +50,7 @@ class iOSGeneratorTestCase(unittest.TestCase):
                                         Schema("./tests/files/test_schema.json"),
                                         "./tests/files/",
                                         "./core/data/path",
+                                        False,
                                         "YetiProject")
         self.assertFalse(generator.check_setup_called())
 

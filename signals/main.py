@@ -12,11 +12,11 @@ generators = {
 
 # Create a separate function so that we can unit test.
 # Issues unit testing `main` due to click decorators.
-def run_main(schema, generator_name, data_models, core_data, project_name, save):
+def run_signals(schema, generator_name, data_models, core_data, check_xcode, project_name, save):
 
     schema = Schema(schema)
 
-    generator = generators[generator_name](generator_name, schema, data_models, core_data, project_name)
+    generator = generators[generator_name](generator_name, schema, data_models, core_data, check_xcode, project_name)
     try:
         generator.process()
         if save:
@@ -42,18 +42,20 @@ def project_specified(ctx, param, value):
     except SignalsError as e:
         print(str(e))
     else:
-        run_main(setting_dict["schema"],
-                 setting_dict["generator"],
-                 setting_dict["data_models"],
-                 setting_dict["core_data"],
-                 setting_dict["project_name"],
-                 False)
+        run_signals(setting_dict["schema"],
+                    setting_dict["generator"],
+                    setting_dict["data_models"],
+                    setting_dict["core_data"],
+                    True,
+                    setting_dict["project_name"],
+                    False)
 
     if ctx is not None:
         ctx.exit()
 
 
 def validate_path(ctx, param, value):
+    value = value.strip()
     if value.startswith('~'):
         value = os.path.expanduser(value)
     elif value.startswith('.'):
@@ -88,8 +90,8 @@ def validate_path(ctx, param, value):
               type=click.Path(dir_okay=True),
               callback=validate_path)
 @click.option('core_data', '--coredata',
-              help='The location of your core data configuration xcdatamodel file.',
-              type=click.Path(exists=True))
+              help='The location of your core data .xcdatamodeld file.',
+              type=click.Path(dir_okay=True))
 @click.option('project_name', '--projectname',
               prompt="name of your iOS project and main target",
               help='The name of your iOS project and main target.',
@@ -98,4 +100,4 @@ def validate_path(ctx, param, value):
 # TODO: These are iOS specific settings and we'll need to figure out a way to handle generator specific arguments
 # when we add more generators in the future.
 def main(settings_path, schema, generator, data_models, core_data, project_name, save):
-    run_main(schema, generator, data_models, core_data, project_name, save)
+    run_signals(schema, generator, data_models, core_data, True, project_name, save)

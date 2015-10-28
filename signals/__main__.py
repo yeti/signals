@@ -1,2 +1,4 @@
 import signals.main
-signals.main.main()
+
+if __name__ == '__main__':
+    signals.main.main()

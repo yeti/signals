@@ -20,7 +20,7 @@ setup(
     name="yak-signals",
     packages=find_packages(exclude=["tests*"]),
     package_data={'signals': package_data_files},
-    version="0.2.2",
+    version="0.2.7",
     description="A tool for auto generating libraries for different platforms to communicate with your API",
     long_description=long_description,
     url="https://github.com/yeti/signals/",

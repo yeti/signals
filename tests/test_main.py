@@ -3,7 +3,7 @@ import click
 import mock
 import unittest
 import subprocess
-from signals.main import run_main, validate_path
+from signals.main import run_signals, validate_path
 from signals.generators.base.base_generator import BaseGenerator
 from tests.utils import captured_stderr, captured_stdout
 
@@ -17,18 +17,19 @@ class MainTestCase(unittest.TestCase):
         self.assertEqual(error, "")
         self.assertIn("Finished generating your files!", output)
 
-    def test_run_main(self):
+    def test_run_signals(self):
         with captured_stderr() as error, captured_stdout() as out:
-            run_main("./tests/files/test_schema.json", "objc", "./tests/files/", None, "YetiProject", False)
+            run_signals("./tests/files/test_schema.json", "objc", "./tests/files/",
+                        None, False, "YetiProject", False)
             self.assertEqual(error.getvalue(), "")
             self.assertIn("Finished generating your files!", out.getvalue())
 
     @mock.patch("signals.generators.ios.ios_generator.subprocess")
-    def test_run_main_error(self, mock_subprocess):
+    def test_run_signals_error(self, mock_subprocess):
         mock_subprocess.check_output.return_value = "Xcode.app"
         with captured_stdout() as out:
-            run_main("./tests/files/test_schema.json", "objc", "./tests/files/", "./core/data/path",
-                     "YetiProject", False)
+            run_signals("./tests/files/test_schema.json", "objc", "./tests/files/",
+                        "./core/data/path", True, "YetiProject", False)
             self.assertIn("Must quit Xcode before writing to core data", out.getvalue())
 
     def test_clear_generated_code_files(self):

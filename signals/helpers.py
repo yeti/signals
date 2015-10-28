@@ -13,4 +13,4 @@ def recursively_find_parent_containing_file(current_path, search_files):
 
         current_path = os.path.normpath(os.path.join(current_path, ".."))
 
-    return None
+    return None, None

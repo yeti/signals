@@ -10,11 +10,12 @@ from signals.generators.ios.core_data import write_xml_to_file
 
 
 class iOSGenerator(BaseGenerator):
-    def __init__(self, generator_name, schema, data_models_path, core_data_path, project_name):
+    def __init__(self, generator_name, schema, data_models_path, core_data_path, check_xcode, project_name):
         super(iOSGenerator, self).__init__(schema)
         # Command flags
         self.data_models_path = data_models_path
         self.core_data_path = core_data_path
+        self.check_xcode = check_xcode
         self.project_name = project_name
 
         # Setup
@@ -28,7 +29,7 @@ class iOSGenerator(BaseGenerator):
 
     def process(self):
         if self.core_data_path is not None:
-            if self.is_xcode_running():
+            if self.check_xcode and self.is_xcode_running():
                 raise SignalsError("Must quit Xcode before writing to core data")
             progress("Creating core data file")
             write_xml_to_file(self.core_data_path, self.schema.data_objects)

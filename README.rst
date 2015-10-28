@@ -23,8 +23,12 @@ To see a list of arguments run ``signals --help``.
 If you do not supply the required arguments when running, the script
 will prompt you for them one by one.
 
-An example for running the script is:
-``signals --schema ~/projects/your-project/api-schema.json --generator ios``
+An example for running the script is::
+
+  signals --schema ~/projects/your-project/api-schema.json
+  --datamodels ~/projects/your-project/data-model-folder/
+  --coredata ~/projects/your-project/core-data.xcdatamodeld
+  --projectname your-project --generator objc
 
 iOS
 ~~~
