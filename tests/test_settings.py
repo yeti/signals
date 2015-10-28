@@ -13,7 +13,7 @@ class SettingsTestCase(unittest.TestCase):
 
         # Run normally to generate settings file
         with captured_stderr() as error, captured_stdout() as out:
-            run_signals("./tests/files/test_schema.json", "ios", "./tests/files/",
+            run_signals("./tests/files/test_schema.json", "objc", "./tests/files/",
                         "./tests/files/doubledummy.xcdatamodeld", True, "YetiProject", True)
             self.assertEqual(error.getvalue(), "")
             self.assertIn("Finished generating your files!", out.getvalue())

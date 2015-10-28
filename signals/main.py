@@ -1,11 +1,12 @@
 import click
 from signals.parser.schema import Schema
-from signals.generators.ios.ios_generator import iOSGenerator
+from signals.generators.ios.ios_generator import ObjectiveCGenerator, SwiftGenerator
 from signals.logging import SignalsError, progress
 from signals.settings import save_settings, load_settings, os
 
 generators = {
-    'ios': iOSGenerator
+    'objc': ObjectiveCGenerator,
+    'swift': SwiftGenerator
 }
 
 
@@ -15,11 +16,12 @@ def run_signals(schema, generator_name, data_models, core_data, check_xcode, pro
 
     schema = Schema(schema)
 
-    generator = generators[generator_name](schema, data_models, core_data, check_xcode, project_name)
+    generator = generators[generator_name](generator_name, schema, data_models, core_data, check_xcode, project_name)
     try:
         generator.process()
         if save:
-            save_settings([data_models, core_data], schema, generator_name, data_models, core_data, project_name)
+            save_settings([data_models, core_data], schema, generator_name, data_models,
+                          core_data, project_name)
     except SignalsError as e:
         print(str(e))
     else:
@@ -52,13 +54,6 @@ def project_specified(ctx, param, value):
         ctx.exit()
 
 
-def add_trailing_slash_to_api(ctx, param, value):
-    if not value.endswith('/'):
-        value += '/'
-
-    return value
-
-
 def validate_path(ctx, param, value):
     value = value.strip()
     if value.startswith('~'):
@@ -87,7 +82,7 @@ def validate_path(ctx, param, value):
               callback=validate_path)
 @click.option('--generator',
               prompt='name of generator to use',
-              help='The name of the generator you\'d like to use.',
+              help='The name of the generator you\'d like to use: Objective C (objc) or Swift (swift)',
               type=click.Choice(generators.keys()))
 @click.option('data_models', '--datamodels',
               prompt='path to iOS data models',

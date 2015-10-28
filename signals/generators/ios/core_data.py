@@ -203,20 +203,25 @@ def get_model(core_data_path):
 # parses the hidden .xccurrentversion for the name of the current version
 # this information is stored inside its first and only <string> xml tag
 def get_current_version(xcdatamodeld_path):
-    xccurrentversion_path = xcdatamodeld_path + '/.xccurrentversion'
+    xccurrentversion_path = '{}/.xccurrentversion'.format(xcdatamodeld_path)
 
     # .xccurrentversion might not exist if there is only one version
     if os.path.exists(xccurrentversion_path):
-        xml_dom = minidom.parse(xccurrentversion_path)
-        return xml_dom.getElementsByTagName('string')[0].childNodes[0].data
-    else:
-        return [f for f in os.listdir(xcdatamodeld_path) if f.endswith('.xcdatamodel')][0]
+        try:
+            xml_dom = minidom.parse(xccurrentversion_path)
+            current_version_name = xml_dom.getElementsByTagName('string')[0].childNodes[0].data
+            return current_version_name
+        # Invalid .xccurrentversion format, passes in order to return first version name
+        except (IndexError, AttributeError):
+            pass
+
+    return [filename for filename in os.listdir(xcdatamodeld_path)
+            if filename.endswith('.xcdatamodel')][0]
 
 
 def get_core_data_from_folder(xcdatamodeld_path):
     current_version_name = get_current_version(xcdatamodeld_path)
-    core_data_path = xcdatamodeld_path + '/' + current_version_name + '/contents'
-    return core_data_path
+    return '{}/{}/contents'.format(xcdatamodeld_path, current_version_name)
 
 
 def write_xml_to_file(xcdatamodeld_path, objects):
