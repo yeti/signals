@@ -59,14 +59,14 @@ func setup(delegate: DataModelDelegate) {
   // We place the relationship mappings after the entities so that we don't need to worry about ordering
 
   // MARK: RestKit URL Descriptors
-  var signUpPostRequestDescriptor = RKRequestDescriptor.requestDescriptorWithMapping(signUpRequestMapping.inverseMapping(), objectClass: SignUpRequest, rootKeyPath: nil, method: RKRequestMethodPOST)
+  var signUpPostRequestDescriptor = RKRequestDescriptor.requestDescriptorWithMapping(signUpRequestMapping.inverseMapping(), objectClass: SignUpRequest.self, rootKeyPath: nil, method: RKRequestMethodPOST)
   objectManager.addRequestDescriptor(signUpPostRequestDescriptor)
 
   var signUpPostResponseDescriptor = RKResponseDescriptor.responseDescriptorWithMapping(signUpResponseMapping, method: RKRequestMethodPOST, pathPattern: "sign_up/", keyPath: nil, statusCodes: RKStatusCodeIndexSetForClass(RKStatusCodeClassSuccessful))
-  objectManager.assResponseDescriptor(signUpPostResponseDescriptor)
+  objectManager.addResponseDescriptor(signUpPostResponseDescriptor)
 
   var loginGetResponseDescriptor = RKResponseDescriptor.responseDescriptorWithMapping(loginResponseMapping, method: RKRequestMethodGET, pathPattern: "login/", keyPath: "results", statusCodes: RKStatusCodeIndexSetForClass(RKStatusCodeClassSuccessful))
-  objectManager.assResponseDescriptor(loginGetResponseDescriptor)
+  objectManager.addResponseDescriptor(loginGetResponseDescriptor)
 
 
   /**

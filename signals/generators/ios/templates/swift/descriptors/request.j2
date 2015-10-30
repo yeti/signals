@@ -1,8 +1,8 @@
 {% set mapping_name = get_object_name(api.request_object) %}
 {% set descriptor_name = get_url_name(api.url_path) + api.method|capitalize %}
 {% if api.method == 'patch' %}
-  var {{ mapping_name }}MappingInverse = {{ mapping_name }}Mapping.inverseMapping
-  {{ mapping_name }}MappingInverse.assignsDefaultValueForMissingAttributes = false;
+  var {{ mapping_name }}MappingInverse = {{ mapping_name }}Mapping.inverseMapping()
+  {{ mapping_name }}MappingInverse.assignsDefaultValueForMissingAttributes = false
 {% endif %}
-  var {{ descriptor_name }}RequestDescriptor = RKRequestDescriptor.requestDescriptorWithMapping({{ mapping_name }}Mapping.inverseMapping(), objectClass: {{ get_object_name(api.request_object, upper_camel_case=True) }}, rootKeyPath: nil, method: RKRequestMethod{{ api.method|upper }})
+  var {{ descriptor_name }}RequestDescriptor = RKRequestDescriptor.requestDescriptorWithMapping({{ mapping_name }}Mapping.inverseMapping(), objectClass: {{ get_object_name(api.request_object, upper_camel_case=True) }}.self, rootKeyPath: nil, method: RKRequestMethod{{ api.method|upper }})
   objectManager.addRequestDescriptor({{ descriptor_name }}RequestDescriptor)

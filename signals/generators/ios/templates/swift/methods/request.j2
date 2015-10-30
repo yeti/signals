@@ -10,19 +10,18 @@
   {% set media_fields = get_media_fields(request_object.fields) %}
   {% if media_fields|length > 0 %}
   if ({{ media_field_check(media_fields) }}) {
-    var request: NSMutableURLRequest = sharedMgr.multipartFormRequestWithObject(obj, method: RKRequestMethod{{ api.method|upper }}, path: "{{ api.url_path }}", parameters: nil, constructingBodyWithBlock: { (formData: AFMultipartFormData) -> () in
-         {% for media_field in media_fields %}
-         {% if media_field.field_type == VIDEO_FIELD %}
-             formData.appendPartWithFileURL({{ get_proper_name(media_field.name) }}, name: "{{ media_field.name }}", fileName: "{{ media_field.name }}.mp4", mimeType: "video/mp4", error: nil)
-         {% else %}
-             formData.appendPartWithFileData(UIImageJPEGRepresentation({{ get_proper_name(media_field.name) }}, 1), name: "{{ media_field.name }}", fileName: "{{ media_field.name }}.jpeg", mimeType: "image/jpeg", error: nil)
-         {% endif %}
-         {% endfor %}
+    var request = sharedMgr.multipartFormRequestWithObject(obj, method: RKRequestMethod{{ api.method|upper }}, path: "{{ api.url_path }}", parameters: nil, constructingBodyWithBlock: { (formData: AFMultipartFormData) -> () in
+     {% for media_field in media_fields %}
+     {% if media_field.field_type == VIDEO_FIELD %}
+      formData.appendPartWithFileURL({{ get_proper_name(media_field.name) }}, name: "{{ media_field.name }}", fileName: "{{ media_field.name }}.mp4", mimeType: "video/mp4", error: nil)
+     {% else %}
+      formData.appendPartWithFileData(UIImageJPEGRepresentation({{ get_proper_name(media_field.name) }}, 1), name: "{{ media_field.name }}", fileName: "{{ media_field.name }}.jpeg", mimeType: "image/jpeg", error: nil)
+     {% endif %}
+     {% endfor %}
     })
 
     var operation = sharedMgr.managedObjectRequestOperationWithRequest(request, managedObjectContext: nil, success: success, failure: failure)
     sharedMgr.enqueueObjectRequestOperation(operation)
-
   } else {
   {%+ include 'methods/send_object.j2' %}
   }
