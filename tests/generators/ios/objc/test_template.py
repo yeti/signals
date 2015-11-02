@@ -1,9 +1,11 @@
 from inspect import getmembers, isfunction
 import os
 import unittest
+from datetime import datetime
 from jinja2 import PackageLoader
 from jinja2 import Environment
 from signals.generators.ios.conversion import sanitize_field_name, get_proper_name
+from signals.generators.ios.objc.template import ObjectiveCTemplate
 from signals.generators.ios.objc.template_methods import ObjectiveCTemplateMethods
 from signals.parser.fields import Relationship, Field
 from signals.parser.schema import DataObject, Schema, URL
@@ -238,3 +240,30 @@ class TemplateTestCase(unittest.TestCase):
             'data_object': post_object,
             'relationship': relationship
         })
+
+    def test_data_model_header_template(self):
+        schema = Schema("./tests/files/test_schema.json")
+        self.assertTemplateEqual('data_model.h.j2', 'DataModel.h', {
+            'schema': schema,
+            'VIDEO_FIELD': Field.VIDEO,
+            'IMAGE_FIELD': Field.IMAGE,
+            'today': datetime.today(),
+            'endpoints': URL.URL_ENDPOINTS.keys(),
+        }, expected_context=(
+            datetime.today().strftime('%m/%d/%Y'),
+        ))
+
+    def test_data_model_implementation_template(self):
+        schema = Schema("./tests/files/test_schema.json")
+        self.assertTemplateEqual('data_model.m.j2', 'DataModel.m', {
+            'project_name': "TestProject",
+            'schema': schema,
+            'VIDEO_FIELD': Field.VIDEO,
+            'IMAGE_FIELD': Field.IMAGE,
+            'today': datetime.today(),
+            'endpoints': URL.URL_ENDPOINTS.keys(),
+            'request_objects': ObjectiveCTemplate.get_request_objects(schema.data_objects),
+            'sanitize_field_name': sanitize_field_name
+        }, expected_context=(
+            datetime.today().strftime('%m/%d/%Y'),
+        ))
