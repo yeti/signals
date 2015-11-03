@@ -6,7 +6,6 @@
 #import "DataModel.h"
 #import <CoreData/CoreData.h>
 #import <RestKit/RestKit.h>
-#import "TestProject-Swift.h"
 
 // Request object imports
 #import "SignUpRequest.h"
