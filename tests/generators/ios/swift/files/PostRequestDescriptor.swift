@@ -1,2 +1,2 @@
-  var postPostRequestDescriptor = RKRequestDescriptor.requestDescriptorWithMapping(postRequestMapping.inverseMapping(), objectClass: PostRequest.self, rootKeyPath: nil, method: RKRequestMethodPOST)
-  objectManager.addRequestDescriptor(postPostRequestDescriptor)
+    let postPostRequestDescriptor = RKRequestDescriptor(mapping: postRequestMapping.inverseMapping(), objectClass: PostRequest.self, rootKeyPath: nil, method: RKRequestMethod.POST)
+    objectManager.addRequestDescriptor(postPostRequestDescriptor)

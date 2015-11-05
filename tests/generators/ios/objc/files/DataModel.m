@@ -104,11 +104,5 @@
   [sharedMgr getObject:nil path:@"login/" parameters:nil success:success failure:failure];
 }
 
-- (void) getAllLoginWithUsername:(NSString*)username password:(NSString*)password success:(void (^)(RKObjectRequestOperation *operation, RKMappingResult *mappingResult))success failure:(void (^)(RKObjectRequestOperation *operation, NSError *error))failure {
-  RKObjectManager* sharedMgr = [RKObjectManager sharedManager];
-  [sharedMgr.HTTPClient setAuthorizationHeaderWithUsername:username password:password];
-  sharedMgr.requestSerializationMIMEType = RKMIMETypeFormURLEncoded;
-  [sharedMgr getObjectsAtPath:@"login/" parameters:nil success:success failure:failure];
-}
 
 @end
