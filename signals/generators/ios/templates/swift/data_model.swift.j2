@@ -33,18 +33,19 @@ class DataModel: NSObject {
 
   func setup(delegate: DataModelDelegate) {
     // Initialize RestKit
-    let _delegate = delegate;
+    let _delegate = delegate
+    self.delegate = delegate
     let baseURL = NSURL(string: _delegate.getBaseURLString())
     let objectManager = RKObjectManager(baseURL: baseURL)
 
     // Enable Activity Indicator Spinner
-    AFNetworkActivityIndicatorManager.sharedManager().enabled = true;
+    AFNetworkActivityIndicatorManager.sharedManager().enabled = true
 
     // Initialize managed object store
     let managedObjectModel = NSManagedObjectModel.mergedModelFromBundles(nil)
     let managedObjectStore = RKManagedObjectStore(managedObjectModel: managedObjectModel)
 
-    objectManager.managedObjectStore = managedObjectStore;
+    objectManager.managedObjectStore = managedObjectStore
 
     // MARK: RestKit Entity Mappings
     {% for name, data_object in schema.data_objects.iteritems() %}

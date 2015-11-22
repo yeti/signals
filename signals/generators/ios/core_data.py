@@ -130,7 +130,7 @@ def add_relationships(model, objects):
             for entity in model.iter("entity"):
                 if entity.get('name') == get_proper_object_name(object_name):
                     first_entity = entity
-                elif entity.get('name') == get_proper_object_name(relationship.related_object):
+                elif entity.get('name') == get_proper_object_name(relationship.related_object.name):
                     second_entity = entity
 
             first_entity_name = first_entity.get('name').lower().replace("response", "")
