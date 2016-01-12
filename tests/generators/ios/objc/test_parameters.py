@@ -33,8 +33,8 @@ class ParametersTestCase(unittest.TestCase):
                 "profile": "O2O,$profileRequest",
                 "tags": "M2M,$tagRequest"
             },
-            "$profileRequest": {},
-            "$tagRequest": {}
+            "$profileRequest": {"test": "string"},
+            "$tagRequest": {"test": "string"}
         }, [])
         request_object = schema.data_objects['$userRequest']
         parameters = ObjCParameter.generate_relationship_parameters(request_object)

@@ -19,7 +19,8 @@ class BaseTemplateMethodsTestCase(unittest.TestCase):
                     "request": "$postRequest",
                     "response": {
                         "200+": "$postResponse"
-                    }
+                    },
+                    "parameters": {}
                 }
             }
         ]
@@ -35,16 +36,17 @@ class BaseTemplateMethodsTestCase(unittest.TestCase):
                 "url": "follow/",
                 "get": {
                     "response": {
-                        "200+": "$followResponse"
-                    }
-                }
+                        "200+": "$followResponse",
+                    },
+                    "parameters": {}
+                },
             }
         ]
         schema = create_dynamic_schema(objects_json, urls_json)
-        self.assertIsNone(BaseTemplateMethods.get_api_request_object(schema.urls[0].get))
+        self.assertEqual(BaseTemplateMethods.get_api_request_object(schema.urls[0].get), {})
 
     def test_get_object_name(self):
-        data_object = DataObject("$postRequest", {})
+        data_object = DataObject("$postRequest", {"body": "string"})
         self.assertEqual(BaseTemplateMethods.get_object_name(data_object), "postRequest")
         self.assertEqual(BaseTemplateMethods.get_object_name(data_object, upper_camel_case=True), "PostRequest")
 
@@ -52,7 +54,8 @@ class BaseTemplateMethodsTestCase(unittest.TestCase):
         api = GetAPI("post/", {
             "response": {
                 "200+": "$postResponse"
-            }
+            },
+            "parameters": {}
         })
         self.assertFalse(BaseTemplateMethods.is_oauth(api))
 

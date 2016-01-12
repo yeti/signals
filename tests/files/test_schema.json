@@ -9,7 +9,8 @@
         "request": "$signUpRequest",
         "response": {
           "200+": "$signUpResponse"
-        }
+        },
+        "parameters": {}
       }
     },
     {
@@ -19,7 +20,8 @@
         "#meta": "basicauth",
         "response": {
           "200+": "$loginResponse"
-        }
+        },
+        "parameters": {}
       }
     }
   ],

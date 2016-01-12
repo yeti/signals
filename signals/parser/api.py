@@ -45,6 +45,8 @@ class GetAPI(API):
         default_resource_type = self.RESOURCE_DETAIL if ":id" in url_path else self.RESOURCE_LIST
         self.resource_type = endpoint_json.get('resource_type', default_resource_type)
 
+        if 'parameters' not in endpoint_json:
+            raise SignalsError('No parameters given in GET request')
         self.parameters_object = endpoint_json.get('parameters')
         self.response_code = endpoint_json['response'].keys()[0]
         self.response_object = endpoint_json['response'][self.response_code]
@@ -53,6 +55,8 @@ class GetAPI(API):
 class RequestResponseAPI(API):
     def __init__(self, url_path, endpoint_json):
         super(RequestResponseAPI, self).__init__(url_path, endpoint_json)
+        if 'request' not in endpoint_json or 'response' not in endpoint_json:
+            raise SignalsError('JSON is missing key arguments in RequestResponseAPI instantiation')
         self.request_object = endpoint_json['request']
         self.response_code = endpoint_json['response'].keys()[0]
         self.response_object = endpoint_json['response'][self.response_code]

@@ -15,6 +15,9 @@ class Schema(object):
         progress("Parsing your schema file")
         with open(schema_path, "r") as schema_file:
             schema_json = json.loads(schema_file.read())
+            if 'objects' not in schema_json:
+                raise SignalsError('Missing objects key in schema file')
+
             self.create_objects(schema_json["objects"])
             self.create_apis(schema_json["urls"])
             self.validate_apis_and_objects()
@@ -58,6 +61,8 @@ class DataObject(object):
         self.fields = []
         self.relationships = []
         self.name = name
+        if not json_fields:
+            raise SignalsError('Empty or missing value for JSON fields')
         for field_name, field_attributes in json_fields.iteritems():
             self.create_field(field_name, field_attributes)
 

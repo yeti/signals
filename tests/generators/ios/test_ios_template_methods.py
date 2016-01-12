@@ -13,14 +13,16 @@ class iOSTemplateMethodsTestCase(unittest.TestCase):
         api = GetAPI("post/", {
             "response": {
                 "200+": "$postResponse"
-            }
+            },
+            "parameters": {}
         })
         self.assertEqual(iOSTemplateMethods.method_name(api), "PostWithSuccess")
 
         api = GetAPI("post/:id/", {
             "response": {
                 "200+": "$postResponse"
-            }
+            },
+            "parameters": {}
         })
         self.assertEqual(iOSTemplateMethods.method_name(api), "PostWithTheID")
 
@@ -46,7 +48,8 @@ class iOSTemplateMethodsTestCase(unittest.TestCase):
         api = GetAPI("post/", {
             "response": {
                 "200+": "$postResponse"
-            }
+            },
+            "parameters": {}
         })
         self.assertEqual(iOSTemplateMethods.content_type(api), "RKMIMETypeJSON")
 

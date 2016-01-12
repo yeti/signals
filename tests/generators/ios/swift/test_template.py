@@ -83,7 +83,8 @@ class SwiftTemplateTestCase(unittest.TestCase):
                 "get": {
                     "response": {
                         "200+": "$postResponse"
-                    }
+                    },
+                    "parameters": {}
                 }
             }
         ]
@@ -195,7 +196,8 @@ class SwiftTemplateTestCase(unittest.TestCase):
             "request": "$postRequest",
             "response": {
                 "200+": "$postResponse"
-            }
+            },
+            "parameters": {}
         })
         # Mock schema object
         schema = {

@@ -35,7 +35,8 @@ class APITestCase(unittest.TestCase):
         api = GetAPI("post/", {
             "response": {
                 "200+": "$postResponse"
-            }
+            },
+            "parameters": {}
         })
         self.assertEqual(api.response_object, "$postResponse")
         self.assertEqual(api.resource_type, GetAPI.RESOURCE_LIST)
@@ -44,7 +45,8 @@ class APITestCase(unittest.TestCase):
         api = GetAPI("post/:id/", {
             "response": {
                 "200+": "$postResponse"
-            }
+            },
+            "parameters": {}
         })
         self.assertEqual(api.response_object, "$postResponse")
         self.assertEqual(api.resource_type, GetAPI.RESOURCE_DETAIL)
@@ -54,7 +56,8 @@ class APITestCase(unittest.TestCase):
             "resource_type": "list",
             "response": {
                 "200+": "$postResponse"
-            }
+            },
+            "parameters": {}
         })
         self.assertEqual(api.response_object, "$postResponse")
         self.assertEqual(api.resource_type, GetAPI.RESOURCE_LIST)
@@ -64,7 +67,8 @@ class APITestCase(unittest.TestCase):
             "request": "$postRequest",
             "response": {
                 "200+": "$postResponse"
-            }
+            },
+            "parameters": {}
         })
         self.assertEqual(api.response_object, "$postResponse")
         self.assertEqual(api.request_object, "$postRequest")

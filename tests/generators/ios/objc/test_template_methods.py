@@ -34,7 +34,8 @@ class TemplateMethodsTestCase(unittest.TestCase):
         api = GetAPI("post/", {
             "response": {
                 "200+": "$postResponse"
-            }
+            },
+            "parameters": {}
         })
         self.assertEqual(ObjectiveCTemplateMethods.key_path(api), '@"results"')
 
@@ -44,7 +45,8 @@ class TemplateMethodsTestCase(unittest.TestCase):
         api = GetAPI("post/:id/favorite/", {
             "response": {
                 "200+": "$postResponse"
-            }
+            },
+            "parameters": {}
         })
         self.assertEqual(ObjectiveCTemplateMethods.key_path(api), 'nil')
 

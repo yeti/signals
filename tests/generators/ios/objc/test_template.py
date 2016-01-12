@@ -84,8 +84,9 @@ class TemplateTestCase(unittest.TestCase):
                 "get": {
                     "response": {
                         "200+": "$postResponse"
-                    }
-                }
+                    },
+                    "parameters": {}
+                },
             }
         ]
         schema = create_dynamic_schema(objects_json, urls_json)
@@ -195,8 +196,9 @@ class TemplateTestCase(unittest.TestCase):
             "#meta": "oauth2",
             "request": "$postRequest",
             "response": {
-                "200+": "$postResponse"
-            }
+                "200+": "$postResponse",
+            },
+            "parameters": {}
         })
         # Mock schema object
         schema = {

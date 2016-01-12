@@ -34,7 +34,8 @@ class SwiftTemplateMethodsTestCase(unittest.TestCase):
         api = GetAPI("post/", {
             "response": {
                 "200+": "$postResponse"
-            }
+            },
+            "parameters": {}
         })
         self.assertEqual(SwiftTemplateMethods.key_path(api), '"results"')
 
@@ -44,7 +45,8 @@ class SwiftTemplateMethodsTestCase(unittest.TestCase):
         api = GetAPI("post/:id/favorite/", {
             "response": {
                 "200+": "$postResponse"
-            }
+            },
+            "parameters": {}
         })
         self.assertEqual(SwiftTemplateMethods.key_path(api), 'nil')
 
