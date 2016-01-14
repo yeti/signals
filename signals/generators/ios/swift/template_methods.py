@@ -1,4 +1,4 @@
-from signals.generators.ios.conversion import get_proper_name
+from signals.generators.ios.conversion import SwiftConverter.get_proper_name
 from signals.generators.ios.ios_template_methods import iOSTemplateMethods
 from signals.generators.ios.swift.parameters import SwiftParameter
 from signals.parser.api import GetAPI
@@ -46,7 +46,7 @@ class SwiftTemplateMethods(iOSTemplateMethods):
         attribute_mapping_string = ""
         for index, field in enumerate(fields):
             leading_comma = '' if index == 0 else ', '
-            swift_variable_name = get_proper_name(field.name)
+            swift_variable_name = SwiftConverter.get_proper_name(field.name)
             attribute_mapping_string += '{}"{}": "{}"'.format(leading_comma, field.name, swift_variable_name)
         return attribute_mapping_string
 
@@ -54,7 +54,7 @@ class SwiftTemplateMethods(iOSTemplateMethods):
     def create_parameter_signature(parameters):
         method_parts = []
         for index, method_field in enumerate(parameters):
-            swift_variable_name = get_proper_name(method_field.name)
+            swift_variable_name = SwiftConverter.get_proper_name(method_field.name)
             parameter_signature = "{}: {}".format(swift_variable_name, method_field.swift_type)
 
             method_parts.append(parameter_signature)

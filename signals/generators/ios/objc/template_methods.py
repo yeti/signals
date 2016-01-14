@@ -1,4 +1,4 @@
-from signals.generators.ios.conversion import get_proper_name
+from signals.generators.ios.conversion import ObjectiveCConverter.get_proper_name
 from signals.generators.ios.ios_template_methods import iOSTemplateMethods
 from signals.generators.ios.objc.parameters import ObjCParameter
 from signals.parser.api import GetAPI
@@ -45,7 +45,7 @@ class ObjectiveCTemplateMethods(iOSTemplateMethods):
         attribute_mapping_string = ""
         for index, field in enumerate(fields):
             leading_comma = '' if index == 0 else ', '
-            objc_variable_name = get_proper_name(field.name)
+            objc_variable_name = ObjectiveCConverter.get_proper_name(field.name)
             attribute_mapping_string += '{}@"{}": @"{}"'.format(leading_comma, field.name, objc_variable_name)
         return attribute_mapping_string
 
@@ -53,7 +53,7 @@ class ObjectiveCTemplateMethods(iOSTemplateMethods):
     def create_parameter_signature(parameters):
         method_parts = []
         for index, method_field in enumerate(parameters):
-            objc_variable_name = get_proper_name(method_field.name)
+            objc_variable_name = ObjectiveCConverter.get_proper_name(method_field.name)
             parameter_signature = "({}){}".format(method_field.objc_type, objc_variable_name)
             # If this isn't the first parameter, also include the variable name before the type
             if index > 0:

@@ -1,6 +1,6 @@
 import shutil
 from signals.generators.base.base_template import BaseTemplate
-from signals.generators.ios.conversion import sanitize_field_name, get_proper_name
+from signals.generators.ios.conversion import SwiftConverter
 from signals.generators.ios.swift.template_methods import SwiftTemplateMethods
 from signals.parser.fields import Field
 
@@ -20,9 +20,9 @@ class SwiftTemplate(BaseTemplate):
             'project_name': self.project_name,
             'VIDEO_FIELD': Field.VIDEO,
             'IMAGE_FIELD': Field.IMAGE,
-            'get_proper_name': get_proper_name,
+            'get_proper_name': SwiftConverter.get_proper_name,
             'request_objects': self.get_request_objects(self.schema.data_objects),
-            'sanitize_field_name': sanitize_field_name,
+            'sanitize_field_name': SwiftConverter.sanitize_field_name,
         })
 
     def copy_data_models(self):

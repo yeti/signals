@@ -16,7 +16,6 @@ OBJC_RESERVED_MAPPINGS = {
     "long": "isLong"
 }
 
-# More listed here: https://developer.apple.com/library/ios/documentation/Swift/Conceptual/Swift_Programming_Language/LexicalStructure.html#//apple_ref/doc/uid/TP40014097-CH30-ID412
 SWIFT_RESERVED_MAPPINGS = {
     "class": "_class",
     "func": "_func",

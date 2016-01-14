@@ -1,6 +1,6 @@
 import shutil
 from signals.generators.base.base_template import BaseTemplate
-from signals.generators.ios.conversion import get_proper_name, sanitize_field_name
+from signals.generators.ios.conversion import ObjectiveCConverter
 from signals.generators.ios.objc.template_methods import ObjectiveCTemplateMethods
 from signals.parser.fields import Field
 
@@ -25,9 +25,9 @@ class ObjectiveCTemplate(BaseTemplate):
             'project_name': self.project_name,
             'VIDEO_FIELD': Field.VIDEO,
             'IMAGE_FIELD': Field.IMAGE,
-            'get_proper_name': get_proper_name,
+            'get_proper_name': ObjectiveCConverter.get_proper_name,
             'request_objects': self.get_request_objects(self.schema.data_objects),
-            'sanitize_field_name': sanitize_field_name
+            'sanitize_field_name': ObjectiveCConverter.sanitize_field_name
         })
 
     def copy_data_models(self):
