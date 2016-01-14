@@ -5,7 +5,7 @@ import os
 from xml.dom import minidom
 from lxml import etree
 from signals.parser.fields import Relationship, Field
-from signals.generators.ios.conversion import ObjectiveCConverter.get_proper_name
+from signals.generators.ios.conversion import ObjectiveCConverter
 
 DATA_TYPES = {
     Field.DATE: "Date",
@@ -140,7 +140,8 @@ def add_relationships(model, objects):
                 add_M2M_relationships(first_entity, second_entity, relationship.name,
                                       get_word_plural(first_entity_name))
             elif relationship.relationship_type == Relationship.ONE_TO_ONE:
-                add_O2O_relationships(first_entity, second_entity, ObjectiveCConverter.get_proper_name(relationship.name),
+                add_O2O_relationships(first_entity, second_entity,
+                                      ObjectiveCConverter.get_proper_name(relationship.name),
                                       first_entity_name)
             elif relationship.relationship_type == Relationship.MANY_TO_ONE:
                 """

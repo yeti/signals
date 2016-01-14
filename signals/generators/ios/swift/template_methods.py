@@ -1,4 +1,4 @@
-from signals.generators.ios.conversion import SwiftConverter.get_proper_name
+from signals.generators.ios.conversion import SwiftConverter
 from signals.generators.ios.ios_template_methods import iOSTemplateMethods
 from signals.generators.ios.swift.parameters import SwiftParameter
 from signals.parser.api import GetAPI

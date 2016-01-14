@@ -4,6 +4,7 @@ Methods to translate the schema variable names and types to desired language's n
 from signals.logging import warn
 import reserved_mappings
 
+
 class BaseConverter(object):
 
     # Some field names are reserved in target language
@@ -11,7 +12,8 @@ class BaseConverter(object):
     def sanitize_field_name(cls, field_name):
         if field_name in cls.reserved_mappings:
             converted_name = cls.reserved_mappings[field_name]
-            warn("{} is a reserved keyword in {} and is now being converted to {}".format(field_name, cls.language, converted_name))
+            warn("{} is a reserved keyword in {} and is now being converted to {}"
+                 .format(field_name, cls.language, converted_name))
             return converted_name
         else:
             return field_name
@@ -38,6 +40,7 @@ class BaseConverter(object):
 class ObjectiveCConverter(BaseConverter):
     language = "Objective-C"
     reserved_mappings = reserved_mappings.OBJC_RESERVED_MAPPINGS
+
 
 class SwiftConverter(BaseConverter):
     language = "Swift"

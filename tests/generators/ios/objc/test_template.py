@@ -4,7 +4,7 @@ import unittest
 from datetime import datetime
 from jinja2 import PackageLoader
 from jinja2 import Environment
-from signals.generators.ios.conversion import sanitize_field_name, get_proper_name
+from signals.generators.ios.conversion import ObjectiveCConverter
 from signals.generators.ios.objc.template import ObjectiveCTemplate
 from signals.generators.ios.objc.template_methods import ObjectiveCTemplateMethods
 from signals.parser.fields import Relationship, Field
@@ -27,8 +27,8 @@ class TemplateTestCase(unittest.TestCase):
             template = self.jinja2_environment.get_template(template_name)
             # Registers all methods in template_methods.py with jinja2 for use
             context.update({name: method for name, method in getmembers(ObjectiveCTemplateMethods, isfunction)})
-            context.update({'get_proper_name': get_proper_name,
-                            'sanitize_field_name': sanitize_field_name
+            context.update({'get_proper_name': ObjectiveCConverter.get_proper_name,
+                            'sanitize_field_name': ObjectiveCConverter.sanitize_field_name
                             })
             template_output = template.render(**context)
             expected_template_out = expected_template_file.read()
@@ -222,7 +222,7 @@ class TemplateTestCase(unittest.TestCase):
         })
         self.assertTemplateEqual('entity_mapping.j2', 'EntityMapping.m', {
             'data_object': data_object,
-            'sanitize_field_name': sanitize_field_name
+            'sanitize_field_name': ObjectiveCConverter.sanitize_field_name
         })
 
     def test_relationship_mapping_template(self):
@@ -263,7 +263,7 @@ class TemplateTestCase(unittest.TestCase):
             'today': datetime.today(),
             'endpoints': URL.URL_ENDPOINTS.keys(),
             'request_objects': ObjectiveCTemplate.get_request_objects(schema.data_objects),
-            'sanitize_field_name': sanitize_field_name
+            'sanitize_field_name': ObjectiveCConverter.sanitize_field_name
         }, expected_context=(
             datetime.today().strftime('%m/%d/%Y'),
         ))

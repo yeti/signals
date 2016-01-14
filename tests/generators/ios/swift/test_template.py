@@ -3,7 +3,7 @@ import os
 import unittest
 from datetime import datetime
 from jinja2 import Environment, PackageLoader
-from signals.generators.ios.conversion import get_proper_name, sanitize_field_name
+from signals.generators.ios.conversion import SwiftConverter
 from signals.generators.ios.swift.template import SwiftTemplate
 from signals.generators.ios.swift.template_methods import SwiftTemplateMethods
 from signals.parser.api import GetAPI, PatchAPI, PostAPI
@@ -26,8 +26,8 @@ class SwiftTemplateTestCase(unittest.TestCase):
             template = self.jinja2_environment.get_template(template_name)
             # Registers all methods in template_methods.py with jinja2 for use
             context.update({name: method for name, method in getmembers(SwiftTemplateMethods, isfunction)})
-            context.update({'get_proper_name': get_proper_name,
-                            'sanitize_field_name': sanitize_field_name
+            context.update({'get_proper_name': SwiftConverter.get_proper_name,
+                            'sanitize_field_name': SwiftConverter.sanitize_field_name
                             })
             template_output = template.render(**context)
             expected_template_out = expected_template_file.read()
@@ -221,7 +221,7 @@ class SwiftTemplateTestCase(unittest.TestCase):
         })
         self.assertTemplateEqual('entity_mapping.j2', 'EntityMapping.swift', {
             'data_object': data_object,
-            'sanitize_field_name': sanitize_field_name
+            'sanitize_field_name': SwiftConverter.sanitize_field_name
         })
 
     def test_relationship_mapping_template(self):
@@ -250,7 +250,7 @@ class SwiftTemplateTestCase(unittest.TestCase):
             'today': datetime.today(),
             'endpoints': URL.URL_ENDPOINTS.keys(),
             'request_objects': SwiftTemplate.get_request_objects(schema.data_objects),
-            'sanitize_field_name': sanitize_field_name
+            'sanitize_field_name': SwiftConverter.sanitize_field_name
         }, expected_context=(
             datetime.today().strftime('%m/%d/%Y'),
         ))

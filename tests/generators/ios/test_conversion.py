@@ -1,11 +1,16 @@
 import unittest
-from signals.generators.ios.conversion import python_to_objc_variable, sanitize_field_name, get_proper_name
+from signals.generators.ios.conversion import ObjectiveCConverter
 
+
+format_name = ObjectiveCConverter.format_name
+sanitize_field_name = ObjectiveCConverter.sanitize_field_name
+get_proper_name = ObjectiveCConverter.get_proper_name
 
 class ConversionTestCase(unittest.TestCase):
-    def test_python_to_objc_variable(self):
-        self.assertEqual(python_to_objc_variable("verbose_description"), "verboseDescription")
-        self.assertEqual(python_to_objc_variable("verbose_description", capitalize_first=True), "VerboseDescription")
+    
+    def format_name(self):
+        self.assertEqual(format_name("verbose_description"), "verboseDescription")
+        self.assertEqual(format_name("verbose_description", capitalize_first=True), "VerboseDescription")
 
     def test_sanitize_field_name(self):
         self.assertEqual(sanitize_field_name("description"), "theDescription")
