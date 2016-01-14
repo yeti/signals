@@ -1,6 +1,7 @@
 """
 Reserved keywords in respective languages
 """
+# Reserved name is Objective-C
 # More listed here: http://www.binpress.com/tutorial/objective-c-reserved-keywords/43
 OBJC_RESERVED_MAPPINGS = {
     "auto": "isAuto",
@@ -20,14 +21,5 @@ SWIFT_RESERVED_MAPPINGS = {
     "func": "_func",
     "init": "_init",
     "id": "theID"
-    # "auto": "isAuto",
-    # "default": "isDefault",
-    # "description": "theDescription",
-    # "id": "theID",
-    # "register": "theRegister",
-    # "restrict": "shouldRestrict",
-    # "super": "isSuper",
-    # "volatile": "isVolatile",
-    # "int": "isInt",
-    # "long": "isLong"
+    # more to be added
 }
