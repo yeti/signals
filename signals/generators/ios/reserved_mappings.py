@@ -15,7 +15,7 @@ OBJC_RESERVED_MAPPINGS = {
     "int": "isInt",
     "long": "isLong"
 }
-
+# Reserved name in Swift
 SWIFT_RESERVED_MAPPINGS = {
     "class": "_class",
     "func": "_func",
